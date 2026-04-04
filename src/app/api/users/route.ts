@@ -13,7 +13,7 @@ export async function GET() {
       id: true,
       name: true,
       decks: {
-        select: { id: true, name: true, commander: true },
+        select: { id: true, name: true, commander: true, edhp: true, bracket: true },
         orderBy: { name: "asc" },
       },
     },

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 interface UserWithDecks {
   id: string;
   name: string;
-  decks: { id: string; name: string; commander: string }[];
+  decks: { id: string; name: string; commander: string; edhp: number | null; bracket: number | null }[];
 }
 
 interface PlayerEntry {
@@ -188,7 +188,7 @@ export default function NewGamePage() {
                 <option value="">Select deck...</option>
                 {getDecksForUser(player.userId).map((d) => (
                   <option key={d.id} value={d.id}>
-                    {d.name} ({d.commander})
+                    {d.name} ({d.commander}){d.edhp != null || d.bracket != null ? ` p:${d.edhp != null ? d.edhp.toFixed(2) : "-"}/b:${d.bracket ?? "-"}` : ""}
                   </option>
                 ))}
               </select>
