@@ -14,6 +14,8 @@ interface Deck {
   colorB: boolean;
   colorR: boolean;
   colorG: boolean;
+  bracket: number | null;
+  edhp: number | null;
   createdAt: string;
 }
 
@@ -179,42 +181,54 @@ export default function DecksPage() {
               className="flex items-center justify-between p-4 rounded-lg border border-gray-200"
               style={deckGradient(deck)}
             >
-              <div className="flex items-center gap-3">
-                {deck.commanderImage && (
-                  <img
-                    src={deck.commanderImage}
-                    alt={deck.commander}
-                    className="w-16 h-16 rounded-lg object-cover shadow-sm flex-shrink-0"
-                  />
+              <div className="space-y-1 min-w-0 flex-1">
+                <div className="font-medium text-gray-900">{deck.name}</div>
+                <div className="text-sm text-gray-900">{deck.commander}</div>
+                <ColorPips
+                  colors={{
+                    W: deck.colorW,
+                    U: deck.colorU,
+                    B: deck.colorB,
+                    R: deck.colorR,
+                    G: deck.colorG,
+                  }}
+                />
+                {(deck.bracket != null || deck.edhp != null) && (
+                  <div className="flex gap-3 text-xs">
+                    {deck.bracket != null && (
+                      <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                        Bracket {deck.bracket}
+                      </span>
+                    )}
+                    {deck.edhp != null && (
+                      <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                        EDHP {deck.edhp.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
                 )}
-                <div className="space-y-1">
-                  <div className="font-medium text-gray-900">{deck.name}</div>
-                  <div className="text-sm text-gray-500">{deck.commander}</div>
-                  <ColorPips
-                    colors={{
-                      W: deck.colorW,
-                      U: deck.colorU,
-                      B: deck.colorB,
-                      R: deck.colorR,
-                      G: deck.colorG,
-                    }}
-                  />
+                <div className="flex gap-3 pt-1">
+                  <Link
+                    href={`/decks/${deck.id}/edit`}
+                    className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(deck.id)}
+                    className="text-red-500 hover:text-red-700 text-xs"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-3 items-center">
-                <Link
-                  href={`/decks/${deck.id}/edit`}
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                >
-                  Edit
-                </Link>
-                <button
-                  onClick={() => handleDelete(deck.id)}
-                  className="text-red-500 hover:text-red-700 text-sm"
-                >
-                  Delete
-                </button>
-              </div>
+              {deck.commanderImage && (
+                <img
+                  src={deck.commanderImage}
+                  alt={deck.commander}
+                  className="w-24 h-24 rounded-lg object-cover shadow-sm flex-shrink-0"
+                />
+              )}
             </div>
           ))}
         </div>

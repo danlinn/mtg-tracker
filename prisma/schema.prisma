@@ -25,6 +25,8 @@ model Deck {
   name           String
   commander      String
   commanderImage String?
+  bracket        Int?
+  edhp           Float?
   colorW    Boolean  @default(false)
   colorU    Boolean  @default(false)
   colorB    Boolean  @default(false)

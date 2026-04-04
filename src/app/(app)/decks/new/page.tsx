@@ -22,6 +22,8 @@ export default function NewDeckPage() {
   const [colors, setColors] = useState<Record<string, boolean>>({
     W: false, U: false, B: false, R: false, G: false,
   });
+  const [bracket, setBracket] = useState("");
+  const [edhp, setEdhp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -50,7 +52,11 @@ export default function NewDeckPage() {
     const res = await fetch("/api/decks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, commander, commanderImage, colors }),
+      body: JSON.stringify({
+        name, commander, commanderImage, colors,
+        bracket: bracket ? Number(bracket) : null,
+        edhp: edhp ? Number(edhp) : null,
+      }),
     });
 
     if (!res.ok) {
@@ -125,6 +131,40 @@ export default function NewDeckPage() {
                 {c.key}
               </button>
             ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="bracket" className="block text-sm font-medium mb-1">
+              Bracket (1-5)
+            </label>
+            <input
+              id="bracket"
+              type="number"
+              min={1}
+              max={5}
+              step={1}
+              value={bracket}
+              onChange={(e) => setBracket(e.target.value)}
+              placeholder="e.g. 3"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+            />
+          </div>
+          <div>
+            <label htmlFor="edhp" className="block text-sm font-medium mb-1">
+              EDHP (0-10)
+            </label>
+            <input
+              id="edhp"
+              type="number"
+              min={0}
+              max={10}
+              step={0.1}
+              value={edhp}
+              onChange={(e) => setEdhp(e.target.value)}
+              placeholder="e.g. 7.5"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+            />
           </div>
         </div>
         <button

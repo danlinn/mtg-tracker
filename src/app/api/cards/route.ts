@@ -30,12 +30,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ card: null });
     }
     const card = await res.json();
+    // Double-faced cards (with //) have images in card_faces instead of top-level
+    const imageUris = card.image_uris ?? card.card_faces?.[0]?.image_uris;
     return NextResponse.json({
       card: {
         name: card.name,
-        image: card.image_uris?.art_crop ?? card.image_uris?.normal ?? null,
-        imageSmall: card.image_uris?.small ?? null,
-        colors: card.colors ?? [],
+        image: imageUris?.art_crop ?? imageUris?.normal ?? null,
+        imageSmall: imageUris?.small ?? null,
+        colors: card.colors ?? card.card_faces?.[0]?.colors ?? [],
         type_line: card.type_line ?? "",
       },
     });

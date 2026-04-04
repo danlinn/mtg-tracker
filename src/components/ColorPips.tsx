@@ -1,7 +1,7 @@
 "use client";
 
 const COLOR_MAP: Record<string, { label: string; bg: string; text: string }> = {
-  W: { label: "W", bg: "bg-yellow-100", text: "text-yellow-800" },
+  W: { label: "W", bg: "bg-yellow-100", text: "text-gray-900" },
   U: { label: "U", bg: "bg-blue-500", text: "text-white" },
   B: { label: "B", bg: "bg-gray-800", text: "text-gray-100" },
   R: { label: "R", bg: "bg-red-500", text: "text-white" },

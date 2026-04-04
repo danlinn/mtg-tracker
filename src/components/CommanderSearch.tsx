@@ -12,8 +12,10 @@ export default function CommanderSearch({ value, onChange, onCardResolved }: Com
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -25,8 +27,17 @@ export default function CommanderSearch({ value, onChange, onCardResolved }: Com
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Scroll active item into view
+  useEffect(() => {
+    if (activeIndex >= 0 && listRef.current) {
+      const item = listRef.current.children[activeIndex] as HTMLElement;
+      item?.scrollIntoView({ block: "nearest" });
+    }
+  }, [activeIndex]);
+
   function handleInputChange(text: string) {
     onChange(text);
+    setActiveIndex(-1);
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -43,6 +54,7 @@ export default function CommanderSearch({ value, onChange, onCardResolved }: Com
         const data = await res.json();
         setSuggestions(data.data ?? []);
         setShowDropdown(true);
+        setActiveIndex(-1);
       } catch {
         setSuggestions([]);
       } finally {
@@ -51,12 +63,30 @@ export default function CommanderSearch({ value, onChange, onCardResolved }: Com
     }, 250);
   }
 
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (!showDropdown || suggestions.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : 0));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((prev) => (prev > 0 ? prev - 1 : suggestions.length - 1));
+    } else if (e.key === "Enter" && activeIndex >= 0) {
+      e.preventDefault();
+      selectSuggestion(suggestions[activeIndex]);
+    } else if (e.key === "Escape") {
+      setShowDropdown(false);
+      setActiveIndex(-1);
+    }
+  }
+
   async function selectSuggestion(name: string) {
     onChange(name);
     setShowDropdown(false);
     setSuggestions([]);
+    setActiveIndex(-1);
 
-    // Resolve full card data
     if (onCardResolved) {
       try {
         const res = await fetch(`/api/cards?name=${encodeURIComponent(name)}`);
@@ -76,9 +106,13 @@ export default function CommanderSearch({ value, onChange, onCardResolved }: Com
         required
         value={value}
         onChange={(e) => handleInputChange(e.target.value)}
+        onKeyDown={handleKeyDown}
         onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
         placeholder="e.g. Krenko, Mob Boss"
         autoComplete="off"
+        role="combobox"
+        aria-expanded={showDropdown}
+        aria-activedescendant={activeIndex >= 0 ? `commander-option-${activeIndex}` : undefined}
         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
       />
       {loading && (
@@ -87,13 +121,25 @@ export default function CommanderSearch({ value, onChange, onCardResolved }: Com
         </div>
       )}
       {showDropdown && suggestions.length > 0 && (
-        <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          {suggestions.map((name) => (
-            <li key={name}>
+        <ul
+          ref={listRef}
+          role="listbox"
+          className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+        >
+          {suggestions.map((name, index) => (
+            <li
+              key={name}
+              id={`commander-option-${index}`}
+              role="option"
+              aria-selected={index === activeIndex}
+            >
               <button
                 type="button"
                 onClick={() => selectSuggestion(name)}
-                className="w-full text-left px-3 py-2 text-sm text-gray-900 hover:bg-blue-50 transition-colors"
+                onMouseEnter={() => setActiveIndex(index)}
+                className={`w-full text-left px-3 py-2 text-sm text-gray-900 transition-colors ${
+                  index === activeIndex ? "bg-blue-50" : "hover:bg-blue-50"
+                }`}
               >
                 {name}
               </button>
