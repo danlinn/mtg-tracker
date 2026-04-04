@@ -10,12 +10,12 @@
     "test": "jest"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.6.0",
+    "@neondatabase/serverless": "^1.0.2",
+    "@prisma/adapter-neon": "^7.6.0",
     "@prisma/client": "^7.6.0",
     "bcryptjs": "^3.0.3",
     "next": "16.2.2",
     "next-auth": "^4.24.13",
-    "pg": "^8.20.0",
     "prisma": "^7.6.0",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -26,7 +26,6 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
-    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
