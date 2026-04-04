@@ -182,7 +182,7 @@ export default function DecksPage() {
               style={deckGradient(deck)}
             >
               <div className="space-y-1 min-w-0 flex-1">
-                <div className="font-medium text-gray-900">{deck.name}</div>
+                <div className="text-lg font-bold text-white" style={{ textShadow: "1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)" }}>{deck.name}</div>
                 <div className="text-sm text-gray-900">{deck.commander}</div>
                 <ColorPips
                   colors={{
