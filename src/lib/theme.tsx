@@ -1,8 +1,14 @@
 "use client";
 
-import { createContext, useContext, useCallback, useSyncExternalStore, ReactNode } from "react";
+import { createContext, useContext, useCallback, useEffect, useSyncExternalStore, ReactNode } from "react";
 
 export type ThemeName = "default" | "old-school" | "synth" | "cyber" | "flame" | "chris";
+
+const VALID_THEMES: ThemeName[] = ["default", "old-school", "synth", "cyber", "flame", "chris"];
+
+function isValidTheme(s: string): s is ThemeName {
+  return VALID_THEMES.includes(s as ThemeName);
+}
 
 interface ThemeContextType {
   theme: ThemeName;
@@ -18,7 +24,7 @@ let listeners: Array<() => void> = [];
 
 function getSnapshot(): ThemeName {
   const saved = localStorage.getItem("mtg-tracker-theme");
-  if (saved === "default" || saved === "old-school" || saved === "synth" || saved === "cyber" || saved === "flame" || saved === "chris") return saved;
+  if (saved && isValidTheme(saved)) return saved;
   return "default";
 }
 
@@ -36,10 +42,31 @@ function subscribe(listener: () => void) {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
+  // Load theme from server on mount
+  useEffect(() => {
+    fetch("/api/theme")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.theme && isValidTheme(data.theme)) {
+          localStorage.setItem("mtg-tracker-theme", data.theme);
+          document.documentElement.setAttribute("data-theme", data.theme);
+          listeners.forEach((l) => l());
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const setTheme = useCallback((t: ThemeName) => {
     localStorage.setItem("mtg-tracker-theme", t);
     document.documentElement.setAttribute("data-theme", t);
     listeners.forEach((l) => l());
+
+    // Persist to server
+    fetch("/api/theme", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ theme: t }),
+    }).catch(() => {});
   }, []);
 
   // Keep data-theme attribute in sync
