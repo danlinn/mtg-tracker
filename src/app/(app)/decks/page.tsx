@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import ColorPips from "@/components/ColorPips";
 
@@ -14,20 +14,32 @@ interface Deck {
   colorB: boolean;
   colorR: boolean;
   colorG: boolean;
+  createdAt: string;
 }
 
-const MTG_COLORS: { key: keyof Pick<Deck, "colorW" | "colorU" | "colorB" | "colorR" | "colorG">; hex: string }[] = [
-  { key: "colorW", hex: "#f5f5f4" }, // white
-  { key: "colorU", hex: "#60a5fa" }, // bright blue
-  { key: "colorB", hex: "#404040" }, // dark charcoal for Black
-  { key: "colorR", hex: "#f87171" }, // vivid red
-  { key: "colorG", hex: "#4ade80" }, // vivid green
+type SortOption = "date" | "name";
+
+const COLOR_KEYS = ["colorW", "colorU", "colorB", "colorR", "colorG"] as const;
+
+const FILTER_COLORS: { key: (typeof COLOR_KEYS)[number]; letter: string; label: string; bg: string; active: string }[] = [
+  { key: "colorW", letter: "W", label: "White", bg: "bg-yellow-100", active: "ring-yellow-400" },
+  { key: "colorU", letter: "U", label: "Blue", bg: "bg-blue-500", active: "ring-blue-400" },
+  { key: "colorB", letter: "B", label: "Black", bg: "bg-gray-800", active: "ring-gray-500" },
+  { key: "colorR", letter: "R", label: "Red", bg: "bg-red-500", active: "ring-red-400" },
+  { key: "colorG", letter: "G", label: "Green", bg: "bg-green-600", active: "ring-green-400" },
+];
+
+const MTG_COLORS: { key: (typeof COLOR_KEYS)[number]; hex: string }[] = [
+  { key: "colorW", hex: "#f5f5f4" },
+  { key: "colorU", hex: "#60a5fa" },
+  { key: "colorB", hex: "#404040" },
+  { key: "colorR", hex: "#f87171" },
+  { key: "colorG", hex: "#4ade80" },
 ];
 
 function deckGradient(deck: Deck): React.CSSProperties {
   const active = MTG_COLORS.filter((c) => deck[c.key]).map((c) => c.hex);
   if (active.length === 0) return {};
-  // Use light text when Black is the only or dominant color
   const isBlackOnly = deck.colorB && !deck.colorW && !deck.colorU && !deck.colorR && !deck.colorG;
   const textColor = isBlackOnly ? "#f5f5f4" : undefined;
   if (active.length === 1) return { background: active[0], color: textColor };
@@ -37,6 +49,34 @@ function deckGradient(deck: Deck): React.CSSProperties {
 export default function DecksPage() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sort, setSort] = useState<SortOption>("date");
+  const [colorFilter, setColorFilter] = useState<Record<string, boolean>>({
+    colorW: false, colorU: false, colorB: false, colorR: false, colorG: false,
+  });
+
+  const activeFilters = COLOR_KEYS.filter((k) => colorFilter[k]);
+
+  const filteredAndSorted = useMemo(() => {
+    let result = decks;
+
+    // Filter: deck must have ALL selected colors
+    if (activeFilters.length > 0) {
+      result = result.filter((deck) =>
+        activeFilters.every((key) => deck[key])
+      );
+    }
+
+    // Sort
+    if (sort === "name") {
+      result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+      result = [...result].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    }
+
+    return result;
+  }, [decks, sort, activeFilters]);
 
   useEffect(() => {
     fetch("/api/decks")
@@ -46,6 +86,10 @@ export default function DecksPage() {
         setLoading(false);
       });
   }, []);
+
+  function toggleColorFilter(key: string) {
+    setColorFilter((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this deck?")) return;
@@ -69,6 +113,53 @@ export default function DecksPage() {
         </Link>
       </div>
 
+      {decks.length > 0 && (
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Color filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Filter:</span>
+            {FILTER_COLORS.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => toggleColorFilter(c.key)}
+                className={`w-8 h-8 rounded-full ${c.bg} flex items-center justify-center text-xs font-bold transition-all ${
+                  colorFilter[c.key]
+                    ? `ring-2 ${c.active} ring-offset-2 scale-110`
+                    : "opacity-40"
+                }`}
+                title={c.label}
+              >
+                {c.letter}
+              </button>
+            ))}
+            {activeFilters.length > 0 && (
+              <button
+                onClick={() =>
+                  setColorFilter({ colorW: false, colorU: false, colorB: false, colorR: false, colorG: false })
+                }
+                className="text-xs text-gray-400 hover:text-gray-600 ml-1"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Sort */}
+          <div className="flex items-center gap-2 ml-auto">
+            <span className="text-sm text-gray-500">Sort:</span>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortOption)}
+              className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-900"
+            >
+              <option value="date">Date Added</option>
+              <option value="name">Name</option>
+            </select>
+          </div>
+        </div>
+      )}
+
       {decks.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           <p>No decks yet.</p>
@@ -76,9 +167,13 @@ export default function DecksPage() {
             Create your first deck
           </Link>
         </div>
+      ) : filteredAndSorted.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          No decks match the selected colors.
+        </div>
       ) : (
         <div className="space-y-2">
-          {decks.map((deck) => (
+          {filteredAndSorted.map((deck) => (
             <div
               key={deck.id}
               className="flex items-center justify-between p-4 rounded-lg border border-gray-200"
@@ -96,14 +191,14 @@ export default function DecksPage() {
                   <div className="font-medium text-gray-900">{deck.name}</div>
                   <div className="text-sm text-gray-500">{deck.commander}</div>
                   <ColorPips
-                  colors={{
-                    W: deck.colorW,
-                    U: deck.colorU,
-                    B: deck.colorB,
-                    R: deck.colorR,
-                    G: deck.colorG,
-                  }}
-                />
+                    colors={{
+                      W: deck.colorW,
+                      U: deck.colorU,
+                      B: deck.colorB,
+                      R: deck.colorR,
+                      G: deck.colorG,
+                    }}
+                  />
                 </div>
               </div>
               <div className="flex gap-3 items-center">
