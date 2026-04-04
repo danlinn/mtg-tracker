@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import CommanderSearch from "@/components/CommanderSearch";
 
 const COLORS = [
   { key: "W", label: "White", bg: "bg-yellow-100", active: "ring-yellow-400" },
@@ -11,22 +12,34 @@ const COLORS = [
   { key: "G", label: "Green", bg: "bg-green-600", active: "ring-green-400" },
 ];
 
+const COLOR_MAP: Record<string, string> = { W: "W", U: "U", B: "B", R: "R", G: "G" };
+
 export default function NewDeckPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [commander, setCommander] = useState("");
+  const [commanderImage, setCommanderImage] = useState<string | null>(null);
   const [colors, setColors] = useState<Record<string, boolean>>({
-    W: false,
-    U: false,
-    B: false,
-    R: false,
-    G: false,
+    W: false, U: false, B: false, R: false, G: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   function toggleColor(key: string) {
     setColors((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
+  function handleCardResolved(card: { name: string; image: string | null; colors: string[] } | null) {
+    if (!card) return;
+    setCommanderImage(card.image);
+    // Auto-set color identity from card
+    if (card.colors.length > 0) {
+      const newColors: Record<string, boolean> = { W: false, U: false, B: false, R: false, G: false };
+      card.colors.forEach((c) => {
+        if (COLOR_MAP[c]) newColors[COLOR_MAP[c]] = true;
+      });
+      setColors(newColors);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -37,7 +50,7 @@ export default function NewDeckPage() {
     const res = await fetch("/api/decks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, commander, colors }),
+      body: JSON.stringify({ name, commander, commanderImage, colors }),
     });
 
     if (!res.ok) {
@@ -74,22 +87,24 @@ export default function NewDeckPage() {
           />
         </div>
         <div>
-          <label
-            htmlFor="commander"
-            className="block text-sm font-medium mb-1"
-          >
+          <label htmlFor="commander" className="block text-sm font-medium mb-1">
             Commander
           </label>
-          <input
-            id="commander"
-            type="text"
-            required
+          <CommanderSearch
             value={commander}
-            onChange={(e) => setCommander(e.target.value)}
-            placeholder="e.g. Krenko, Mob Boss"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+            onChange={setCommander}
+            onCardResolved={handleCardResolved}
           />
         </div>
+        {commanderImage && (
+          <div className="flex justify-center">
+            <img
+              src={commanderImage}
+              alt={commander}
+              className="w-full rounded-lg shadow-md"
+            />
+          </div>
+        )}
         <div>
           <label className="block text-sm font-medium mb-2">
             Color Identity

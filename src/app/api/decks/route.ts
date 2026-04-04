@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, commander, colors } = await req.json();
+  const { name, commander, commanderImage, colors } = await req.json();
 
   if (!name || !commander) {
     return NextResponse.json(
@@ -35,6 +35,7 @@ export async function POST(req: Request) {
     data: {
       name,
       commander,
+      commanderImage: commanderImage ?? null,
       colorW: colors?.W ?? false,
       colorU: colors?.U ?? false,
       colorB: colors?.B ?? false,

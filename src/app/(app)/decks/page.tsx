@@ -8,6 +8,7 @@ interface Deck {
   id: string;
   name: string;
   commander: string;
+  commanderImage: string | null;
   colorW: boolean;
   colorU: boolean;
   colorB: boolean;
@@ -16,9 +17,9 @@ interface Deck {
 }
 
 const MTG_COLORS: { key: keyof Pick<Deck, "colorW" | "colorU" | "colorB" | "colorR" | "colorG">; hex: string }[] = [
-  { key: "colorW", hex: "#fde047" }, // vivid gold for White
+  { key: "colorW", hex: "#f5f5f4" }, // white
   { key: "colorU", hex: "#60a5fa" }, // bright blue
-  { key: "colorB", hex: "#9ca3af" }, // medium gray for Black
+  { key: "colorB", hex: "#404040" }, // dark charcoal for Black
   { key: "colorR", hex: "#f87171" }, // vivid red
   { key: "colorG", hex: "#4ade80" }, // vivid green
 ];
@@ -26,8 +27,11 @@ const MTG_COLORS: { key: keyof Pick<Deck, "colorW" | "colorU" | "colorB" | "colo
 function deckGradient(deck: Deck): React.CSSProperties {
   const active = MTG_COLORS.filter((c) => deck[c.key]).map((c) => c.hex);
   if (active.length === 0) return {};
-  if (active.length === 1) return { background: active[0] };
-  return { background: `linear-gradient(135deg, ${active.join(", ")})` };
+  // Use light text when Black is the only or dominant color
+  const isBlackOnly = deck.colorB && !deck.colorW && !deck.colorU && !deck.colorR && !deck.colorG;
+  const textColor = isBlackOnly ? "#f5f5f4" : undefined;
+  if (active.length === 1) return { background: active[0], color: textColor };
+  return { background: `linear-gradient(135deg, ${active.join(", ")})`, color: textColor };
 }
 
 export default function DecksPage() {
@@ -80,10 +84,18 @@ export default function DecksPage() {
               className="flex items-center justify-between p-4 rounded-lg border border-gray-200"
               style={deckGradient(deck)}
             >
-              <div className="space-y-1">
-                <div className="font-medium text-gray-900">{deck.name}</div>
-                <div className="text-sm text-gray-500">{deck.commander}</div>
-                <ColorPips
+              <div className="flex items-center gap-3">
+                {deck.commanderImage && (
+                  <img
+                    src={deck.commanderImage}
+                    alt={deck.commander}
+                    className="w-16 h-16 rounded-lg object-cover shadow-sm flex-shrink-0"
+                  />
+                )}
+                <div className="space-y-1">
+                  <div className="font-medium text-gray-900">{deck.name}</div>
+                  <div className="text-sm text-gray-500">{deck.commander}</div>
+                  <ColorPips
                   colors={{
                     W: deck.colorW,
                     U: deck.colorU,
@@ -92,6 +104,7 @@ export default function DecksPage() {
                     G: deck.colorG,
                   }}
                 />
+                </div>
               </div>
               <div className="flex gap-3 items-center">
                 <Link

@@ -21,9 +21,10 @@ model User {
 }
 
 model Deck {
-  id        String   @id @default(cuid())
-  name      String
-  commander String
+  id             String   @id @default(cuid())
+  name           String
+  commander      String
+  commanderImage String?
   colorW    Boolean  @default(false)
   colorU    Boolean  @default(false)
   colorB    Boolean  @default(false)

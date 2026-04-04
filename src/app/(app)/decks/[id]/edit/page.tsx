@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import CommanderSearch from "@/components/CommanderSearch";
 
 const COLORS = [
   { key: "W", label: "White", bg: "bg-yellow-100", active: "ring-yellow-400" },
@@ -12,6 +13,8 @@ const COLORS = [
   { key: "G", label: "Green", bg: "bg-green-600", active: "ring-green-400" },
 ];
 
+const COLOR_MAP: Record<string, string> = { W: "W", U: "U", B: "B", R: "R", G: "G" };
+
 export default function EditDeckPage() {
   const router = useRouter();
   const params = useParams();
@@ -19,6 +22,7 @@ export default function EditDeckPage() {
 
   const [name, setName] = useState("");
   const [commander, setCommander] = useState("");
+  const [commanderImage, setCommanderImage] = useState<string | null>(null);
   const [colors, setColors] = useState<Record<string, boolean>>({
     W: false, U: false, B: false, R: false, G: false,
   });
@@ -35,6 +39,7 @@ export default function EditDeckPage() {
       .then((deck) => {
         setName(deck.name);
         setCommander(deck.commander);
+        setCommanderImage(deck.commanderImage ?? null);
         setColors({
           W: deck.colorW,
           U: deck.colorU,
@@ -54,6 +59,18 @@ export default function EditDeckPage() {
     setColors((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
+  function handleCardResolved(card: { name: string; image: string | null; colors: string[] } | null) {
+    if (!card) return;
+    setCommanderImage(card.image);
+    if (card.colors.length > 0) {
+      const newColors: Record<string, boolean> = { W: false, U: false, B: false, R: false, G: false };
+      card.colors.forEach((c) => {
+        if (COLOR_MAP[c]) newColors[COLOR_MAP[c]] = true;
+      });
+      setColors(newColors);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -62,7 +79,7 @@ export default function EditDeckPage() {
     const res = await fetch(`/api/decks/${deckId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, commander, colors }),
+      body: JSON.stringify({ name, commander, commanderImage, colors }),
     });
 
     if (!res.ok) {
@@ -105,15 +122,21 @@ export default function EditDeckPage() {
           <label htmlFor="commander" className="block text-sm font-medium mb-1">
             Commander
           </label>
-          <input
-            id="commander"
-            type="text"
-            required
+          <CommanderSearch
             value={commander}
-            onChange={(e) => setCommander(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+            onChange={setCommander}
+            onCardResolved={handleCardResolved}
           />
         </div>
+        {commanderImage && (
+          <div className="flex justify-center">
+            <img
+              src={commanderImage}
+              alt={commander}
+              className="w-full rounded-lg shadow-md"
+            />
+          </div>
+        )}
         <div>
           <label className="block text-sm font-medium mb-2">
             Color Identity
