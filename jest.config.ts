@@ -1,6 +1,8 @@
 import type { Config } from "jest";
+import "dotenv/config";
 
 const config: Config = {
+  setupFiles: ["dotenv/config"],
   preset: "ts-jest",
   testEnvironment: "node",
   roots: ["<rootDir>/src"],
