@@ -19,7 +19,7 @@ interface Deck {
   createdAt: string;
 }
 
-type SortOption = "date" | "name";
+type SortOption = "date" | "name" | "bracket" | "edhp";
 
 const COLOR_KEYS = ["colorW", "colorU", "colorB", "colorR", "colorG"] as const;
 
@@ -55,30 +55,42 @@ export default function DecksPage() {
   const [colorFilter, setColorFilter] = useState<Record<string, boolean>>({
     colorW: false, colorU: false, colorB: false, colorR: false, colorG: false,
   });
+  const [bracketFilter, setBracketFilter] = useState<string>("");
 
   const activeFilters = COLOR_KEYS.filter((k) => colorFilter[k]);
 
   const filteredAndSorted = useMemo(() => {
     let result = decks;
 
-    // Filter: deck must have ALL selected colors
+    // Color filter: deck must have ALL selected colors
     if (activeFilters.length > 0) {
       result = result.filter((deck) =>
         activeFilters.every((key) => deck[key])
       );
     }
 
-    // Sort
-    if (sort === "name") {
-      result = [...result].sort((a, b) => a.name.localeCompare(b.name));
-    } else {
-      result = [...result].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+    // Bracket filter
+    if (bracketFilter) {
+      const b = Number(bracketFilter);
+      result = result.filter((deck) => deck.bracket === b);
     }
 
+    // Sort
+    result = [...result].sort((a, b) => {
+      switch (sort) {
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "bracket":
+          return (a.bracket ?? 99) - (b.bracket ?? 99);
+        case "edhp":
+          return (b.edhp ?? -1) - (a.edhp ?? -1);
+        default:
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+    });
+
     return result;
-  }, [decks, sort, activeFilters]);
+  }, [decks, sort, activeFilters, bracketFilter]);
 
   useEffect(() => {
     fetch("/api/decks")
@@ -135,16 +147,34 @@ export default function DecksPage() {
                 {c.letter}
               </button>
             ))}
-            {activeFilters.length > 0 && (
+            {(activeFilters.length > 0 || bracketFilter) && (
               <button
-                onClick={() =>
-                  setColorFilter({ colorW: false, colorU: false, colorB: false, colorR: false, colorG: false })
-                }
+                onClick={() => {
+                  setColorFilter({ colorW: false, colorU: false, colorB: false, colorR: false, colorG: false });
+                  setBracketFilter("");
+                }}
                 className="text-xs text-gray-400 hover:text-gray-600 ml-1"
               >
                 Clear
               </button>
             )}
+          </div>
+
+          {/* Bracket filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Bracket:</span>
+            <select
+              value={bracketFilter}
+              onChange={(e) => setBracketFilter(e.target.value)}
+              className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-900"
+            >
+              <option value="">All</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
           </div>
 
           {/* Sort */}
@@ -157,6 +187,8 @@ export default function DecksPage() {
             >
               <option value="date">Date Added</option>
               <option value="name">Name</option>
+              <option value="bracket">Bracket</option>
+              <option value="edhp">EDHP</option>
             </select>
           </div>
         </div>
