@@ -15,7 +15,11 @@ const navItems = [
 
 const themeLabels: Record<ThemeName, string> = {
   default: "Default",
-  mtg: "MTG",
+  "old-school": "Old School",
+  liquid: "Liquid",
+  cyber: "Cyber",
+  synth: "Synth",
+  chris: "Chris",
 };
 
 export default function NavBar() {

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useCallback, useSyncExternalStore, ReactNode } from "react";
 
-export type ThemeName = "default" | "mtg";
+export type ThemeName = "default" | "old-school" | "liquid" | "cyber" | "synth" | "chris";
 
 interface ThemeContextType {
   theme: ThemeName;
@@ -18,7 +18,7 @@ let listeners: Array<() => void> = [];
 
 function getSnapshot(): ThemeName {
   const saved = localStorage.getItem("mtg-tracker-theme");
-  if (saved === "default" || saved === "mtg") return saved;
+  if (saved === "default" || saved === "old-school" || saved === "liquid" || saved === "cyber" || saved === "synth" || saved === "chris") return saved;
   return "default";
 }
 
