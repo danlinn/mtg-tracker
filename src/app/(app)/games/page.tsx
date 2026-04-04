@@ -5,7 +5,7 @@ import Link from "next/link";
 
 interface GamePlayer {
   user: { id: string; name: string };
-  deck: { id: string; name: string; commander: string };
+  deck: { id: string; name: string; commander: string; edhp: number | null; bracket: number | null };
   isWinner: boolean;
 }
 
@@ -82,7 +82,7 @@ export default function GamesPage() {
                         {p.user.name}
                       </div>
                       <div className="text-gray-500 text-xs">
-                        {p.deck.commander}
+                        {p.deck.commander}{p.deck.edhp != null || p.deck.bracket != null ? ` p:${p.deck.edhp != null ? p.deck.edhp.toFixed(2) : "-"}/b:${p.deck.bracket ?? "-"}` : ""}
                       </div>
                     </div>
                   ))}

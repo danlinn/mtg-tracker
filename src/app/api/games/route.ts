@@ -14,7 +14,7 @@ export async function GET() {
       players: {
         include: {
           user: { select: { id: true, name: true } },
-          deck: { select: { id: true, name: true, commander: true } },
+          deck: { select: { id: true, name: true, commander: true, edhp: true, bracket: true } },
         },
       },
     },
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
       players: {
         include: {
           user: { select: { id: true, name: true } },
-          deck: { select: { id: true, name: true, commander: true } },
+          deck: { select: { id: true, name: true, commander: true, edhp: true, bracket: true } },
         },
       },
     },
