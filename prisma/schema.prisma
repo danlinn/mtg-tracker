@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String
+  hashedPassword String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  decks       Deck[]
+  gameEntries GamePlayer[]
+}
+
+model Deck {
+  id        String   @id @default(cuid())
+  name      String
+  commander String
+  colorW    Boolean  @default(false)
+  colorU    Boolean  @default(false)
+  colorB    Boolean  @default(false)
+  colorR    Boolean  @default(false)
+  colorG    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameEntries GamePlayer[]
+
+  @@index([userId])
+}
+
+model Game {
+  id        String   @id @default(cuid())
+  playedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  players GamePlayer[]
+}
+
+model GamePlayer {
+  id       String  @id @default(cuid())
+  isWinner Boolean @default(false)
+
+  gameId String
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  deckId String
+  deck   Deck   @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, userId])
+  @@index([userId])
+  @@index([deckId])
+}

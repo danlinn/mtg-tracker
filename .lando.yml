@@ -1,0 +1,45 @@
+name: mtg-tracker
+recipe: node
+config:
+  node: "20"
+
+services:
+  node:
+    type: node:20
+    build:
+      - npm install
+    command: npm run dev
+    port: 3000
+    scanner:
+      path: /login
+  database:
+    type: postgres:15
+    portforward: true
+    creds:
+      user: postgres
+      password: postgres
+      database: mtg_tracker
+
+tooling:
+  npm:
+    service: node
+  npx:
+    service: node
+  prisma:
+    service: node
+    cmd: npx prisma
+  db-migrate:
+    service: node
+    cmd: npx prisma migrate dev
+  db-push:
+    service: node
+    cmd: npx prisma db push
+  db-seed:
+    service: node
+    cmd: npx prisma db seed
+  db-studio:
+    service: node
+    cmd: npx prisma studio
+
+env_file:
+  - .env.lando
