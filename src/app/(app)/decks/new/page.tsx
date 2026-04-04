@@ -24,8 +24,19 @@ export default function NewDeckPage() {
   });
   const [bracket, setBracket] = useState("");
   const [edhp, setEdhp] = useState("");
+  const [decklist, setDecklist] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  function buildEdhpUrl() {
+    if (!decklist.trim()) return null;
+    const encoded = decklist
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .join("~") + "~Z~";
+    return `https://edhpowerlevel.com/?d=${encoded.replace(/ /g, "+")}`;
+  }
 
   function toggleColor(key: string) {
     setColors((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -56,6 +67,7 @@ export default function NewDeckPage() {
         name, commander, commanderImage, colors,
         bracket: bracket ? Number(bracket) : null,
         edhp: edhp ? Number(edhp) : null,
+        decklist: decklist.trim() || null,
       }),
     });
 
@@ -132,6 +144,29 @@ export default function NewDeckPage() {
               </button>
             ))}
           </div>
+        </div>
+        <div>
+          <label htmlFor="decklist" className="block text-sm font-medium mb-1">
+            Decklist
+          </label>
+          <textarea
+            id="decklist"
+            value={decklist}
+            onChange={(e) => setDecklist(e.target.value)}
+            placeholder={"1 Sol Ring\n1 Command Tower\n1 Arcane Signet\n..."}
+            rows={6}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 text-sm font-mono"
+          />
+          {decklist.trim() && (
+            <a
+              href={buildEdhpUrl()!}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-2 text-sm bg-amber-600 text-white px-4 py-1.5 rounded-lg hover:bg-amber-700 transition-colors"
+            >
+              Check Power Level on EDHPowerLevel.com
+            </a>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>

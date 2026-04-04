@@ -27,6 +27,7 @@ model Deck {
   commanderImage String?
   bracket        Int?
   edhp           Float?
+  decklist       String?
   colorW    Boolean  @default(false)
   colorU    Boolean  @default(false)
   colorB    Boolean  @default(false)
