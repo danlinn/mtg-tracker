@@ -1,4 +1,5 @@
 import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaNeon } from "@prisma/adapter-neon";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
@@ -14,24 +15,8 @@ function createPrismaClient() {
     );
   }
 
-  // Use Neon HTTP adapter on Vercel (serverless-friendly, no WebSockets needed)
-  const useNeon =
-    process.env.VERCEL === "1" ||
-    connectionString.includes("neon.tech") ||
-    connectionString.includes("neon.") ||
-    connectionString.includes("vercel-storage.com");
-
-  if (useNeon) {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { PrismaNeonHttp } = require("@prisma/adapter-neon");
-    const adapter = new PrismaNeonHttp(connectionString, { fullResults: true });
-    return new PrismaClient({ adapter });
-  } else {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { PrismaPg } = require("@prisma/adapter-pg");
-    const adapter = new PrismaPg({ connectionString });
-    return new PrismaClient({ adapter });
-  }
+  const adapter = new PrismaNeon({ connectionString });
+  return new PrismaClient({ adapter });
 }
 
 export const prisma = globalForPrisma.prisma || createPrismaClient();
