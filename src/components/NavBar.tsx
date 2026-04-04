@@ -16,9 +16,9 @@ const navItems = [
 const themeLabels: Record<ThemeName, string> = {
   default: "Default",
   "old-school": "Old School",
-  liquid: "Liquid",
-  cyber: "Cyber",
   synth: "Synth",
+  cyber: "Cyber",
+  flame: "Flame",
   chris: "Chris",
 };
 
