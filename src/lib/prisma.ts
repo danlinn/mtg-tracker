@@ -14,7 +14,7 @@ function createPrismaClient() {
     );
   }
 
-  // Use Neon serverless adapter on Vercel or when connecting to a Neon database
+  // Use Neon HTTP adapter on Vercel (serverless-friendly, no WebSockets needed)
   const useNeon =
     process.env.VERCEL === "1" ||
     connectionString.includes("neon.tech") ||
@@ -23,8 +23,8 @@ function createPrismaClient() {
 
   if (useNeon) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { PrismaNeon } = require("@prisma/adapter-neon");
-    const adapter = new PrismaNeon({ connectionString });
+    const { PrismaNeonHttp } = require("@prisma/adapter-neon");
+    const adapter = new PrismaNeonHttp(connectionString, { fullResults: true });
     return new PrismaClient({ adapter });
   } else {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
