@@ -16,11 +16,11 @@ interface Deck {
 }
 
 const MTG_COLORS: { key: keyof Pick<Deck, "colorW" | "colorU" | "colorB" | "colorR" | "colorG">; hex: string }[] = [
-  { key: "colorW", hex: "#fef9c3" }, // warm cream/gold for White
-  { key: "colorU", hex: "#bfdbfe" }, // soft blue
-  { key: "colorB", hex: "#d1d5db" }, // light gray for Black (keeps text readable)
-  { key: "colorR", hex: "#fecaca" }, // soft red
-  { key: "colorG", hex: "#bbf7d0" }, // soft green
+  { key: "colorW", hex: "#fde047" }, // vivid gold for White
+  { key: "colorU", hex: "#60a5fa" }, // bright blue
+  { key: "colorB", hex: "#9ca3af" }, // medium gray for Black
+  { key: "colorR", hex: "#f87171" }, // vivid red
+  { key: "colorG", hex: "#4ade80" }, // vivid green
 ];
 
 function deckGradient(deck: Deck): React.CSSProperties {
@@ -93,12 +93,20 @@ export default function DecksPage() {
                   }}
                 />
               </div>
-              <button
-                onClick={() => handleDelete(deck.id)}
-                className="text-red-500 hover:text-red-700 text-sm"
-              >
-                Delete
-              </button>
+              <div className="flex gap-3 items-center">
+                <Link
+                  href={`/decks/${deck.id}/edit`}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  Edit
+                </Link>
+                <button
+                  onClick={() => handleDelete(deck.id)}
+                  className="text-red-500 hover:text-red-700 text-sm"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>

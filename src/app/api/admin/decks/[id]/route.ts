@@ -1,40 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/auth-helpers";
-
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { id } = await params;
-  const deck = await prisma.deck.findUnique({ where: { id } });
-
-  if (!deck || deck.userId !== userId) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  return NextResponse.json(deck);
-}
+import { isAdmin } from "@/lib/auth-helpers";
 
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { id } = await params;
   const deck = await prisma.deck.findUnique({ where: { id } });
-
-  if (!deck || deck.userId !== userId) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!deck) {
+    return NextResponse.json({ error: "Deck not found" }, { status: 404 });
   }
 
   const { name, commander, colors } = await req.json();
@@ -59,19 +38,16 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { id } = await params;
   const deck = await prisma.deck.findUnique({ where: { id } });
-
-  if (!deck || deck.userId !== userId) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!deck) {
+    return NextResponse.json({ error: "Deck not found" }, { status: 404 });
   }
 
   await prisma.deck.delete({ where: { id } });
-
   return NextResponse.json({ success: true });
 }

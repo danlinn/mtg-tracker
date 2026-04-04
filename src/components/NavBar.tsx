@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import { useTheme, ThemeName } from "@/lib/theme";
 
@@ -22,6 +22,12 @@ export default function NavBar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { data: session } = useSession();
+  const userRole = (session?.user as { role?: string })?.role;
+
+  const allNavItems = userRole === "admin"
+    ? [...navItems, { href: "/admin", label: "Admin" }]
+    : navItems;
 
   return (
     <nav className="bg-gray-900 text-white sticky top-0 z-50">
@@ -33,7 +39,7 @@ export default function NavBar() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-4">
-            {navItems.map((item) => (
+            {allNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -99,7 +105,7 @@ export default function NavBar() {
         {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden pb-3 space-y-1">
-            {navItems.map((item) => (
+            {allNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
