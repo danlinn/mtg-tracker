@@ -4,7 +4,7 @@ export async function registerViaUI(
   page: Page,
   { name, email, password }: { name: string; email: string; password: string }
 ) {
-  await page.goto("/register");
+  await page.goto("/sign-up-here");
   await page.getByLabel("Display Name").fill(name);
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);

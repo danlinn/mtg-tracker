@@ -15,6 +15,21 @@ interface Deck {
   colorG: boolean;
 }
 
+const MTG_COLORS: { key: keyof Pick<Deck, "colorW" | "colorU" | "colorB" | "colorR" | "colorG">; hex: string }[] = [
+  { key: "colorW", hex: "#fef9c3" }, // warm cream/gold for White
+  { key: "colorU", hex: "#bfdbfe" }, // soft blue
+  { key: "colorB", hex: "#d1d5db" }, // light gray for Black (keeps text readable)
+  { key: "colorR", hex: "#fecaca" }, // soft red
+  { key: "colorG", hex: "#bbf7d0" }, // soft green
+];
+
+function deckGradient(deck: Deck): React.CSSProperties {
+  const active = MTG_COLORS.filter((c) => deck[c.key]).map((c) => c.hex);
+  if (active.length === 0) return {};
+  if (active.length === 1) return { background: active[0] };
+  return { background: `linear-gradient(135deg, ${active.join(", ")})` };
+}
+
 export default function DecksPage() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +77,8 @@ export default function DecksPage() {
           {decks.map((deck) => (
             <div
               key={deck.id}
-              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-white"
+              className="flex items-center justify-between p-4 rounded-lg border border-gray-200"
+              style={deckGradient(deck)}
             >
               <div className="space-y-1">
                 <div className="font-medium text-gray-900">{deck.name}</div>

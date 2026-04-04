@@ -24,7 +24,7 @@ test.describe("game logging", () => {
     const page = await ctx.newPage();
 
     // Register second user
-    await page.goto("/register");
+    await page.goto("/sign-up-here");
     await page.getByLabel("Display Name").fill(secondUserName);
     await page.getByLabel("Email").fill(secondUserEmail);
     await page.getByLabel("Password").fill(secondUserPassword);
