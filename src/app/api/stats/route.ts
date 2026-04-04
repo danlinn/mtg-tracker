@@ -15,27 +15,53 @@ export async function GET() {
       where: { userId },
       include: {
         gameEntries: {
-          select: { isWinner: true },
+          select: {
+            isWinner: true,
+            game: {
+              select: {
+                players: { select: { id: true } },
+              },
+            },
+          },
         },
       },
     }),
   ]);
 
-  const deckStats = decks.map((deck) => ({
-    id: deck.id,
-    name: deck.name,
-    commander: deck.commander,
-    games: deck.gameEntries.length,
-    wins: deck.gameEntries.filter((e) => e.isWinner).length,
-    winRate:
-      deck.gameEntries.length > 0
-        ? Math.round(
-            (deck.gameEntries.filter((e) => e.isWinner).length /
-              deck.gameEntries.length) *
-              100
-          )
-        : 0,
-  }));
+  const deckStats = decks.map((deck) => {
+    const totalEntries = deck.gameEntries.length;
+    const totalWins = deck.gameEntries.filter((e) => e.isWinner).length;
+
+    const byPlayerCount: Record<number, { games: number; wins: number }> = {};
+    for (const entry of deck.gameEntries) {
+      const count = entry.game.players.length;
+      if (!byPlayerCount[count]) byPlayerCount[count] = { games: 0, wins: 0 };
+      byPlayerCount[count].games++;
+      if (entry.isWinner) byPlayerCount[count].wins++;
+    }
+
+    const winRateByPlayerCount: Record<
+      number,
+      { games: number; wins: number; winRate: number }
+    > = {};
+    for (const [count, data] of Object.entries(byPlayerCount)) {
+      winRateByPlayerCount[Number(count)] = {
+        ...data,
+        winRate: data.games > 0 ? Math.round((data.wins / data.games) * 100) : 0,
+      };
+    }
+
+    return {
+      id: deck.id,
+      name: deck.name,
+      commander: deck.commander,
+      games: totalEntries,
+      wins: totalWins,
+      winRate:
+        totalEntries > 0 ? Math.round((totalWins / totalEntries) * 100) : 0,
+      winRateByPlayerCount,
+    };
+  });
 
   return NextResponse.json({
     totalGames,

@@ -1,5 +1,7 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Philosopher:ital,wght@0,400;0,700;1,400&display=swap');
 
+/* ─── Default (light) theme ─── */
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -22,19 +24,351 @@
   }
 }
 
-/* MTG theme - placeholder for future custom styling */
-[data-theme="mtg"] {
-  --background: #1a1410;
-  --foreground: #e8dcc8;
-  --card-bg: #2a2018;
-  --card-border: #4a3828;
-  --accent: #c9a84c;
-  --accent-hover: #b8963a;
-  --muted: #9a8a6a;
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════
+   MTG THEME — fanciful, immersive, magical
+   ═══════════════════════════════════════════════ */
+
+[data-theme="mtg"] {
+  --background: #0d0b07;
+  --foreground: #e8dcc8;
+  --card-bg: #1a1510;
+  --card-border: #3d3020;
+  --accent: #c9a84c;
+  --accent-hover: #dbb85a;
+  --muted: #8a7a60;
+
+  --gold: #c9a84c;
+  --gold-light: #e8d48b;
+  --gold-dark: #8a6d2b;
+  --parchment: #e8dcc8;
+  --leather: #2a2018;
+  --leather-light: #3d3020;
+  --ink: #1a1510;
+  --ember: #c44d2a;
+  --mana-blue: #4a8bc2;
+}
+
+[data-theme="mtg"] body {
+  font-family: 'Philosopher', Georgia, 'Times New Roman', serif;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(201,168,76,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(201,168,76,0.04) 0%, transparent 50%),
+    var(--background);
+}
+
+/* ─── Headings get the ornate serif font ─── */
+[data-theme="mtg"] h1,
+[data-theme="mtg"] h2,
+[data-theme="mtg"] h3 {
+  font-family: 'Cinzel', Georgia, serif;
+  color: var(--gold);
+  letter-spacing: 0.03em;
+}
+
+[data-theme="mtg"] h1 {
+  text-shadow: 0 0 20px rgba(201,168,76,0.3), 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* ─── Cards & containers ─── */
+[data-theme="mtg"] .bg-white,
+[data-theme="mtg"] .bg-gray-50 {
+  background: var(--card-bg) !important;
+  color: var(--parchment) !important;
+}
+
+[data-theme="mtg"] .border-gray-200,
+[data-theme="mtg"] .border-gray-100,
+[data-theme="mtg"] .border-gray-300 {
+  border-color: var(--leather-light) !important;
+}
+
+[data-theme="mtg"] .rounded-lg.border {
+  box-shadow: inset 0 1px 0 rgba(201,168,76,0.1), 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* ─── Text color overrides ─── */
+[data-theme="mtg"] .text-gray-900 {
+  color: var(--parchment) !important;
+}
+
+[data-theme="mtg"] .text-gray-700 {
+  color: #c4b89a !important;
+}
+
+[data-theme="mtg"] .text-gray-500 {
+  color: var(--muted) !important;
+}
+
+[data-theme="mtg"] .text-gray-400 {
+  color: #6d6050 !important;
+}
+
+[data-theme="mtg"] .text-gray-300 {
+  color: #5a5040 !important;
+}
+
+/* ─── Links & accents ─── */
+[data-theme="mtg"] .text-blue-600 {
+  color: var(--gold) !important;
+}
+
+[data-theme="mtg"] .text-blue-600:hover,
+[data-theme="mtg"] .hover\:text-blue-800:hover {
+  color: var(--gold-light) !important;
+}
+
+[data-theme="mtg"] .hover\:border-blue-300:hover {
+  border-color: var(--gold) !important;
+}
+
+/* ─── Primary buttons ─── */
+[data-theme="mtg"] .bg-blue-600 {
+  background: linear-gradient(180deg, #c9a84c 0%, #8a6d2b 100%) !important;
+  color: #1a1510 !important;
+  border: 1px solid rgba(201,168,76,0.4) !important;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.2);
+  box-shadow: 0 2px 8px rgba(201,168,76,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+[data-theme="mtg"] .bg-blue-600:hover,
+[data-theme="mtg"] .hover\:bg-blue-700:hover {
+  background: linear-gradient(180deg, #dbb85a 0%, #a07e35 100%) !important;
+  box-shadow: 0 4px 16px rgba(201,168,76,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+/* ─── Secondary buttons / outlines ─── */
+[data-theme="mtg"] .border.border-gray-300:not(input):not(select):not(textarea) {
+  border-color: var(--gold-dark) !important;
+  color: var(--gold) !important;
+}
+
+[data-theme="mtg"] .border.border-gray-300:not(input):not(select):not(textarea):hover {
+  background: rgba(201,168,76,0.1) !important;
+  border-color: var(--gold) !important;
+}
+
+/* ─── Player count buttons ─── */
+[data-theme="mtg"] .bg-gray-100 {
+  background: var(--leather) !important;
+  color: var(--muted) !important;
+}
+
+[data-theme="mtg"] .hover\:bg-gray-200:hover {
+  background: var(--leather-light) !important;
+}
+
+[data-theme="mtg"] .hover\:bg-gray-50:hover {
+  background: rgba(201,168,76,0.08) !important;
+}
+
+/* ─── Form inputs, selects, textareas ─── */
+[data-theme="mtg"] input,
+[data-theme="mtg"] select,
+[data-theme="mtg"] textarea {
+  background: var(--ink) !important;
+  color: var(--parchment) !important;
+  border-color: var(--leather-light) !important;
+  font-family: 'Philosopher', Georgia, serif;
+}
+
+[data-theme="mtg"] input::placeholder,
+[data-theme="mtg"] textarea::placeholder {
+  color: var(--muted) !important;
+}
+
+[data-theme="mtg"] input:focus,
+[data-theme="mtg"] select:focus,
+[data-theme="mtg"] textarea:focus {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 0 2px rgba(201,168,76,0.25) !important;
+  outline: none;
+}
+
+[data-theme="mtg"] option {
+  background: var(--ink);
+  color: var(--parchment);
+}
+
+/* ─── Error states ─── */
+[data-theme="mtg"] .bg-red-50 {
+  background: rgba(196,77,42,0.15) !important;
+  color: #e8785a !important;
+  border: 1px solid rgba(196,77,42,0.3);
+}
+
+[data-theme="mtg"] .text-red-600 {
+  color: #e8785a !important;
+}
+
+[data-theme="mtg"] .text-red-500 {
+  color: #c44d2a !important;
+}
+
+/* ─── Winner/success states ─── */
+[data-theme="mtg"] .text-green-600 {
+  color: #6dba5e !important;
+}
+
+[data-theme="mtg"] .bg-green-50 {
+  background: rgba(109,186,94,0.1) !important;
+}
+
+[data-theme="mtg"] .border-green-200 {
+  border-color: rgba(109,186,94,0.25) !important;
+}
+
+[data-theme="mtg"] .bg-green-500 {
+  background: #4a8a3c !important;
+}
+
+[data-theme="mtg"] .hover\:bg-green-100:hover {
+  background: rgba(109,186,94,0.15) !important;
+}
+
+/* ─── Leaderboard podium ─── */
+[data-theme="mtg"] .bg-yellow-400 {
+  background: linear-gradient(135deg, #c9a84c, #e8d48b) !important;
+  color: #1a1510 !important;
+  box-shadow: 0 0 12px rgba(201,168,76,0.5);
+}
+
+[data-theme="mtg"] .bg-gray-300 {
+  background: linear-gradient(135deg, #8a8a8a, #b0b0b0) !important;
+  color: #1a1510 !important;
+}
+
+[data-theme="mtg"] .bg-orange-300 {
+  background: linear-gradient(135deg, #a06030, #c48050) !important;
+  color: #1a1510 !important;
+}
+
+/* ─── Stats cards ─── */
+[data-theme="mtg"] .text-2xl.font-bold.text-gray-900 {
+  color: var(--gold) !important;
+  text-shadow: 0 0 10px rgba(201,168,76,0.3);
+}
+
+/* ─── NavBar ─── */
+[data-theme="mtg"] nav.bg-gray-900 {
+  background: linear-gradient(
+    180deg,
+    #1f1a12 0%,
+    #151008 100%
+  ) !important;
+  border-bottom: 2px solid var(--gold-dark);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.6), 0 1px 0 rgba(201,168,76,0.15);
+}
+
+[data-theme="mtg"] nav .font-bold.text-lg {
+  font-family: 'Cinzel', serif !important;
+  color: var(--gold) !important;
+  text-shadow: 0 0 16px rgba(201,168,76,0.4);
+  letter-spacing: 0.08em;
+}
+
+[data-theme="mtg"] nav .bg-gray-700 {
+  background: rgba(201,168,76,0.2) !important;
+  color: var(--gold-light) !important;
+  border: 1px solid rgba(201,168,76,0.2);
+}
+
+[data-theme="mtg"] nav .text-gray-300 {
+  color: var(--muted) !important;
+}
+
+[data-theme="mtg"] nav .text-gray-300:hover,
+[data-theme="mtg"] nav .hover\:text-white:hover {
+  color: var(--gold-light) !important;
+}
+
+[data-theme="mtg"] nav .hover\:bg-gray-800:hover {
+  background: rgba(201,168,76,0.1) !important;
+}
+
+[data-theme="mtg"] nav .text-gray-400 {
+  color: #6d6050 !important;
+}
+
+[data-theme="mtg"] nav select {
+  background: var(--ink) !important;
+  border-color: var(--leather-light) !important;
+  color: var(--muted) !important;
+}
+
+/* ─── Decorative section dividers ─── */
+[data-theme="mtg"] .text-lg.font-semibold {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+[data-theme="mtg"] .text-lg.font-semibold::before,
+[data-theme="mtg"] .text-lg.font-semibold::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+}
+
+/* ─── Login / auth pages ─── */
+[data-theme="mtg"] .min-h-screen {
+  background:
+    radial-gradient(ellipse at center, rgba(201,168,76,0.08) 0%, transparent 60%),
+    var(--background);
+}
+
+/* ─── Bracket / EDHP badges ─── */
+[data-theme="mtg"] .bg-gray-100.text-gray-700 {
+  background: rgba(201,168,76,0.15) !important;
+  color: var(--gold) !important;
+  border: 1px solid rgba(201,168,76,0.2);
+}
+
+/* ─── Scrollbar (WebKit) ─── */
+[data-theme="mtg"] ::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-theme="mtg"] ::-webkit-scrollbar-track {
+  background: var(--ink);
+}
+
+[data-theme="mtg"] ::-webkit-scrollbar-thumb {
+  background: var(--leather-light);
+  border-radius: 4px;
+}
+
+[data-theme="mtg"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-dark);
+}
+
+/* ─── Subtle shimmer animation for gold text ─── */
+@keyframes mtg-shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+[data-theme="mtg"] nav .font-bold.text-lg {
+  animation: mtg-shimmer 4s ease-in-out infinite;
+}
+
+/* ─── Card hover glow ─── */
+[data-theme="mtg"] .hover\:shadow-sm:hover {
+  box-shadow: 0 0 12px rgba(201,168,76,0.2), 0 4px 12px rgba(0,0,0,0.4) !important;
+  border-color: var(--gold) !important;
+}
+
+/* ─── Mobile menu ─── */
+[data-theme="mtg"] nav .md\:hidden.pb-3 {
+  background: var(--ink);
+  border-top: 1px solid var(--leather-light);
 }

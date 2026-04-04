@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+interface PlayerCountStat {
+  games: number;
+  wins: number;
+  winRate: number;
+}
+
 interface DeckStat {
   id: string;
   name: string;
@@ -10,6 +16,7 @@ interface DeckStat {
   games: number;
   wins: number;
   winRate: number;
+  winRateByPlayerCount: Record<number, PlayerCountStat>;
 }
 
 interface Stats {
@@ -67,23 +74,51 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold mb-3">Deck Performance</h2>
           <div className="space-y-2">
             {stats.deckStats.map((deck) => (
-              <div
+              <Link
                 key={deck.id}
-                className="flex items-center justify-between p-3 rounded-lg border border-gray-200 bg-white"
+                href={`/decks/${deck.id}/edit`}
+                className="block p-3 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm transition-all"
               >
-                <div>
-                  <div className="font-medium text-gray-900">{deck.name}</div>
-                  <div className="text-sm text-gray-500">{deck.commander}</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-semibold text-gray-900">
-                    {deck.wins}W - {deck.games - deck.wins}L
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium text-gray-900">{deck.name}</div>
+                    <div className="text-sm text-gray-500">{deck.commander}</div>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    {deck.winRate}% win rate
+                  <div className="text-right">
+                    <div className="font-semibold text-gray-900">
+                      {deck.wins}W - {deck.games - deck.wins}L
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {deck.winRate}% win rate
+                    </div>
                   </div>
                 </div>
-              </div>
+                {deck.games > 0 && (
+                  <div className="flex gap-3 mt-2 pt-2 border-t border-gray-100">
+                    {([2, 3, 4] as const).map((count) => {
+                      const stat = deck.winRateByPlayerCount[count];
+                      return (
+                        <div
+                          key={count}
+                          className="flex-1 text-center text-xs"
+                        >
+                          <div className="text-gray-400">{count}-player</div>
+                          {stat ? (
+                            <div className="font-semibold text-gray-700">
+                              {stat.winRate}%{" "}
+                              <span className="text-gray-400 font-normal">
+                                ({stat.games})
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="text-gray-300">—</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Link>
             ))}
           </div>
         </div>
