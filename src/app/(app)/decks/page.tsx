@@ -23,12 +23,12 @@ type SortOption = "date" | "name" | "bracket" | "edhp";
 
 const COLOR_KEYS = ["colorW", "colorU", "colorB", "colorR", "colorG"] as const;
 
-const FILTER_COLORS: { key: (typeof COLOR_KEYS)[number]; letter: string; label: string; bg: string; active: string }[] = [
-  { key: "colorW", letter: "W", label: "White", bg: "bg-yellow-100", active: "ring-yellow-400" },
-  { key: "colorU", letter: "U", label: "Blue", bg: "bg-blue-500", active: "ring-blue-400" },
-  { key: "colorB", letter: "B", label: "Black", bg: "bg-gray-800", active: "ring-gray-500" },
-  { key: "colorR", letter: "R", label: "Red", bg: "bg-red-500", active: "ring-red-400" },
-  { key: "colorG", letter: "G", label: "Green", bg: "bg-green-600", active: "ring-green-400" },
+const FILTER_COLORS: { key: (typeof COLOR_KEYS)[number]; letter: string; label: string; bg: string; active: string; textColor: string }[] = [
+  { key: "colorW", letter: "W", label: "White", bg: "bg-yellow-100", active: "ring-yellow-400", textColor: "#111" },
+  { key: "colorU", letter: "U", label: "Blue", bg: "bg-blue-500", active: "ring-blue-400", textColor: "#fff" },
+  { key: "colorB", letter: "B", label: "Black", bg: "bg-gray-800", active: "ring-gray-500", textColor: "#eee" },
+  { key: "colorR", letter: "R", label: "Red", bg: "bg-red-500", active: "ring-red-400", textColor: "#fff" },
+  { key: "colorG", letter: "G", label: "Green", bg: "bg-green-600", active: "ring-green-400", textColor: "#fff" },
 ];
 
 const MTG_COLORS: { key: (typeof COLOR_KEYS)[number]; hex: string }[] = [
@@ -142,6 +142,7 @@ export default function DecksPage() {
                     ? `ring-2 ${c.active} ring-offset-2 scale-110`
                     : "opacity-40"
                 }`}
+                style={{ color: c.textColor }}
                 title={c.label}
               >
                 {c.letter}

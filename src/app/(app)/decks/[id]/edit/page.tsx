@@ -6,11 +6,11 @@ import Link from "next/link";
 import CommanderSearch from "@/components/CommanderSearch";
 
 const COLORS = [
-  { key: "W", label: "White", bg: "bg-yellow-100", active: "ring-yellow-400" },
-  { key: "U", label: "Blue", bg: "bg-blue-500", active: "ring-blue-400" },
-  { key: "B", label: "Black", bg: "bg-gray-800", active: "ring-gray-500" },
-  { key: "R", label: "Red", bg: "bg-red-500", active: "ring-red-400" },
-  { key: "G", label: "Green", bg: "bg-green-600", active: "ring-green-400" },
+  { key: "W", label: "White", bg: "bg-yellow-100", active: "ring-yellow-400", textColor: "#111" },
+  { key: "U", label: "Blue", bg: "bg-blue-500", active: "ring-blue-400", textColor: "#fff" },
+  { key: "B", label: "Black", bg: "bg-gray-800", active: "ring-gray-500", textColor: "#eee" },
+  { key: "R", label: "Red", bg: "bg-red-500", active: "ring-red-400", textColor: "#fff" },
+  { key: "G", label: "Green", bg: "bg-green-600", active: "ring-green-400", textColor: "#fff" },
 ];
 
 const COLOR_MAP: Record<string, string> = { W: "W", U: "U", B: "B", R: "R", G: "G" };
@@ -173,6 +173,7 @@ export default function EditDeckPage() {
                     ? `ring-2 ${c.active} ring-offset-2 scale-110`
                     : "opacity-40"
                 }`}
+                style={{ color: c.textColor }}
                 title={c.label}
               >
                 {c.key}
