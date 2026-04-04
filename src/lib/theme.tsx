@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useCallback, useSyncExternalStore, ReactNode } from "react";
 
 export type ThemeName = "default" | "mtg";
 
@@ -14,24 +14,38 @@ const ThemeContext = createContext<ThemeContextType>({
   setTheme: () => {},
 });
 
-function getInitialTheme(): ThemeName {
-  if (typeof window === "undefined") return "default";
+let listeners: Array<() => void> = [];
+
+function getSnapshot(): ThemeName {
   const saved = localStorage.getItem("mtg-tracker-theme");
   if (saved === "default" || saved === "mtg") return saved;
   return "default";
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeName>(getInitialTheme);
+function getServerSnapshot(): ThemeName {
+  return "default";
+}
 
-  const setTheme = (t: ThemeName) => {
-    setThemeState(t);
-    localStorage.setItem("mtg-tracker-theme", t);
+function subscribe(listener: () => void) {
+  listeners.push(listener);
+  return () => {
+    listeners = listeners.filter((l) => l !== listener);
   };
+}
 
-  useEffect(() => {
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  const setTheme = useCallback((t: ThemeName) => {
+    localStorage.setItem("mtg-tracker-theme", t);
+    document.documentElement.setAttribute("data-theme", t);
+    listeners.forEach((l) => l());
+  }, []);
+
+  // Keep data-theme attribute in sync
+  if (typeof window !== "undefined") {
     document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
