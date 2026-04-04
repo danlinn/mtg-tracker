@@ -202,7 +202,7 @@ export default function DecksPage() {
                     )}
                     {deck.edhp != null && (
                       <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
-                        EDHP {deck.edhp.toFixed(1)}
+                        EDHP {deck.edhp.toFixed(2)}
                       </span>
                     )}
                   </div>
