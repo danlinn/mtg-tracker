@@ -37,7 +37,7 @@ export async function GET(req: Request) {
         name: card.name,
         image: imageUris?.art_crop ?? imageUris?.normal ?? null,
         imageSmall: imageUris?.small ?? null,
-        colors: card.colors ?? card.card_faces?.[0]?.colors ?? [],
+        colors: card.color_identity ?? card.colors ?? [],
         type_line: card.type_line ?? "",
       },
     });
