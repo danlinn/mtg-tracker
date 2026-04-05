@@ -95,9 +95,10 @@ export default function PlayerProfilePage() {
           <h2 className="text-lg font-semibold mb-3">Decks</h2>
           <div className="space-y-2">
             {profile.deckStats.map((deck) => (
-              <div
+              <Link
                 key={deck.id}
-                className="p-3 rounded-lg border border-gray-200 bg-white"
+                href={`/players/${playerId}/decks/${deck.id}`}
+                className="block p-3 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm transition-all"
               >
                 <div className="flex items-center gap-3">
                   {deck.commanderImage && (
@@ -169,7 +170,7 @@ export default function PlayerProfilePage() {
                     })}
                   </div>
                 )}
-              </div>
+              </Link>
             ))}
           </div>
         </div>
