@@ -2,26 +2,45 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
 
-export async function GET() {
+export async function GET(req: Request) {
   const userId = await getCurrentUserId();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const games = await prisma.game.findMany({
-    where: { players: { some: { userId } } },
-    include: {
-      players: {
-        include: {
-          user: { select: { id: true, name: true } },
-          deck: { select: { id: true, name: true, commander: true, edhp: true, bracket: true } },
+  const { searchParams } = new URL(req.url);
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
+  const perPage = [20, 50, 100].includes(Number(searchParams.get("perPage")))
+    ? Number(searchParams.get("perPage"))
+    : 20;
+
+  const where = { players: { some: { userId } } };
+
+  const [games, total] = await Promise.all([
+    prisma.game.findMany({
+      where,
+      include: {
+        players: {
+          include: {
+            user: { select: { id: true, name: true } },
+            deck: { select: { id: true, name: true, commander: true, edhp: true, bracket: true } },
+          },
         },
       },
-    },
-    orderBy: [{ playedAt: "desc" }, { createdAt: "desc" }],
-  });
+      orderBy: [{ playedAt: "desc" }, { createdAt: "desc" }],
+      skip: (page - 1) * perPage,
+      take: perPage,
+    }),
+    prisma.game.count({ where }),
+  ]);
 
-  return NextResponse.json(games);
+  return NextResponse.json({
+    games,
+    total,
+    page,
+    perPage,
+    totalPages: Math.ceil(total / perPage),
+  });
 }
 
 export async function POST(req: Request) {

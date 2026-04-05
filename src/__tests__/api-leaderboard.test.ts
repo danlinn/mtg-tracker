@@ -19,6 +19,10 @@ async function getHandler() {
   return mod.GET;
 }
 
+function makeRequest(params = "") {
+  return new Request(`http://localhost/api/leaderboard${params ? `?${params}` : ""}`);
+}
+
 describe("GET /api/leaderboard", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -27,63 +31,62 @@ describe("GET /api/leaderboard", () => {
   it("returns 401 when not authenticated", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue(null);
-    const res = await GET();
+    const res = await GET(makeRequest());
     expect(res.status).toBe(401);
   });
 
-  it("returns empty array when no users have games", async () => {
+  it("returns empty entries when no users have games", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
-    mockUserFindMany.mockResolvedValue([
-      { id: "u1", name: "Alice", gameEntries: [] },
-    ]);
+    mockUserFindMany.mockResolvedValue([]);
 
-    const res = await GET();
+    const res = await GET(makeRequest());
     const data = await res.json();
-    expect(data).toEqual([]);
+    expect(data.entries).toEqual([]);
+    expect(data.total).toBe(0);
   });
 
   it("sorts by wins descending, then winRate", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
     mockUserFindMany.mockResolvedValue([
-      { id: "u1", name: "Alice", gameEntries: [{ isWinner: true }, { isWinner: false }] },
-      { id: "u2", name: "Bob", gameEntries: [{ isWinner: true }, { isWinner: true }, { isWinner: false }] },
-      { id: "u3", name: "Charlie", gameEntries: [{ isWinner: true }, { isWinner: false }] },
+      { id: "u1", name: "Alice", _count: { gameEntries: 2 }, gameEntries: [{ id: "w1" }] },
+      { id: "u2", name: "Bob", _count: { gameEntries: 3 }, gameEntries: [{ id: "w1" }, { id: "w2" }] },
+      { id: "u3", name: "Charlie", _count: { gameEntries: 2 }, gameEntries: [{ id: "w1" }] },
     ]);
 
-    const res = await GET();
+    const res = await GET(makeRequest());
     const data = await res.json();
-    expect(data).toHaveLength(3);
-    expect(data[0].name).toBe("Bob"); // 2 wins
-    expect(data[0].wins).toBe(2);
-    expect(data[1].wins).toBe(1); // Alice and Charlie tied at 1 win
-  });
-
-  it("filters out users with zero games", async () => {
-    const GET = await getHandler();
-    mockGetCurrentUserId.mockResolvedValue("user-1");
-    mockUserFindMany.mockResolvedValue([
-      { id: "u1", name: "Active", gameEntries: [{ isWinner: true }] },
-      { id: "u2", name: "Inactive", gameEntries: [] },
-    ]);
-
-    const res = await GET();
-    const data = await res.json();
-    expect(data).toHaveLength(1);
-    expect(data[0].name).toBe("Active");
+    expect(data.entries).toHaveLength(3);
+    expect(data.entries[0].name).toBe("Bob");
+    expect(data.entries[0].wins).toBe(2);
+    expect(data.entries[1].wins).toBe(1);
   });
 
   it("calculates winRate correctly", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
     mockUserFindMany.mockResolvedValue([
-      { id: "u1", name: "Alice", gameEntries: [{ isWinner: true }, { isWinner: true }, { isWinner: false }] },
+      { id: "u1", name: "Alice", _count: { gameEntries: 3 }, gameEntries: [{ id: "w1" }, { id: "w2" }] },
     ]);
 
-    const res = await GET();
+    const res = await GET(makeRequest());
     const data = await res.json();
-    expect(data[0].winRate).toBe(67);
-    expect(data[0].games).toBe(3);
+    expect(data.entries[0].winRate).toBe(67);
+    expect(data.entries[0].games).toBe(3);
+  });
+
+  it("paginates results", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockUserFindMany.mockResolvedValue([
+      { id: "u1", name: "Alice", _count: { gameEntries: 5 }, gameEntries: [{ id: "w1" }, { id: "w2" }, { id: "w3" }] },
+    ]);
+
+    const res = await GET(makeRequest("page=1&perPage=20"));
+    const data = await res.json();
+    expect(data.page).toBe(1);
+    expect(data.perPage).toBe(20);
+    expect(data.totalPages).toBe(1);
   });
 });

@@ -8,11 +8,13 @@ jest.mock("@/lib/auth-helpers", () => ({
 
 // Mock prisma
 const mockFindMany = jest.fn();
+const mockDeckCount = jest.fn();
 const mockDeckCreate = jest.fn();
 jest.mock("@/lib/prisma", () => ({
   prisma: {
     deck: {
       findMany: (...args: unknown[]) => mockFindMany(...args),
+      count: (...args: unknown[]) => mockDeckCount(...args),
       create: (...args: unknown[]) => mockDeckCreate(...args),
     },
   },
@@ -39,22 +41,26 @@ describe("GET /api/decks", () => {
   it("returns 401 when not authenticated", async () => {
     const { GET } = await getHandlers();
     mockGetCurrentUserId.mockResolvedValue(null);
-    const res = await GET();
+    const res = await GET(new Request("http://localhost/api/decks"));
     expect(res.status).toBe(401);
   });
 
-  it("returns user decks", async () => {
+  it("returns paginated user decks", async () => {
     const { GET } = await getHandlers();
     mockGetCurrentUserId.mockResolvedValue("user-1");
     const decks = [
       { id: "d1", name: "Krenko", commander: "Krenko, Mob Boss" },
     ];
     mockFindMany.mockResolvedValue(decks);
+    mockDeckCount.mockResolvedValue(1);
 
-    const res = await GET();
+    const res = await GET(new Request("http://localhost/api/decks"));
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data).toEqual(decks);
+    expect(data.decks).toEqual(decks);
+    expect(data.total).toBe(1);
+    expect(data.page).toBe(1);
+    expect(data.perPage).toBe(20);
   });
 });
 

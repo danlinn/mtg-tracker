@@ -14,15 +14,22 @@ interface LeaderboardEntry {
 export default function LeaderboardPage() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    fetch("/api/leaderboard")
+    setLoading(true);
+    fetch(`/api/leaderboard?page=${page}&perPage=${perPage}`)
       .then((r) => r.json())
       .then((data) => {
-        setEntries(data);
+        setEntries(data.entries);
+        setTotalPages(data.totalPages);
+        setTotal(data.total);
         setLoading(false);
       });
-  }, []);
+  }, [page, perPage]);
 
   if (loading) {
     return <div className="text-center py-12 text-gray-500">Loading...</div>;
@@ -46,16 +53,16 @@ export default function LeaderboardPage() {
             >
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                  index === 0
+                  (page - 1) * perPage + index === 0
                     ? "bg-yellow-400 text-yellow-900"
-                    : index === 1
+                    : (page - 1) * perPage + index === 1
                     ? "bg-gray-300 text-gray-700"
-                    : index === 2
+                    : (page - 1) * perPage + index === 2
                     ? "bg-orange-300 text-orange-800"
                     : "bg-gray-100 text-gray-500"
                 }`}
               >
-                {index + 1}
+                {(page - 1) * perPage + index + 1}
               </div>
               <div className="flex-1">
                 <div className="font-medium text-gray-900">{entry.name}</div>
@@ -73,6 +80,43 @@ export default function LeaderboardPage() {
               </div>
             </Link>
           ))}
+        </div>
+      )}
+
+      {total > 0 && (
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Per page:</span>
+            <select
+              value={perPage}
+              onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+              className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-900"
+            >
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span className="text-sm text-gray-400">{total} players</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+            >
+              Prev
+            </button>
+            <span className="text-sm text-gray-500">
+              {page} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>

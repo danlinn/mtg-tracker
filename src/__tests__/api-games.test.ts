@@ -8,6 +8,7 @@ jest.mock("@/lib/auth-helpers", () => ({
 
 // Mock prisma
 const mockGameFindMany = jest.fn();
+const mockGameCount = jest.fn();
 const mockGameCreate = jest.fn();
 const mockDeckUpdate = jest.fn();
 const mockTransaction = jest.fn();
@@ -15,6 +16,7 @@ jest.mock("@/lib/prisma", () => ({
   prisma: {
     game: {
       findMany: (...args: unknown[]) => mockGameFindMany(...args),
+      count: (...args: unknown[]) => mockGameCount(...args),
       create: (...args: unknown[]) => mockGameCreate(...args),
     },
     deck: {
@@ -45,27 +47,45 @@ describe("GET /api/games", () => {
   it("returns 401 when not authenticated", async () => {
     const { GET } = await getHandlers();
     mockGetCurrentUserId.mockResolvedValue(null);
-    const res = await GET();
+    const res = await GET(new Request("http://localhost/api/games"));
     expect(res.status).toBe(401);
   });
 
-  it("returns user games", async () => {
+  it("returns paginated games", async () => {
     const { GET } = await getHandlers();
     mockGetCurrentUserId.mockResolvedValue("user-1");
     mockGameFindMany.mockResolvedValue([]);
+    mockGameCount.mockResolvedValue(0);
 
-    const res = await GET();
+    const res = await GET(new Request("http://localhost/api/games"));
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data).toEqual([]);
+    expect(data.games).toEqual([]);
+    expect(data.total).toBe(0);
+    expect(data.page).toBe(1);
+    expect(data.perPage).toBe(20);
+  });
+
+  it("respects page and perPage params", async () => {
+    const { GET } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockGameFindMany.mockResolvedValue([]);
+    mockGameCount.mockResolvedValue(60);
+
+    const res = await GET(new Request("http://localhost/api/games?page=2&perPage=50"));
+    const data = await res.json();
+    expect(data.page).toBe(2);
+    expect(data.perPage).toBe(50);
+    expect(data.totalPages).toBe(2);
   });
 
   it("queries with correct sort order: playedAt desc, createdAt desc", async () => {
     const { GET } = await getHandlers();
     mockGetCurrentUserId.mockResolvedValue("user-1");
     mockGameFindMany.mockResolvedValue([]);
+    mockGameCount.mockResolvedValue(0);
 
-    await GET();
+    await GET(new Request("http://localhost/api/games"));
 
     expect(mockGameFindMany).toHaveBeenCalledTimes(1);
     const callArgs = mockGameFindMany.mock.calls[0][0] as { orderBy: unknown };

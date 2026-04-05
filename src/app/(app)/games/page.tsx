@@ -59,15 +59,22 @@ function getWinLabel(game: Game): { text: string; color: string } | null {
 export default function GamesPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    fetch("/api/games")
+    setLoading(true);
+    fetch(`/api/games?page=${page}&perPage=${perPage}`)
       .then((r) => r.json())
       .then((data) => {
-        setGames(data);
+        setGames(data.games);
+        setTotalPages(data.totalPages);
+        setTotal(data.total);
         setLoading(false);
       });
-  }, []);
+  }, [page, perPage]);
 
   if (loading) {
     return <div className="text-center py-12 text-gray-500">Loading...</div>;
@@ -145,6 +152,43 @@ export default function GamesPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {total > 0 && (
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Per page:</span>
+            <select
+              value={perPage}
+              onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+              className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-900"
+            >
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span className="text-sm text-gray-400">{total} total</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+            >
+              Prev
+            </button>
+            <span className="text-sm text-gray-500">
+              {page} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>

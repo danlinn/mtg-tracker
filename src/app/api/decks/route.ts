@@ -2,18 +2,37 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
 
-export async function GET() {
+export async function GET(req: Request) {
   const userId = await getCurrentUserId();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const decks = await prisma.deck.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-  });
+  const { searchParams } = new URL(req.url);
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
+  const perPage = [20, 50, 100].includes(Number(searchParams.get("perPage")))
+    ? Number(searchParams.get("perPage"))
+    : 20;
 
-  return NextResponse.json(decks);
+  const where = { userId };
+
+  const [decks, total] = await Promise.all([
+    prisma.deck.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * perPage,
+      take: perPage,
+    }),
+    prisma.deck.count({ where }),
+  ]);
+
+  return NextResponse.json({
+    decks,
+    total,
+    page,
+    perPage,
+    totalPages: Math.ceil(total / perPage),
+  });
 }
 
 export async function POST(req: Request) {

@@ -97,10 +97,10 @@ export default function DecksPage() {
   }, [decks, sort, activeFilters, bracketFilter]);
 
   useEffect(() => {
-    fetch("/api/decks")
+    fetch("/api/decks?perPage=100")
       .then((r) => r.json())
       .then((data) => {
-        setDecks(data);
+        setDecks(data.decks);
         setLoading(false);
       });
   }, []);

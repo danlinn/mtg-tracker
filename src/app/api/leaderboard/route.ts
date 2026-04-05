@@ -2,18 +2,28 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
 
-export async function GET() {
+export async function GET(req: Request) {
   const userId = await getCurrentUserId();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { searchParams } = new URL(req.url);
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
+  const perPage = [20, 50, 100].includes(Number(searchParams.get("perPage")))
+    ? Number(searchParams.get("perPage"))
+    : 20;
+
+  // Get all users who have played at least one game, with aggregated stats
   const users = await prisma.user.findMany({
+    where: { gameEntries: { some: {} } },
     select: {
       id: true,
       name: true,
+      _count: { select: { gameEntries: true } },
       gameEntries: {
-        select: { isWinner: true },
+        where: { isWinner: true },
+        select: { id: true },
       },
     },
   });
@@ -22,19 +32,23 @@ export async function GET() {
     .map((user) => ({
       id: user.id,
       name: user.name,
-      games: user.gameEntries.length,
-      wins: user.gameEntries.filter((e) => e.isWinner).length,
+      games: user._count.gameEntries,
+      wins: user.gameEntries.length,
       winRate:
-        user.gameEntries.length > 0
-          ? Math.round(
-              (user.gameEntries.filter((e) => e.isWinner).length /
-                user.gameEntries.length) *
-                100
-            )
+        user._count.gameEntries > 0
+          ? Math.round((user.gameEntries.length / user._count.gameEntries) * 100)
           : 0,
     }))
-    .filter((u) => u.games > 0)
     .sort((a, b) => b.wins - a.wins || b.winRate - a.winRate);
 
-  return NextResponse.json(leaderboard);
+  const total = leaderboard.length;
+  const paged = leaderboard.slice((page - 1) * perPage, page * perPage);
+
+  return NextResponse.json({
+    entries: paged,
+    total,
+    page,
+    perPage,
+    totalPages: Math.ceil(total / perPage),
+  });
 }
