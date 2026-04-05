@@ -304,6 +304,96 @@ describe("E2E: Full application flow", () => {
     });
   });
 
+  // ---- GAME SORT ORDER ----
+
+  describe("Game sort order", () => {
+    it("games with different dates sort newest first", async () => {
+      // Log a game with an older date
+      await apiRequest("/api/games", {
+        method: "POST",
+        body: {
+          playedAt: "2024-01-01",
+          players: [
+            { userId: userA.id, deckId: deckA1.id, isWinner: true },
+            { userId: userB.id, deckId: deckB1.id, isWinner: false },
+          ],
+        },
+        cookie: cookieA,
+      });
+
+      // Log a game with a newer date
+      await apiRequest("/api/games", {
+        method: "POST",
+        body: {
+          playedAt: "2025-06-15",
+          players: [
+            { userId: userA.id, deckId: deckA1.id, isWinner: false },
+            { userId: userB.id, deckId: deckB1.id, isWinner: true },
+          ],
+        },
+        cookie: cookieA,
+      });
+
+      const res = await apiRequest("/api/games", { cookie: cookieA });
+      const data = await res.json() as { playedAt: string }[];
+      expect(data.length).toBeGreaterThanOrEqual(2);
+
+      // Verify all games are sorted by playedAt descending
+      for (let i = 1; i < data.length; i++) {
+        const prev = new Date(data[i - 1].playedAt).getTime();
+        const curr = new Date(data[i].playedAt).getTime();
+        expect(prev).toBeGreaterThanOrEqual(curr);
+      }
+    });
+
+    it("games on the same date sort by creation time (newest first)", async () => {
+      // Log two games on the same date in sequence
+      const sameDate = "2025-12-25";
+
+      const res1 = await apiRequest("/api/games", {
+        method: "POST",
+        body: {
+          playedAt: sameDate,
+          notes: "first-logged",
+          players: [
+            { userId: userA.id, deckId: deckA1.id, isWinner: true },
+            { userId: userB.id, deckId: deckB1.id, isWinner: false },
+          ],
+        },
+        cookie: cookieA,
+      });
+      const game1 = await res1.json() as { id: string; createdAt: string };
+
+      const res2 = await apiRequest("/api/games", {
+        method: "POST",
+        body: {
+          playedAt: sameDate,
+          notes: "second-logged",
+          players: [
+            { userId: userA.id, deckId: deckA1.id, isWinner: false },
+            { userId: userB.id, deckId: deckB1.id, isWinner: true },
+          ],
+        },
+        cookie: cookieA,
+      });
+      const game2 = await res2.json() as { id: string; createdAt: string };
+
+      // Fetch all games
+      const res = await apiRequest("/api/games", { cookie: cookieA });
+      const data = await res.json() as { id: string; playedAt: string; notes: string | null }[];
+
+      // Find the two Christmas games
+      const xmasGames = data.filter(
+        (g) => g.playedAt && new Date(g.playedAt).toISOString().startsWith("2025-12-25")
+      );
+      expect(xmasGames.length).toBe(2);
+
+      // The second-logged game should appear first (newer createdAt)
+      expect(xmasGames[0].id).toBe(game2.id);
+      expect(xmasGames[1].id).toBe(game1.id);
+    });
+  });
+
   // ---- STATS ----
 
   describe("Stats", () => {

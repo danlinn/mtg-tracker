@@ -53,6 +53,21 @@ describe("GET /api/games", () => {
     const data = await res.json();
     expect(data).toEqual([]);
   });
+
+  it("queries with correct sort order: playedAt desc, createdAt desc", async () => {
+    const { GET } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockGameFindMany.mockResolvedValue([]);
+
+    await GET();
+
+    expect(mockGameFindMany).toHaveBeenCalledTimes(1);
+    const callArgs = mockGameFindMany.mock.calls[0][0] as { orderBy: unknown };
+    expect(callArgs.orderBy).toEqual([
+      { playedAt: "desc" },
+      { createdAt: "desc" },
+    ]);
+  });
 });
 
 describe("POST /api/games", () => {
