@@ -16,22 +16,34 @@ export async function PUT(
     return NextResponse.json({ error: "Deck not found" }, { status: 404 });
   }
 
-  const { name, commander, colors } = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
-  const updated = await prisma.deck.update({
-    where: { id },
-    data: {
-      name: name ?? deck.name,
-      commander: commander ?? deck.commander,
-      colorW: colors?.W ?? deck.colorW,
-      colorU: colors?.U ?? deck.colorU,
-      colorB: colors?.B ?? deck.colorB,
-      colorR: colors?.R ?? deck.colorR,
-      colorG: colors?.G ?? deck.colorG,
-    },
-  });
+  const { name, commander, colors } = body;
 
-  return NextResponse.json(updated);
+  try {
+    const updated = await prisma.deck.update({
+      where: { id },
+      data: {
+        name: name ?? deck.name,
+        commander: commander ?? deck.commander,
+        colorW: colors?.W ?? deck.colorW,
+        colorU: colors?.U ?? deck.colorU,
+        colorB: colors?.B ?? deck.colorB,
+        colorR: colors?.R ?? deck.colorR,
+        colorG: colors?.G ?? deck.colorG,
+      },
+    });
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("[PUT /api/admin/decks/[id]] Error:", error);
+    return NextResponse.json({ error: "Failed to update deck" }, { status: 500 });
+  }
 }
 
 export async function DELETE(
@@ -48,6 +60,11 @@ export async function DELETE(
     return NextResponse.json({ error: "Deck not found" }, { status: 404 });
   }
 
-  await prisma.deck.delete({ where: { id } });
-  return NextResponse.json({ success: true });
+  try {
+    await prisma.deck.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[DELETE /api/admin/decks/[id]] Error:", error);
+    return NextResponse.json({ error: "Failed to delete deck" }, { status: 500 });
+  }
 }

@@ -24,15 +24,26 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { theme } = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const { theme } = body;
   if (!VALID_THEMES.includes(theme)) {
     return NextResponse.json({ error: "Invalid theme" }, { status: 400 });
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { theme },
-  });
-
-  return NextResponse.json({ theme });
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { theme },
+    });
+    return NextResponse.json({ theme });
+  } catch (error) {
+    console.error("[PUT /api/theme] Error:", error);
+    return NextResponse.json({ error: "Failed to update theme" }, { status: 500 });
+  }
 }

@@ -30,7 +30,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { playedAt, players, notes, asterisk } = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const { playedAt, players, notes, asterisk } = body;
 
   if (!players || players.length < 2 || players.length > 4) {
     return NextResponse.json(
@@ -50,42 +57,48 @@ export async function POST(req: Request) {
   }
 
   const gameDate = playedAt ? new Date(playedAt) : new Date();
-
-  const game = await prisma.game.create({
-    data: {
-      playedAt: gameDate,
-      notes: notes?.trim() || null,
-      asterisk: !!asterisk,
-      players: {
-        create: players.map(
-          (p: { userId: string; deckId: string; isWinner: boolean }) => ({
-            userId: p.userId,
-            deckId: p.deckId,
-            isWinner: p.isWinner,
-          })
-        ),
-      },
-    },
-    include: {
-      players: {
-        include: {
-          user: { select: { id: true, name: true } },
-          deck: { select: { id: true, name: true, commander: true, edhp: true, bracket: true } },
-        },
-      },
-    },
-  });
-
-  // Update lastPlayedAt on all decks used in this game
   const deckIds = players.map((p: { deckId: string }) => p.deckId);
-  await Promise.all(
-    deckIds.map((deckId: string) =>
-      prisma.deck.update({
-        where: { id: deckId },
-        data: { lastPlayedAt: gameDate },
-      })
-    )
-  );
 
-  return NextResponse.json(game);
+  try {
+    const [game] = await prisma.$transaction([
+      prisma.game.create({
+        data: {
+          playedAt: gameDate,
+          notes: notes?.trim() || null,
+          asterisk: !!asterisk,
+          players: {
+            create: players.map(
+              (p: { userId: string; deckId: string; isWinner: boolean }) => ({
+                userId: p.userId,
+                deckId: p.deckId,
+                isWinner: p.isWinner,
+              })
+            ),
+          },
+        },
+        include: {
+          players: {
+            include: {
+              user: { select: { id: true, name: true } },
+              deck: { select: { id: true, name: true, commander: true, edhp: true, bracket: true } },
+            },
+          },
+        },
+      }),
+      ...deckIds.map((deckId: string) =>
+        prisma.deck.update({
+          where: { id: deckId },
+          data: { lastPlayedAt: gameDate },
+        })
+      ),
+    ]);
+
+    return NextResponse.json(game);
+  } catch (error) {
+    console.error("[POST /api/games] Error:", error);
+    return NextResponse.json(
+      { error: "Failed to save game" },
+      { status: 500 }
+    );
+  }
 }

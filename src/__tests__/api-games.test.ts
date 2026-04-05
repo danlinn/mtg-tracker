@@ -10,6 +10,7 @@ jest.mock("@/lib/auth-helpers", () => ({
 const mockGameFindMany = jest.fn();
 const mockGameCreate = jest.fn();
 const mockDeckUpdate = jest.fn();
+const mockTransaction = jest.fn();
 jest.mock("@/lib/prisma", () => ({
   prisma: {
     game: {
@@ -19,6 +20,7 @@ jest.mock("@/lib/prisma", () => ({
     deck: {
       update: (...args: unknown[]) => mockDeckUpdate(...args),
     },
+    $transaction: (...args: unknown[]) => mockTransaction(...args),
   },
 }));
 
@@ -143,7 +145,7 @@ describe("POST /api/games", () => {
     expect(data.error).toBe("Exactly one winner required");
   });
 
-  it("creates game successfully", async () => {
+  it("creates game successfully via transaction", async () => {
     const { POST } = await getHandlers();
     mockGetCurrentUserId.mockResolvedValue("user-1");
     const gameResult = {
@@ -166,7 +168,8 @@ describe("POST /api/games", () => {
         },
       ],
     };
-    mockGameCreate.mockResolvedValue(gameResult);
+    // $transaction returns array of results; first element is the game
+    mockTransaction.mockResolvedValue([gameResult, {}, {}]);
 
     const res = await POST(
       makeRequest({
@@ -180,5 +183,23 @@ describe("POST /api/games", () => {
     const data = await res.json();
     expect(data.id).toBe("g1");
     expect(data.players).toHaveLength(2);
+  });
+
+  it("returns 500 when transaction fails", async () => {
+    const { POST } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockTransaction.mockRejectedValue(new Error("DB connection lost"));
+
+    const res = await POST(
+      makeRequest({
+        players: [
+          { userId: "u1", deckId: "d1", isWinner: true },
+          { userId: "u2", deckId: "d2", isWinner: false },
+        ],
+      })
+    );
+    expect(res.status).toBe(500);
+    const data = await res.json();
+    expect(data.error).toBe("Failed to save game");
   });
 });

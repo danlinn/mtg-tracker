@@ -1,12 +1,10 @@
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 
 // Mock prisma
-const mockFindUnique = jest.fn();
 const mockCreate = jest.fn();
 jest.mock("@/lib/prisma", () => ({
   prisma: {
     user: {
-      findUnique: (...args: unknown[]) => mockFindUnique(...args),
       create: (...args: unknown[]) => mockCreate(...args),
     },
   },
@@ -44,9 +42,11 @@ describe("POST /api/register", () => {
     expect(data.error).toBe("Missing required fields");
   });
 
-  it("returns 400 when email already exists", async () => {
+  it("returns 400 when email already exists (P2002 constraint)", async () => {
     const POST = await getHandler();
-    mockFindUnique.mockResolvedValue({ id: "1", email: "test@test.com" });
+    const prismaError = new Error("Unique constraint failed");
+    (prismaError as unknown as { code: string }).code = "P2002";
+    mockCreate.mockRejectedValue(prismaError);
 
     const res = await POST(
       makeRequest({
@@ -62,7 +62,6 @@ describe("POST /api/register", () => {
 
   it("creates user successfully", async () => {
     const POST = await getHandler();
-    mockFindUnique.mockResolvedValue(null);
     mockCreate.mockResolvedValue({
       id: "new-id",
       email: "new@test.com",
@@ -81,5 +80,34 @@ describe("POST /api/register", () => {
     expect(data.id).toBe("new-id");
     expect(data.email).toBe("new@test.com");
     expect(data.name).toBe("New User");
+  });
+
+  it("returns 500 on unexpected database error", async () => {
+    const POST = await getHandler();
+    mockCreate.mockRejectedValue(new Error("Connection timeout"));
+
+    const res = await POST(
+      makeRequest({
+        email: "test@test.com",
+        password: "password123",
+        name: "Test",
+      })
+    );
+    expect(res.status).toBe(500);
+    const data = await res.json();
+    expect(data.error).toBe("Internal server error");
+  });
+
+  it("returns 400 for invalid JSON body", async () => {
+    const POST = await getHandler();
+    const req = new Request("http://localhost/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "not json",
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("Invalid JSON");
   });
 });

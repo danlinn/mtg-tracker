@@ -3,24 +3,23 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
+  let body;
   try {
-    const { email, password, name } = await req.json();
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
-    if (!email || !password || !name) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
+  const { email, password, name } = body;
 
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      return NextResponse.json(
-        { error: "Email already registered" },
-        { status: 400 }
-      );
-    }
+  if (!email || !password || !name) {
+    return NextResponse.json(
+      { error: "Missing required fields" },
+      { status: 400 }
+    );
+  }
 
+  try {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = await prisma.user.create({
@@ -32,8 +31,18 @@ export async function POST(req: Request) {
       email: user.email,
       name: user.name,
     });
-  } catch (error) {
-    console.error("Registration error:", error);
+  } catch (error: unknown) {
+    // Prisma unique constraint violation (duplicate email)
+    if (
+      typeof error === "object" && error !== null &&
+      "code" in error && (error as { code: string }).code === "P2002"
+    ) {
+      return NextResponse.json(
+        { error: "Email already registered" },
+        { status: 400 }
+      );
+    }
+    console.error("[POST /api/register] Error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
