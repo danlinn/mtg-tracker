@@ -38,9 +38,17 @@ export default function CardDetailModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Close button over image */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/50 hover:bg-black/70 text-white text-2xl font-bold transition-colors shadow-lg"
+        >
+          &times;
+        </button>
+
         {/* Card image */}
         {card.imageNormal && (
           <img
@@ -52,19 +60,11 @@ export default function CardDetailModal({
 
         <div className="p-4 space-y-3">
           {/* Header */}
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">{card.name}</h3>
-              {card.manaCost && (
-                <span className="text-sm text-gray-500">{card.manaCost}</span>
-              )}
-            </div>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 text-lg font-bold transition-colors"
-            >
-              &times;
-            </button>
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">{card.name}</h3>
+            {card.manaCost && (
+              <span className="text-sm text-gray-500">{card.manaCost}</span>
+            )}
           </div>
 
           {/* Type line */}
