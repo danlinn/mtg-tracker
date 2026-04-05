@@ -102,7 +102,7 @@ export default function GamesPage() {
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-500">
-                    {new Date(game.playedAt).toLocaleDateString()}
+                    {new Date(game.playedAt).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" })}
                   </span>
                   <div className="flex items-center gap-2">
                     {winLabel && (

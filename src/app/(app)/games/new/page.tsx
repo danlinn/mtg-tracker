@@ -23,7 +23,7 @@ export default function NewGamePage() {
     Array.from({ length: 4 }, () => ({ userId: "", deckId: "", isWinner: false }))
   );
   const [playedAt, setPlayedAt] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" })
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
