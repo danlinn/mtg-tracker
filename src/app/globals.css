@@ -1411,8 +1411,97 @@ body {
 }
 
 [data-theme="stained-glass"] .rounded-lg.border {
-  border-color: #2a2048 !important;
-  box-shadow: 0 0 4px rgba(212,168,74,0.1), inset 0 1px 0 rgba(212,168,74,0.08);
+  border-color: #3a2a58 !important;
+  border-width: 2px !important;
+  box-shadow: 0 0 6px rgba(212,168,74,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Stained glass pane backgrounds — 4 rotating patterns */
+[data-theme="stained-glass"] .rounded-lg.border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.18;
+}
+
+[data-theme="stained-glass"] .rounded-lg.border > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Pattern 1: Ruby & Sapphire diagonal split */
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+1) > .rounded-lg.border::before,
+[data-theme="stained-glass"] .grid > :nth-child(4n+1)::before {
+  background:
+    linear-gradient(135deg, #8b1a3a 0%, #8b1a3a 50%, #1a3a8b 50%, #1a3a8b 100%),
+    linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 40%);
+  background-blend-mode: normal;
+}
+
+/* Pattern 2: Emerald & Gold triangles */
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+2) > .rounded-lg.border::before,
+[data-theme="stained-glass"] .grid > :nth-child(4n+2)::before {
+  background:
+    linear-gradient(45deg, #1a6b3a 0%, #1a6b3a 50%, #8b6a1a 50%, #8b6a1a 100%),
+    linear-gradient(45deg, rgba(255,255,255,0.25) 0%, transparent 35%);
+  background-blend-mode: normal;
+}
+
+/* Pattern 3: Amethyst & Ruby four triangles */
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+3) > .rounded-lg.border::before,
+[data-theme="stained-glass"] .grid > :nth-child(4n+3)::before {
+  background:
+    conic-gradient(from 0deg at 50% 50%, #5a1a8b 0deg, #5a1a8b 90deg, #8b1a3a 90deg, #8b1a3a 180deg, #1a5a8b 180deg, #1a5a8b 270deg, #1a8b3a 270deg, #1a8b3a 360deg),
+    linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%);
+  background-blend-mode: normal;
+}
+
+/* Pattern 4: Sapphire & Emerald reverse diagonal */
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+4) > .rounded-lg.border::before,
+[data-theme="stained-glass"] .grid > :nth-child(4n+4)::before {
+  background:
+    linear-gradient(-45deg, #1a3a8b 0%, #1a3a8b 50%, #1a6b3a 50%, #1a6b3a 100%),
+    linear-gradient(-45deg, rgba(255,255,255,0.25) 0%, transparent 40%);
+  background-blend-mode: normal;
+}
+
+/* Glint overlay on all stained glass panes */
+[data-theme="stained-glass"] .rounded-lg.border::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.06) 100%);
+  pointer-events: none;
+}
+
+/* Stats grid cards get patterns directly */
+[data-theme="stained-glass"] .grid > .bg-white {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="stained-glass"] .grid > .bg-white::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+}
+
+[data-theme="stained-glass"] .grid > .bg-white::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.06) 100%);
+  pointer-events: none;
+}
+
+[data-theme="stained-glass"] .grid > .bg-white > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Buttons */
