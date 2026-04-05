@@ -48,6 +48,8 @@ model Game {
   id        String   @id @default(cuid())
   playedAt  DateTime @default(now())
   createdAt DateTime @default(now())
+  notes     String?
+  asterisk  Boolean  @default(false)
 
   players GamePlayer[]
 }

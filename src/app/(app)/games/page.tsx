@@ -12,6 +12,8 @@ interface GamePlayer {
 interface Game {
   id: string;
   playedAt: string;
+  notes: string | null;
+  asterisk: boolean;
   players: GamePlayer[];
 }
 
@@ -103,6 +105,7 @@ export default function GamesPage() {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-500">
                     {new Date(game.playedAt).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" })}
+                    {game.asterisk && <span className="text-yellow-500 ml-1" title="Asterisk">*</span>}
                   </span>
                   <div className="flex items-center gap-2">
                     {winLabel && (
@@ -134,6 +137,11 @@ export default function GamesPage() {
                     </div>
                   ))}
                 </div>
+                {game.notes && (
+                  <div className="mt-2 text-xs text-gray-500 italic">
+                    {game.notes}
+                  </div>
+                )}
               </div>
             );
           })}

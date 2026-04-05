@@ -25,6 +25,8 @@ export default function NewGamePage() {
   const [playedAt, setPlayedAt] = useState(
     new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" })
   );
+  const [notes, setNotes] = useState("");
+  const [asterisk, setAsterisk] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -93,7 +95,7 @@ export default function NewGamePage() {
     const res = await fetch("/api/games", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ playedAt, players: activePlayers }),
+      body: JSON.stringify({ playedAt, players: activePlayers, notes, asterisk }),
     });
 
     if (!res.ok) {
@@ -195,6 +197,30 @@ export default function NewGamePage() {
             )}
           </div>
         ))}
+
+        <div>
+          <label htmlFor="notes" className="block text-sm font-medium mb-1">
+            Notes
+          </label>
+          <textarea
+            id="notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Optional game notes..."
+            rows={2}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+          />
+        </div>
+
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={asterisk}
+            onChange={(e) => setAsterisk(e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300"
+          />
+          <span className="text-sm font-medium">Asterisk *</span>
+        </label>
 
         <button
           type="submit"

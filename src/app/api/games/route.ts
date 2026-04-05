@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { playedAt, players } = await req.json();
+  const { playedAt, players, notes, asterisk } = await req.json();
 
   if (!players || players.length < 2 || players.length > 4) {
     return NextResponse.json(
@@ -52,6 +52,8 @@ export async function POST(req: Request) {
   const game = await prisma.game.create({
     data: {
       playedAt: playedAt ? new Date(playedAt) : new Date(),
+      notes: notes?.trim() || null,
+      asterisk: !!asterisk,
       players: {
         create: players.map(
           (p: { userId: string; deckId: string; isWinner: boolean }) => ({
