@@ -1,0 +1,27 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - link "MTG Tracker" [ref=e5] [cursor=pointer]:
+        - /url: /dashboard
+      - generic [ref=e6]:
+        - link "Dashboard" [ref=e7] [cursor=pointer]:
+          - /url: /dashboard
+        - link "Decks" [ref=e8] [cursor=pointer]:
+          - /url: /decks
+        - link "Games" [ref=e9] [cursor=pointer]:
+          - /url: /games
+        - link "Players" [ref=e10] [cursor=pointer]:
+          - /url: /players
+        - link "Leaderboard" [ref=e11] [cursor=pointer]:
+          - /url: /leaderboard
+        - combobox [ref=e12]:
+          - option "Default" [selected]
+          - option "Old School"
+          - option "Synth"
+          - option "Cyber"
+          - option "Flame"
+          - option "Chris"
+        - button "Sign out" [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e15]: Loading...
+  - alert [ref=e16]
