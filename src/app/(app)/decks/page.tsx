@@ -33,19 +33,21 @@ const FILTER_COLORS: { key: (typeof COLOR_KEYS)[number]; letter: string; label: 
   { key: "colorG", letter: "G", label: "Green", bg: "bg-green-600", active: "ring-green-400", textColor: "#fff" },
 ];
 
+// Gradient order: Black, Blue, Red, Green, White
 const MTG_COLORS: { key: (typeof COLOR_KEYS)[number]; hex: string }[] = [
-  { key: "colorW", hex: "#f5f5f4" },
-  { key: "colorU", hex: "#60a5fa" },
   { key: "colorB", hex: "#404040" },
+  { key: "colorU", hex: "#60a5fa" },
   { key: "colorR", hex: "#f87171" },
   { key: "colorG", hex: "#4ade80" },
+  { key: "colorW", hex: "#f5f5f4" },
 ];
 
 function deckGradient(deck: Deck): React.CSSProperties {
   const active = MTG_COLORS.filter((c) => deck[c.key]).map((c) => c.hex);
   if (active.length === 0) return {};
+  const isWhiteOnly = deck.colorW && !deck.colorB && !deck.colorU && !deck.colorR && !deck.colorG;
   const isBlackOnly = deck.colorB && !deck.colorW && !deck.colorU && !deck.colorR && !deck.colorG;
-  const textColor = isBlackOnly ? "#f5f5f4" : undefined;
+  const textColor = isBlackOnly ? "#f5f5f4" : isWhiteOnly ? "#1a1a1a" : undefined;
   if (active.length === 1) return { background: active[0], color: textColor };
   return { background: `linear-gradient(135deg, ${active.join(", ")})`, color: textColor };
 }
@@ -210,15 +212,21 @@ export default function DecksPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filteredAndSorted.map((deck) => (
+          {filteredAndSorted.map((deck) => {
+            const whiteOnly = deck.colorW && !deck.colorB && !deck.colorU && !deck.colorR && !deck.colorG;
+            const titleShadow = whiteOnly
+              ? "1px 1px 0 rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.1)"
+              : "1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)";
+            const titleColor = whiteOnly ? "#1a1a1a" : "white";
+            return (
             <div
               key={deck.id}
               className="flex items-center justify-between p-4 rounded-lg border border-gray-200"
               style={deckGradient(deck)}
             >
               <div className="space-y-1 min-w-0 flex-1">
-                <div className="text-xl font-bold text-white" style={{ textShadow: "1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)" }}>{deck.name}</div>
-                <div className="text-sm font-semibold text-white" style={{ textShadow: "1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)" }}>{deck.commander}{deck.commander2 ? ` & ${deck.commander2}` : ""}</div>
+                <div className="text-xl font-bold" style={{ color: titleColor, textShadow: titleShadow }}>{deck.name}</div>
+                <div className="text-sm font-semibold" style={{ color: titleColor, textShadow: titleShadow }}>{deck.commander}{deck.commander2 ? ` & ${deck.commander2}` : ""}</div>
                 <ColorPips
                   colors={{
                     W: deck.colorW,
@@ -231,12 +239,12 @@ export default function DecksPage() {
                 {(deck.bracket != null || deck.edhp != null) && (
                   <div className="flex gap-3 text-xs">
                     {deck.bracket != null && (
-                      <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                      <span className={`px-2 py-0.5 rounded ${whiteOnly ? "bg-white/60 text-gray-800" : "bg-gray-100 text-gray-700"}`}>
                         Bracket {deck.bracket}
                       </span>
                     )}
                     {deck.edhp != null && (
-                      <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
+                      <span className={`px-2 py-0.5 rounded ${whiteOnly ? "bg-white/60 text-gray-800" : "bg-gray-100 text-gray-700"}`}>
                         EDHP {deck.edhp.toFixed(2)}
                       </span>
                     )}
@@ -245,13 +253,13 @@ export default function DecksPage() {
                 <div className="flex gap-3 pt-1">
                   <Link
                     href={`/decks/${deck.id}/edit`}
-                    className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                    className={`text-xs font-medium ${whiteOnly ? "text-blue-800 hover:text-blue-950" : "text-blue-600 hover:text-blue-800"}`}
                   >
                     Edit
                   </Link>
                   <button
                     onClick={() => handleDelete(deck.id)}
-                    className="text-red-500 hover:text-red-700 text-xs"
+                    className={`text-xs ${whiteOnly ? "text-red-700 hover:text-red-900" : "text-red-500 hover:text-red-700"}`}
                   >
                     Delete
                   </button>
@@ -265,7 +273,8 @@ export default function DecksPage() {
                 />
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
