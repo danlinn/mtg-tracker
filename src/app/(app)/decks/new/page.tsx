@@ -21,6 +21,7 @@ export default function NewDeckPage() {
   const [commanderImage, setCommanderImage] = useState<string | null>(null);
   const [commander2, setCommander2] = useState("");
   const [commander2Image, setCommander2Image] = useState<string | null>(null);
+  const [showPartner, setShowPartner] = useState(false);
   const [colors, setColors] = useState<Record<string, boolean>>({
     W: false, U: false, B: false, R: false, G: false,
   });
@@ -139,24 +140,47 @@ export default function NewDeckPage() {
             />
           </div>
         )}
-        <div>
-          <label htmlFor="commander2" className="block text-sm font-medium mb-1">
-            Partner / Second Commander
-          </label>
-          <CommanderSearch
-            value={commander2}
-            onChange={setCommander2}
-            onCardResolved={handleCard2Resolved}
-          />
-        </div>
-        {commander2Image && commander2.trim() && (
-          <div className="flex justify-center">
-            <img
-              src={commander2Image}
-              alt={commander2}
-              className="w-full rounded-lg shadow-md"
-            />
-          </div>
+        {commander2 || showPartner ? (
+          <>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label htmlFor="commander2" className="block text-sm font-medium">
+                  Partner / Second Commander
+                </label>
+                {!commander2.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => { setShowPartner(false); setCommander2(""); setCommander2Image(null); }}
+                    className="text-xs text-gray-400 hover:text-gray-600"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              <CommanderSearch
+                value={commander2}
+                onChange={setCommander2}
+                onCardResolved={handleCard2Resolved}
+              />
+            </div>
+            {commander2Image && commander2.trim() && (
+              <div className="flex justify-center">
+                <img
+                  src={commander2Image}
+                  alt={commander2}
+                  className="w-full rounded-lg shadow-md"
+                />
+              </div>
+            )}
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowPartner(true)}
+            className="text-sm text-blue-600 hover:text-blue-800"
+          >
+            + Add Partner / Second Commander
+          </button>
         )}
         <div>
           <label className="block text-sm font-medium mb-2">
