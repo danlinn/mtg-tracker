@@ -975,7 +975,7 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 12px rgba(255,42,109,0.4));
+  filter: drop-shadow(1px 1px 0 #000) drop-shadow(-1px 1px 0 #000) drop-shadow(0 2px 4px rgba(0,0,0,0.5));
 }
 
 [data-theme="flame"] .rounded-lg.border {
