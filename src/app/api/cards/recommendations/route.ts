@@ -26,12 +26,14 @@ export async function POST(req: Request) {
   const query = `f:commander ${colorFilter} -t:basic`;
 
   try {
-    const res = await fetch(
-      `${SCRYFALL_BASE}/cards/search?q=${encodeURIComponent(query)}&order=edhrec&dir=asc&unique=cards`,
-    );
+    const url = `${SCRYFALL_BASE}/cards/search?q=${encodeURIComponent(query)}&order=edhrec&dir=asc&unique=cards`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": "MTGCommanderTracker/1.0" },
+    });
 
     if (!res.ok) {
-      return NextResponse.json({ cards: [] });
+      console.error("[recommendations] Scryfall error:", res.status, await res.text().catch(() => ""));
+      return NextResponse.json({ cards: [], error: "Scryfall search failed" });
     }
 
     const data = await res.json();
@@ -71,7 +73,8 @@ export async function POST(req: Request) {
       });
 
     return NextResponse.json({ cards });
-  } catch {
-    return NextResponse.json({ cards: [] });
+  } catch (error) {
+    console.error("[recommendations] Error:", error);
+    return NextResponse.json({ cards: [], error: "Failed to fetch recommendations" });
   }
 }

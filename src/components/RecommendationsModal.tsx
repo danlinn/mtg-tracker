@@ -55,7 +55,11 @@ export default function RecommendationsModal({
       })
       .then((data) => {
         if (!cancelled) {
-          setCards(data.cards ?? []);
+          if (data.error) {
+            setError(true);
+          } else {
+            setCards(data.cards ?? []);
+          }
           setLoading(false);
         }
       })
