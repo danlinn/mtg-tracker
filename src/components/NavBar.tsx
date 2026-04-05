@@ -21,6 +21,11 @@ const themeLabels: Record<ThemeName, string> = {
   cyber: "Cyber",
   flame: "Flame",
   chris: "Chris",
+  phyrexia: "Phyrexia",
+  "stained-glass": "Stained Glass",
+  dungeon: "Dungeon",
+  "neon-dynasty": "Neon Dynasty",
+  "retro-frame": "Retro Frame",
 };
 
 export default function NavBar() {
