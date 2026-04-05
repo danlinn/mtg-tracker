@@ -1533,10 +1533,26 @@ body {
 
 [data-theme="dungeon"] body {
   font-family: 'Philosopher', Georgia, 'Times New Roman', serif;
-  background:
+  background-color: #2a2218;
+  background-image:
     radial-gradient(ellipse at 20% 10%, rgba(232,160,64,0.06) 0%, transparent 40%),
     radial-gradient(ellipse at 80% 10%, rgba(232,160,64,0.04) 0%, transparent 40%),
-    linear-gradient(180deg, #1a1410 0%, #120e0a 100%);
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px, transparent 28px,
+      rgba(0,0,0,0.3) 28px, rgba(0,0,0,0.3) 30px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 58px,
+      rgba(0,0,0,0.2) 58px, rgba(0,0,0,0.2) 60px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(40,32,22,1) 0px, rgba(40,32,22,1) 30px,
+      rgba(35,28,18,1) 30px, rgba(35,28,18,1) 60px
+    );
+  background-attachment: fixed;
 }
 
 [data-theme="dungeon"] h1,
