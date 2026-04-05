@@ -10,6 +10,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/decks", label: "Decks" },
   { href: "/games", label: "Games" },
+  { href: "/players", label: "Players" },
   { href: "/leaderboard", label: "Leaderboard" },
 ];
 

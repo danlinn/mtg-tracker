@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface LeaderboardEntry {
   id: string;
@@ -38,9 +39,10 @@ export default function LeaderboardPage() {
       ) : (
         <div className="space-y-2">
           {entries.map((entry, index) => (
-            <div
+            <Link
               key={entry.id}
-              className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 bg-white"
+              href={`/players/${entry.id}`}
+              className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm transition-all"
             >
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
@@ -69,7 +71,7 @@ export default function LeaderboardPage() {
                   {entry.winRate}% win rate
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
