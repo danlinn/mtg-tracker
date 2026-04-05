@@ -18,7 +18,7 @@ export async function GET() {
         },
       },
     },
-    orderBy: { playedAt: "desc" },
+    orderBy: [{ playedAt: "desc" }, { createdAt: "desc" }],
   });
 
   return NextResponse.json(games);
