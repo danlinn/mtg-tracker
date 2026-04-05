@@ -61,6 +61,7 @@ export default function DecksPage() {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<SortOption>("date");
+  const [sortAsc, setSortAsc] = useState(false);
   const [colorFilter, setColorFilter] = useState<Record<string, boolean>>({
     colorW: false, colorU: false, colorB: false, colorR: false, colorG: false,
   });
@@ -85,21 +86,22 @@ export default function DecksPage() {
     }
 
     // Sort
+    const dir = sortAsc ? 1 : -1;
     result = [...result].sort((a, b) => {
       switch (sort) {
         case "name":
-          return a.name.localeCompare(b.name);
+          return a.name.localeCompare(b.name) * dir;
         case "bracket":
-          return (a.bracket ?? 99) - (b.bracket ?? 99);
+          return ((a.bracket ?? 99) - (b.bracket ?? 99)) * dir;
         case "edhp":
-          return (b.edhp ?? -1) - (a.edhp ?? -1);
+          return ((b.edhp ?? -1) - (a.edhp ?? -1)) * dir;
         default:
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return (new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) * dir;
       }
     });
 
     return result;
-  }, [decks, sort, activeFilters, bracketFilter]);
+  }, [decks, sort, sortAsc, activeFilters, bracketFilter]);
 
   useEffect(() => {
     fetch("/api/decks?perPage=100")
@@ -200,6 +202,13 @@ export default function DecksPage() {
               <option value="bracket">Bracket</option>
               <option value="edhp">EDHP</option>
             </select>
+            <button
+              onClick={() => setSortAsc(!sortAsc)}
+              className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-900 hover:bg-gray-50 transition-colors"
+              title={sortAsc ? "Ascending" : "Descending"}
+            >
+              {sortAsc ? "↑" : "↓"}
+            </button>
           </div>
         </div>
       )}

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import ColorPips from "@/components/ColorPips";
 import CardGrid, { type DeckCard } from "@/components/CardGrid";
+import RecommendationsModal from "@/components/RecommendationsModal";
 
 interface PlayerCountStat {
   games: number;
@@ -42,6 +43,7 @@ export default function PlayerDeckPage() {
   const [error, setError] = useState("");
   const [deckCards, setDeckCards] = useState<DeckCard[] | null>(null);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [showRecs, setShowRecs] = useState(false);
 
   useEffect(() => {
     fetch(`/api/players/decks/${deckId}`)
@@ -178,6 +180,24 @@ export default function PlayerDeckPage() {
         </div>
       )}
 
+      {/* Action buttons */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={() => setShowRecs(true)}
+          className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Get Recommendations
+        </button>
+        <a
+          href={`https://edhrec.com/commanders/${deck.commander.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "")}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          View on EDHREC
+        </a>
+      </div>
+
       {/* Card grid */}
       {deckCards ? (
         <CardGrid cards={deckCards} totalPrice={totalPrice} />
@@ -189,6 +209,22 @@ export default function PlayerDeckPage() {
         <div className="text-center py-6 text-gray-400 text-sm">
           No decklist available.
         </div>
+      )}
+
+      {/* Recommendations modal */}
+      {showRecs && (
+        <RecommendationsModal
+          commander={deck.commander}
+          colors={[
+            ...(deck.colorW ? ["W"] : []),
+            ...(deck.colorU ? ["U"] : []),
+            ...(deck.colorB ? ["B"] : []),
+            ...(deck.colorR ? ["R"] : []),
+            ...(deck.colorG ? ["G"] : []),
+          ]}
+          existingCards={deckCards?.map((c) => c.name) ?? []}
+          onClose={() => setShowRecs(false)}
+        />
       )}
     </div>
   );
