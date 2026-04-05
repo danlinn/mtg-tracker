@@ -13,6 +13,7 @@ interface DeckStat {
   id: string;
   name: string;
   commander: string;
+  commander2: string | null;
   games: number;
   wins: number;
   winRate: number;
@@ -82,7 +83,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium text-gray-900">{deck.name}</div>
-                    <div className="text-sm text-gray-500">{deck.commander}</div>
+                    <div className="text-sm text-gray-500">{deck.commander}{deck.commander2 ? ` & ${deck.commander2}` : ""}</div>
                   </div>
                   <div className="text-right">
                     <div className="font-semibold text-gray-900">

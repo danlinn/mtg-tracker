@@ -55,12 +55,22 @@ export async function GET() {
       id: deck.id,
       name: deck.name,
       commander: deck.commander,
+      commander2: deck.commander2,
       games: totalEntries,
       wins: totalWins,
       winRate:
         totalEntries > 0 ? Math.round((totalWins / totalEntries) * 100) : 0,
       winRateByPlayerCount,
+      lastPlayedAt: deck.lastPlayedAt?.toISOString() ?? null,
     };
+  });
+
+  // Sort by last played (most recent first), never-played decks at the end
+  deckStats.sort((a, b) => {
+    if (!a.lastPlayedAt && !b.lastPlayedAt) return 0;
+    if (!a.lastPlayedAt) return 1;
+    if (!b.lastPlayedAt) return -1;
+    return new Date(b.lastPlayedAt).getTime() - new Date(a.lastPlayedAt).getTime();
   });
 
   return NextResponse.json({

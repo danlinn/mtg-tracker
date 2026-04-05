@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { name, commander, commanderImage, colors, bracket, edhp, decklist } = await req.json();
+  const { name, commander, commanderImage, commander2, commander2Image, colors, bracket, edhp, decklist } = await req.json();
 
   if (!name || !commander) {
     return NextResponse.json(
@@ -36,6 +36,8 @@ export async function POST(req: Request) {
       name,
       commander,
       commanderImage: commanderImage ?? null,
+      commander2: commander2?.trim() || null,
+      commander2Image: commander2Image ?? null,
       bracket: bracket != null ? Number(bracket) : null,
       edhp: edhp != null ? Number(edhp) : null,
       decklist: decklist ?? null,

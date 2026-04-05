@@ -19,6 +19,8 @@ export default function NewDeckPage() {
   const [name, setName] = useState("");
   const [commander, setCommander] = useState("");
   const [commanderImage, setCommanderImage] = useState<string | null>(null);
+  const [commander2, setCommander2] = useState("");
+  const [commander2Image, setCommander2Image] = useState<string | null>(null);
   const [colors, setColors] = useState<Record<string, boolean>>({
     W: false, U: false, B: false, R: false, G: false,
   });
@@ -45,13 +47,24 @@ export default function NewDeckPage() {
   function handleCardResolved(card: { name: string; image: string | null; colors: string[] } | null) {
     if (!card) return;
     setCommanderImage(card.image);
-    // Auto-set color identity from card
-    if (card.colors.length > 0) {
-      const newColors: Record<string, boolean> = { W: false, U: false, B: false, R: false, G: false };
-      card.colors.forEach((c) => {
-        if (COLOR_MAP[c]) newColors[COLOR_MAP[c]] = true;
+    mergeColors(card.colors);
+  }
+
+  function handleCard2Resolved(card: { name: string; image: string | null; colors: string[] } | null) {
+    if (!card) return;
+    setCommander2Image(card.image);
+    mergeColors(card.colors);
+  }
+
+  function mergeColors(cardColors: string[]) {
+    if (cardColors.length > 0) {
+      setColors((prev) => {
+        const updated = { ...prev };
+        cardColors.forEach((c) => {
+          if (COLOR_MAP[c]) updated[COLOR_MAP[c]] = true;
+        });
+        return updated;
       });
-      setColors(newColors);
     }
   }
 
@@ -64,7 +77,10 @@ export default function NewDeckPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name, commander, commanderImage, colors,
+        name, commander, commanderImage,
+        commander2: commander2.trim() || null,
+        commander2Image: commander2.trim() ? commander2Image : null,
+        colors,
         bracket: bracket ? Number(bracket) : null,
         edhp: edhp ? Number(edhp) : null,
         decklist: decklist.trim() || null,
@@ -119,6 +135,25 @@ export default function NewDeckPage() {
             <img
               src={commanderImage}
               alt={commander}
+              className="w-full rounded-lg shadow-md"
+            />
+          </div>
+        )}
+        <div>
+          <label htmlFor="commander2" className="block text-sm font-medium mb-1">
+            Partner / Second Commander
+          </label>
+          <CommanderSearch
+            value={commander2}
+            onChange={setCommander2}
+            onCardResolved={handleCard2Resolved}
+          />
+        </div>
+        {commander2Image && commander2.trim() && (
+          <div className="flex justify-center">
+            <img
+              src={commander2Image}
+              alt={commander2}
               className="w-full rounded-lg shadow-md"
             />
           </div>

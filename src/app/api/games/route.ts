@@ -49,9 +49,11 @@ export async function POST(req: Request) {
     );
   }
 
+  const gameDate = playedAt ? new Date(playedAt) : new Date();
+
   const game = await prisma.game.create({
     data: {
-      playedAt: playedAt ? new Date(playedAt) : new Date(),
+      playedAt: gameDate,
       notes: notes?.trim() || null,
       asterisk: !!asterisk,
       players: {
@@ -73,6 +75,17 @@ export async function POST(req: Request) {
       },
     },
   });
+
+  // Update lastPlayedAt on all decks used in this game
+  const deckIds = players.map((p: { deckId: string }) => p.deckId);
+  await Promise.all(
+    deckIds.map((deckId: string) =>
+      prisma.deck.update({
+        where: { id: deckId },
+        data: { lastPlayedAt: gameDate },
+      })
+    )
+  );
 
   return NextResponse.json(game);
 }

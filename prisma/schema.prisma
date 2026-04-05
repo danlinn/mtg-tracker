@@ -26,9 +26,12 @@ model Deck {
   name           String
   commander      String
   commanderImage String?
+  commander2      String?
+  commander2Image String?
   bracket        Int?
   edhp           Float?
   decklist       String?
+  lastPlayedAt DateTime?
   colorW    Boolean  @default(false)
   colorU    Boolean  @default(false)
   colorB    Boolean  @default(false)

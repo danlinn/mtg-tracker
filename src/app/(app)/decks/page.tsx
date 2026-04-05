@@ -9,6 +9,8 @@ interface Deck {
   name: string;
   commander: string;
   commanderImage: string | null;
+  commander2: string | null;
+  commander2Image: string | null;
   colorW: boolean;
   colorU: boolean;
   colorB: boolean;
@@ -216,7 +218,7 @@ export default function DecksPage() {
             >
               <div className="space-y-1 min-w-0 flex-1">
                 <div className="text-xl font-bold text-white" style={{ textShadow: "1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)" }}>{deck.name}</div>
-                <div className="text-sm font-semibold text-white" style={{ textShadow: "1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)" }}>{deck.commander}</div>
+                <div className="text-sm font-semibold text-white" style={{ textShadow: "1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)" }}>{deck.commander}{deck.commander2 ? ` & ${deck.commander2}` : ""}</div>
                 <ColorPips
                   colors={{
                     W: deck.colorW,

@@ -9,11 +9,15 @@ jest.mock("@/lib/auth-helpers", () => ({
 // Mock prisma
 const mockGameFindMany = jest.fn();
 const mockGameCreate = jest.fn();
+const mockDeckUpdate = jest.fn();
 jest.mock("@/lib/prisma", () => ({
   prisma: {
     game: {
       findMany: (...args: unknown[]) => mockGameFindMany(...args),
       create: (...args: unknown[]) => mockGameCreate(...args),
+    },
+    deck: {
+      update: (...args: unknown[]) => mockDeckUpdate(...args),
     },
   },
 }));

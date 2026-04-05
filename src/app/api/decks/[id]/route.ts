@@ -37,7 +37,7 @@ export async function PUT(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const { name, commander, commanderImage, colors, bracket, edhp, decklist } = await req.json();
+  const { name, commander, commanderImage, commander2, commander2Image, colors, bracket, edhp, decklist } = await req.json();
 
   const updated = await prisma.deck.update({
     where: { id },
@@ -45,6 +45,8 @@ export async function PUT(
       name: name ?? deck.name,
       commander: commander ?? deck.commander,
       commanderImage: commanderImage !== undefined ? commanderImage : deck.commanderImage,
+      commander2: commander2 !== undefined ? (commander2?.trim() || null) : deck.commander2,
+      commander2Image: commander2Image !== undefined ? commander2Image : deck.commander2Image,
       bracket: bracket !== undefined ? (bracket != null ? Number(bracket) : null) : deck.bracket,
       edhp: edhp !== undefined ? (edhp != null ? Number(edhp) : null) : deck.edhp,
       decklist: decklist !== undefined ? decklist : deck.decklist,
