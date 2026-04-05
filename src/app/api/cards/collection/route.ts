@@ -115,13 +115,16 @@ async function cacheCard(name: string, card: ScryfallCard): Promise<void> {
   }
 }
 
-async function fetchLatestPrinting(name: string): Promise<ScryfallCard | null> {
+async function fetchPricedPrinting(name: string): Promise<ScryfallCard | null> {
   try {
+    // Search for a printing that has a USD price, newest first
+    const query = `!"${name}" usd>0`;
     const res = await fetch(
-      `${SCRYFALL_BASE}/cards/named?fuzzy=${encodeURIComponent(name)}`,
+      `${SCRYFALL_BASE}/cards/search?q=${encodeURIComponent(query)}&order=released&dir=desc&unique=prints`,
     );
     if (!res.ok) return null;
-    return await res.json();
+    const data = await res.json();
+    return data.data?.[0] ?? null;
   } catch {
     return null;
   }
@@ -214,7 +217,7 @@ export async function POST(req: Request) {
 
   // Batch retry (limit to 10 to avoid timeout)
   for (const name of pricelessNames.slice(0, 10)) {
-    const latest = await fetchLatestPrinting(name);
+    const latest = await fetchPricedPrinting(name);
     if (latest && (latest.prices?.usd || latest.prices?.usd_foil)) {
       cardMap.set(name.toLowerCase(), latest);
       cacheCard(name, latest);

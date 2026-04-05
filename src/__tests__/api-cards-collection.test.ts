@@ -231,10 +231,10 @@ describe("POST /api/cards/collection", () => {
     expect(res.status).toBe(400);
   });
 
-  it("retries priceless cards with named search", async () => {
+  it("retries priceless cards with search for priced printing", async () => {
     const POST = await getHandler();
     // First call: collection returns card without price
-    // Second call: named search returns card with price
+    // Second call: search returns priced printing
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
@@ -245,10 +245,12 @@ describe("POST /api/cards/collection", () => {
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          name: "Promo Card",
-          prices: { usd: "5.00", usd_foil: null },
-          image_uris: { small: "http://img/latest" },
-          id: "p1-latest",
+          data: [{
+            name: "Promo Card",
+            prices: { usd: "5.00", usd_foil: null },
+            image_uris: { small: "http://img/latest" },
+            id: "p1-latest",
+          }],
         }),
       });
 
