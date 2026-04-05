@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
+import { getWinLabel } from "@/lib/win-labels";
 
 export async function GET(req: Request) {
   const userId = await getCurrentUserId();
@@ -14,7 +15,6 @@ export async function GET(req: Request) {
     ? Number(searchParams.get("perPage"))
     : 20;
 
-  // Get all users who have played at least one game, with aggregated stats
   const users = await prisma.user.findMany({
     where: { gameEntries: { some: {} } },
     select: {
@@ -23,22 +23,50 @@ export async function GET(req: Request) {
       _count: { select: { gameEntries: true } },
       gameEntries: {
         where: { isWinner: true },
-        select: { id: true },
+        select: {
+          id: true,
+          game: {
+            select: {
+              players: {
+                select: {
+                  isWinner: true,
+                  deck: { select: { bracket: true, edhp: true } },
+                },
+              },
+            },
+          },
+        },
       },
     },
   });
 
   const leaderboard = users
-    .map((user) => ({
-      id: user.id,
-      name: user.name,
-      games: user._count.gameEntries,
-      wins: user.gameEntries.length,
-      winRate:
-        user._count.gameEntries > 0
-          ? Math.round((user.gameEntries.length / user._count.gameEntries) * 100)
-          : 0,
-    }))
+    .map((user) => {
+      let niceWins = 0;
+      let bigWins = 0;
+      let easyWins = 0;
+
+      for (const entry of user.gameEntries) {
+        const label = getWinLabel(entry.game.players);
+        if (label === "nice") niceWins++;
+        else if (label === "big") bigWins++;
+        else if (label === "easy") easyWins++;
+      }
+
+      return {
+        id: user.id,
+        name: user.name,
+        games: user._count.gameEntries,
+        wins: user.gameEntries.length,
+        winRate:
+          user._count.gameEntries > 0
+            ? Math.round((user.gameEntries.length / user._count.gameEntries) * 100)
+            : 0,
+        niceWins,
+        bigWins,
+        easyWins,
+      };
+    })
     .sort((a, b) => b.wins - a.wins || b.winRate - a.winRate);
 
   const total = leaderboard.length;

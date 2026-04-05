@@ -9,6 +9,9 @@ interface LeaderboardEntry {
   games: number;
   wins: number;
   winRate: number;
+  niceWins: number;
+  bigWins: number;
+  easyWins: number;
 }
 
 export default function LeaderboardPage() {
@@ -71,6 +74,19 @@ export default function LeaderboardPage() {
                 <div className="text-sm text-gray-500">
                   {entry.games} games played
                 </div>
+                {(entry.niceWins > 0 || entry.bigWins > 0 || entry.easyWins > 0) && (
+                  <div className="flex gap-2 mt-1">
+                    {entry.bigWins > 0 && (
+                      <span className="text-xs font-bold text-yellow-500">{entry.bigWins} Big</span>
+                    )}
+                    {entry.niceWins > 0 && (
+                      <span className="text-xs font-bold text-blue-500">{entry.niceWins} Nice</span>
+                    )}
+                    {entry.easyWins > 0 && (
+                      <span className="text-xs text-gray-400">{entry.easyWins} Easy</span>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="text-right">
                 <div className="font-semibold text-gray-900">

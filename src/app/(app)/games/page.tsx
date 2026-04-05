@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getWinLabel as getWinLabelRaw } from "@/lib/win-labels";
 
 interface GamePlayer {
   user: { id: string; name: string };
@@ -17,43 +18,15 @@ interface Game {
   players: GamePlayer[];
 }
 
+const WIN_LABEL_DISPLAY = {
+  nice: { text: "Nice Win", color: "text-blue-500" },
+  big: { text: "Big Win!", color: "text-yellow-500" },
+  easy: { text: "Easy Win", color: "text-gray-400" },
+} as const;
+
 function getWinLabel(game: Game): { text: string; color: string } | null {
-  const winner = game.players.find((p) => p.isWinner);
-  if (!winner) return null;
-
-  const losers = game.players.filter((p) => !p.isWinner);
-  const winBracket = winner.deck.bracket;
-  const winEdhp = winner.deck.edhp;
-
-  // Highest loser values
-  const maxLoserBracket = losers.reduce<number | null>((max, l) => {
-    if (l.deck.bracket == null) return max;
-    return max == null ? l.deck.bracket : Math.max(max, l.deck.bracket);
-  }, null);
-  const maxLoserEdhp = losers.reduce<number | null>((max, l) => {
-    if (l.deck.edhp == null) return max;
-    return max == null ? l.deck.edhp : Math.max(max, l.deck.edhp);
-  }, null);
-
-  const bracketDiff = winBracket != null && maxLoserBracket != null ? maxLoserBracket - winBracket : null;
-  const edhpDiff = winEdhp != null && maxLoserEdhp != null ? maxLoserEdhp - winEdhp : null;
-
-  // Easy win: winner is 2+ brackets above OR 3.0+ edhp above highest loser
-  if ((bracketDiff != null && bracketDiff <= -2) || (edhpDiff != null && edhpDiff <= -3.0)) {
-    return { text: "Easy Win", color: "text-gray-400" };
-  }
-
-  // Big win: winner is 2+ brackets below OR 3.0+ edhp below a loser
-  if ((bracketDiff != null && bracketDiff >= 2) || (edhpDiff != null && edhpDiff >= 3.0)) {
-    return { text: "Big Win!", color: "text-yellow-500" };
-  }
-
-  // Nice win: any bracket difference OR 1.5+ edhp difference (winner lower)
-  if ((bracketDiff != null && bracketDiff >= 1) || (edhpDiff != null && edhpDiff >= 1.5)) {
-    return { text: "Nice Win", color: "text-blue-500" };
-  }
-
-  return null;
+  const label = getWinLabelRaw(game.players);
+  return label ? WIN_LABEL_DISPLAY[label] : null;
 }
 
 export default function GamesPage() {
