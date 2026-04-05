@@ -3,6 +3,17 @@ import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
 
+const mockCacheFindUnique = jest.fn();
+const mockCacheUpsert = jest.fn();
+jest.mock("@/lib/prisma", () => ({
+  prisma: {
+    cardCache: {
+      findUnique: (...args: unknown[]) => mockCacheFindUnique(...args),
+      upsert: (...args: unknown[]) => mockCacheUpsert(...args),
+    },
+  },
+}));
+
 async function getHandler() {
   const mod = await import("@/app/api/cards/collection/route");
   return mod.POST;
@@ -19,6 +30,8 @@ function makeRequest(body: Record<string, unknown>) {
 describe("POST /api/cards/collection", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCacheFindUnique.mockResolvedValue(null); // no cache by default
+    mockCacheUpsert.mockResolvedValue({});
   });
 
   it("returns 400 with no decklist", async () => {
@@ -159,10 +172,12 @@ describe("POST /api/cards/collection", () => {
     expect(data.totalPrice).toBe(3.0);
 
     // Verify identifiers sent to Scryfall don't include set codes
-    const fetchCall = mockFetch.mock.calls[0];
-    const body = JSON.parse(fetchCall[1].body);
-    expect(body.identifiers[0].name).toBe("Sol Ring");
-    expect(body.identifiers[1].name).toBe("Lightning Bolt");
+    const collectionCall = mockFetch.mock.calls.find(
+      (c: unknown[]) => typeof c[0] === "string" && (c[0] as string).includes("/collection")
+    );
+    const reqBody = JSON.parse(((collectionCall as unknown[])[1] as { body: string }).body);
+    expect(reqBody.identifiers[0].name).toBe("sol ring");
+    expect(reqBody.identifiers[1].name).toBe("lightning bolt");
   });
 
   it("strips set codes in bracket format", async () => {
@@ -214,5 +229,75 @@ describe("POST /api/cards/collection", () => {
     });
     const res = await POST(req);
     expect(res.status).toBe(400);
+  });
+
+  it("retries priceless cards with named search", async () => {
+    const POST = await getHandler();
+    // First call: collection returns card without price
+    // Second call: named search returns card with price
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [{ name: "Promo Card", prices: { usd: null, usd_foil: null }, image_uris: { small: "http://img" }, id: "p1" }],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          name: "Promo Card",
+          prices: { usd: "5.00", usd_foil: null },
+          image_uris: { small: "http://img/latest" },
+          id: "p1-latest",
+        }),
+      });
+
+    const res = await POST(makeRequest({ decklist: "1 Promo Card" }));
+    const data = await res.json();
+    expect(data.cards[0].priceUsd).toBe(5.0);
+    expect(data.totalPrice).toBe(5.0);
+  });
+
+  it("uses cached card data", async () => {
+    const POST = await getHandler();
+    const cachedCard = {
+      name: "Sol Ring",
+      prices: { usd: "2.00" },
+      image_uris: { small: "http://cached/img" },
+      id: "cached-id",
+    };
+    mockCacheFindUnique.mockResolvedValue({
+      name: "sol ring",
+      data: JSON.stringify(cachedCard),
+      fetchedAt: new Date(), // fresh
+    });
+
+    const res = await POST(makeRequest({ decklist: "1 Sol Ring" }));
+    const data = await res.json();
+    expect(data.cards[0].found).toBe(true);
+    expect(data.cards[0].priceUsd).toBe(2.0);
+    expect(data.cards[0].imageSmall).toBe("http://cached/img");
+    // Should NOT have called Scryfall
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("skips stale cache and fetches fresh", async () => {
+    const POST = await getHandler();
+    mockCacheFindUnique.mockResolvedValue({
+      name: "sol ring",
+      data: JSON.stringify({ name: "Sol Ring", prices: { usd: "1.00" } }),
+      fetchedAt: new Date(Date.now() - 25 * 60 * 60 * 1000), // 25h ago = stale
+    });
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{ name: "Sol Ring", prices: { usd: "2.50" }, image_uris: { small: "http://fresh" }, id: "new" }],
+      }),
+    });
+
+    const res = await POST(makeRequest({ decklist: "1 Sol Ring" }));
+    const data = await res.json();
+    expect(data.cards[0].priceUsd).toBe(2.5);
+    expect(mockFetch).toHaveBeenCalled();
   });
 });

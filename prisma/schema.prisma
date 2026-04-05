@@ -59,6 +59,12 @@ model Game {
   players GamePlayer[]
 }
 
+model CardCache {
+  name      String   @id
+  data      String   // JSON blob
+  fetchedAt DateTime @default(now())
+}
+
 model GamePlayer {
   id       String  @id @default(cuid())
   isWinner Boolean @default(false)

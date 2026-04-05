@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 const SCRYFALL_BASE = "https://api.scryfall.com";
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 interface ScryfallCard {
   name: string;
@@ -30,8 +32,6 @@ interface ScryfallCard {
 }
 
 function stripSetCode(name: string): string {
-  // Remove set code + collector number: "Sol Ring (C20) 225" -> "Sol Ring"
-  // Also handles "Sol Ring (C20)" and "Sol Ring [C20] 225"
   return name.replace(/\s*[\(\[]\w+[\)\]]\s*\d*\s*$/, "").trim();
 }
 
@@ -53,6 +53,80 @@ function getImageUris(card: ScryfallCard) {
   return card.image_uris ?? card.card_faces?.[0]?.image_uris;
 }
 
+function cardToResult(card: ScryfallCard | null, entry: { quantity: number; name: string }) {
+  const frontUris = card ? getImageUris(card) : undefined;
+  const backUris = card?.card_faces?.[1]?.image_uris;
+  const priceUsd = card?.prices?.usd ? parseFloat(card.prices.usd) : null;
+  const priceFoil = card?.prices?.usd_foil ? parseFloat(card.prices.usd_foil) : null;
+  const frontFace = card?.card_faces?.[0];
+  const backFace = card?.card_faces?.[1];
+
+  return {
+    quantity: entry.quantity,
+    name: entry.name,
+    found: !!card,
+    manaCost: card?.mana_cost ?? frontFace?.mana_cost ?? null,
+    cmc: card?.cmc ?? null,
+    typeLine: card?.type_line ?? null,
+    oracleText: card?.oracle_text ?? frontFace?.oracle_text ?? null,
+    power: card?.power ?? frontFace?.power ?? null,
+    toughness: card?.toughness ?? frontFace?.toughness ?? null,
+    rarity: card?.rarity ?? null,
+    setName: card?.set_name ?? null,
+    imageSmall: frontUris?.small ?? null,
+    imageNormal: frontUris?.normal ?? null,
+    backImageSmall: backUris?.small ?? null,
+    backImageNormal: backUris?.normal ?? null,
+    backName: backFace?.name ?? null,
+    backOracleText: backFace?.oracle_text ?? null,
+    backTypeLine: backFace?.type_line ?? null,
+    backPower: backFace?.power ?? null,
+    backToughness: backFace?.toughness ?? null,
+    priceUsd,
+    priceFoil,
+    scryfallUri: card?.scryfall_uri ?? null,
+    scryfallId: card?.id ?? null,
+  };
+}
+
+async function getCachedCard(name: string): Promise<ScryfallCard | null> {
+  try {
+    const cached = await prisma.cardCache.findUnique({
+      where: { name: name.toLowerCase() },
+    });
+    if (cached && Date.now() - cached.fetchedAt.getTime() < CACHE_TTL_MS) {
+      return JSON.parse(cached.data);
+    }
+  } catch {
+    // Cache miss
+  }
+  return null;
+}
+
+async function cacheCard(name: string, card: ScryfallCard): Promise<void> {
+  try {
+    await prisma.cardCache.upsert({
+      where: { name: name.toLowerCase() },
+      update: { data: JSON.stringify(card), fetchedAt: new Date() },
+      create: { name: name.toLowerCase(), data: JSON.stringify(card) },
+    });
+  } catch {
+    // Non-critical
+  }
+}
+
+async function fetchLatestPrinting(name: string): Promise<ScryfallCard | null> {
+  try {
+    const res = await fetch(
+      `${SCRYFALL_BASE}/cards/named?fuzzy=${encodeURIComponent(name)}`,
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: Request) {
   let body;
   try {
@@ -71,87 +145,96 @@ export async function POST(req: Request) {
     return NextResponse.json({ cards: [], totalPrice: 0 });
   }
 
-  // Scryfall collection endpoint accepts up to 75 cards per request
-  const identifiers = entries.map((e) => ({ name: e.name }));
-  const chunks: { name: string }[][] = [];
-  for (let i = 0; i < identifiers.length; i += 75) {
-    chunks.push(identifiers.slice(i, i + 75));
-  }
-
-  const allCards: ScryfallCard[] = [];
-  for (const chunk of chunks) {
-    try {
-      const res = await fetch(`${SCRYFALL_BASE}/cards/collection`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifiers: chunk }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        allCards.push(...(data.data ?? []));
-      }
-    } catch {
-      // Skip failed chunks
-    }
-    // Scryfall asks for 50-100ms between requests
-    if (chunks.length > 1) {
-      await new Promise((r) => setTimeout(r, 100));
-    }
-  }
-
-  // Map cards by full name AND front face name for DFC matching
+  // Check cache first
+  const uniqueNames = [...new Set(entries.map((e) => e.name.toLowerCase()))];
   const cardMap = new Map<string, ScryfallCard>();
-  for (const card of allCards) {
-    cardMap.set(card.name.toLowerCase(), card);
-    // Also map by front face name (before //)
-    if (card.name.includes("//")) {
-      const frontName = card.name.split("//")[0].trim().toLowerCase();
-      if (!cardMap.has(frontName)) {
-        cardMap.set(frontName, card);
+  const uncachedNames: string[] = [];
+
+  for (const name of uniqueNames) {
+    const cached = await getCachedCard(name);
+    if (cached) {
+      cardMap.set(name, cached);
+      // Also map front face name for DFCs
+      if (cached.name.includes("//")) {
+        const frontName = cached.name.split("//")[0].trim().toLowerCase();
+        if (!cardMap.has(frontName)) cardMap.set(frontName, cached);
+      }
+    } else {
+      uncachedNames.push(name);
+    }
+  }
+
+  // Fetch uncached cards from Scryfall collection endpoint
+  if (uncachedNames.length > 0) {
+    const identifiers = uncachedNames.map((n) => ({ name: n }));
+    const chunks: { name: string }[][] = [];
+    for (let i = 0; i < identifiers.length; i += 75) {
+      chunks.push(identifiers.slice(i, i + 75));
+    }
+
+    for (const chunk of chunks) {
+      try {
+        const res = await fetch(`${SCRYFALL_BASE}/cards/collection`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifiers: chunk }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          for (const card of (data.data ?? []) as ScryfallCard[]) {
+            cardMap.set(card.name.toLowerCase(), card);
+            if (card.name.includes("//")) {
+              const frontName = card.name.split("//")[0].trim().toLowerCase();
+              if (!cardMap.has(frontName)) cardMap.set(frontName, card);
+            }
+            // Cache it
+            cacheCard(card.name, card);
+            if (card.name.includes("//")) {
+              cacheCard(card.name.split("//")[0].trim(), card);
+            }
+          }
+        }
+      } catch {
+        // Skip
+      }
+      if (chunks.length > 1) {
+        await new Promise((r) => setTimeout(r, 100));
       }
     }
   }
 
+  // Retry priceless cards with named search for latest printing
+  const pricelessNames: string[] = [];
+  for (const entry of entries) {
+    const card = cardMap.get(entry.name.toLowerCase());
+    if (card && !card.prices?.usd && !card.prices?.usd_foil) {
+      pricelessNames.push(entry.name);
+    }
+  }
+
+  // Batch retry (limit to 10 to avoid timeout)
+  for (const name of pricelessNames.slice(0, 10)) {
+    const latest = await fetchLatestPrinting(name);
+    if (latest && (latest.prices?.usd || latest.prices?.usd_foil)) {
+      cardMap.set(name.toLowerCase(), latest);
+      cacheCard(name, latest);
+      if (latest.name.includes("//")) {
+        const frontName = latest.name.split("//")[0].trim().toLowerCase();
+        cardMap.set(frontName, latest);
+        cacheCard(frontName, latest);
+      }
+    }
+    await new Promise((r) => setTimeout(r, 75));
+  }
+
+  // Build results
   let totalPrice = 0;
   const cards = entries.map((entry) => {
-    const card = cardMap.get(entry.name.toLowerCase());
-    const frontUris = card ? getImageUris(card) : undefined;
-    const backUris = card?.card_faces?.[1]?.image_uris;
-    const priceUsd = card?.prices?.usd ? parseFloat(card.prices.usd) : null;
-    const priceFoil = card?.prices?.usd_foil ? parseFloat(card.prices.usd_foil) : null;
-    const unitPrice = priceUsd ?? priceFoil ?? null;
+    const card = cardMap.get(entry.name.toLowerCase()) ?? null;
+    const result = cardToResult(card, entry);
+    const unitPrice = result.priceUsd ?? result.priceFoil ?? null;
     if (unitPrice) totalPrice += unitPrice * entry.quantity;
-
-    // For DFCs, use front face data; provide back face images
-    const frontFace = card?.card_faces?.[0];
-    const backFace = card?.card_faces?.[1];
-
-    return {
-      quantity: entry.quantity,
-      name: entry.name,
-      found: !!card,
-      manaCost: card?.mana_cost ?? frontFace?.mana_cost ?? null,
-      cmc: card?.cmc ?? null,
-      typeLine: card?.type_line ?? null,
-      oracleText: card?.oracle_text ?? frontFace?.oracle_text ?? null,
-      power: card?.power ?? frontFace?.power ?? null,
-      toughness: card?.toughness ?? frontFace?.toughness ?? null,
-      rarity: card?.rarity ?? null,
-      setName: card?.set_name ?? null,
-      imageSmall: frontUris?.small ?? null,
-      imageNormal: frontUris?.normal ?? null,
-      backImageSmall: backUris?.small ?? null,
-      backImageNormal: backUris?.normal ?? null,
-      backName: backFace?.name ?? null,
-      backOracleText: backFace?.oracle_text ?? null,
-      backTypeLine: backFace?.type_line ?? null,
-      backPower: backFace?.power ?? null,
-      backToughness: backFace?.toughness ?? null,
-      priceUsd: priceUsd,
-      priceFoil: priceFoil,
-      scryfallUri: card?.scryfall_uri ?? null,
-      scryfallId: card?.id ?? null,
-    };
+    return result;
   });
 
   return NextResponse.json({
