@@ -20,15 +20,17 @@ export default function PlayersPage() {
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
     fetch(`/api/leaderboard?page=${page}&perPage=${perPage}`)
       .then((r) => r.json())
       .then((data) => {
+        if (cancelled) return;
         setPlayers(data.entries);
         setTotalPages(data.totalPages);
         setTotal(data.total);
         setLoading(false);
       });
+    return () => { cancelled = true; };
   }, [page, perPage]);
 
   if (loading) {

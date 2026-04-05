@@ -65,15 +65,17 @@ export default function GamesPage() {
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
     fetch(`/api/games?page=${page}&perPage=${perPage}`)
       .then((r) => r.json())
       .then((data) => {
+        if (cancelled) return;
         setGames(data.games);
         setTotalPages(data.totalPages);
         setTotal(data.total);
         setLoading(false);
       });
+    return () => { cancelled = true; };
   }, [page, perPage]);
 
   if (loading) {
