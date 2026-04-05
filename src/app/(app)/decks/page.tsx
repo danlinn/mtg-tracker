@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ColorPips from "@/components/ColorPips";
 
@@ -54,6 +55,7 @@ function deckGradient(deck: Deck): React.CSSProperties {
 }
 
 export default function DecksPage() {
+  const router = useRouter();
   const { data: session } = useSession();
   const userId = (session?.user as { id?: string })?.id;
   const [decks, setDecks] = useState<Deck[]>([]);
@@ -224,7 +226,8 @@ export default function DecksPage() {
             return (
             <div
               key={deck.id}
-              className="flex items-center justify-between p-4 rounded-lg border border-gray-200"
+              onClick={() => userId && router.push(`/players/${userId}/decks/${deck.id}`)}
+              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
               style={deckGradient(deck)}
             >
               <div className="space-y-1 min-w-0 flex-1">
@@ -253,15 +256,7 @@ export default function DecksPage() {
                     )}
                   </div>
                 )}
-                <div className="flex gap-3 pt-1">
-                  {userId && (
-                    <Link
-                      href={`/players/${userId}/decks/${deck.id}`}
-                      className={`text-xs font-medium ${whiteOnly ? "text-blue-800 hover:text-blue-950" : "text-blue-600 hover:text-blue-800"}`}
-                    >
-                      View
-                    </Link>
-                  )}
+                <div className="flex gap-3 pt-1" onClick={(e) => e.stopPropagation()}>
                   <Link
                     href={`/decks/${deck.id}/edit`}
                     className={`text-xs font-medium ${whiteOnly ? "text-blue-800 hover:text-blue-950" : "text-blue-600 hover:text-blue-800"}`}
