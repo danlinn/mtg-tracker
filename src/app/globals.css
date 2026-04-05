@@ -1433,6 +1433,8 @@ body {
 }
 
 /* Pattern 1: Ruby & Sapphire diagonal split */
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+1).rounded-lg.border::before,
+[data-theme="stained-glass"] .space-y-3 > :nth-child(4n+1).rounded-lg.border::before,
 [data-theme="stained-glass"] .space-y-2 > :nth-child(4n+1) > .rounded-lg.border::before,
 [data-theme="stained-glass"] .grid > :nth-child(4n+1)::before {
   background:
@@ -1442,6 +1444,8 @@ body {
 }
 
 /* Pattern 2: Emerald & Gold triangles */
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+2).rounded-lg.border::before,
+[data-theme="stained-glass"] .space-y-3 > :nth-child(4n+2).rounded-lg.border::before,
 [data-theme="stained-glass"] .space-y-2 > :nth-child(4n+2) > .rounded-lg.border::before,
 [data-theme="stained-glass"] .grid > :nth-child(4n+2)::before {
   background:
@@ -1451,6 +1455,8 @@ body {
 }
 
 /* Pattern 3: Amethyst & Ruby four triangles */
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+3).rounded-lg.border::before,
+[data-theme="stained-glass"] .space-y-3 > :nth-child(4n+3).rounded-lg.border::before,
 [data-theme="stained-glass"] .space-y-2 > :nth-child(4n+3) > .rounded-lg.border::before,
 [data-theme="stained-glass"] .grid > :nth-child(4n+3)::before {
   background:
@@ -1460,6 +1466,8 @@ body {
 }
 
 /* Pattern 4: Sapphire & Emerald reverse diagonal */
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+4).rounded-lg.border::before,
+[data-theme="stained-glass"] .space-y-3 > :nth-child(4n+4).rounded-lg.border::before,
 [data-theme="stained-glass"] .space-y-2 > :nth-child(4n+4) > .rounded-lg.border::before,
 [data-theme="stained-glass"] .grid > :nth-child(4n+4)::before {
   background:
