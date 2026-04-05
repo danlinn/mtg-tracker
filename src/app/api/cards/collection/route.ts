@@ -120,10 +120,10 @@ async function cacheCard(name: string, card: ScryfallCard): Promise<void> {
 
 async function fetchPricedPrinting(name: string): Promise<ScryfallCard | null> {
   try {
-    // Search for a printing that has a USD price, newest first
+    // Search for the cheapest printing that has a USD price
     const query = `!"${name}" usd>0`;
     const res = await fetch(
-      `${SCRYFALL_BASE}/cards/search?q=${encodeURIComponent(query)}&order=released&dir=desc&unique=prints`,
+      `${SCRYFALL_BASE}/cards/search?q=${encodeURIComponent(query)}&order=usd&dir=asc&unique=prints`,
     );
     if (!res.ok) return null;
     const data = await res.json();
