@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import ColorPips from "@/components/ColorPips";
 
 interface Deck {
@@ -53,6 +54,8 @@ function deckGradient(deck: Deck): React.CSSProperties {
 }
 
 export default function DecksPage() {
+  const { data: session } = useSession();
+  const userId = (session?.user as { id?: string })?.id;
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<SortOption>("date");
@@ -251,6 +254,14 @@ export default function DecksPage() {
                   </div>
                 )}
                 <div className="flex gap-3 pt-1">
+                  {userId && (
+                    <Link
+                      href={`/players/${userId}/decks/${deck.id}`}
+                      className={`text-xs font-medium ${whiteOnly ? "text-blue-800 hover:text-blue-950" : "text-blue-600 hover:text-blue-800"}`}
+                    >
+                      View
+                    </Link>
+                  )}
                   <Link
                     href={`/decks/${deck.id}/edit`}
                     className={`text-xs font-medium ${whiteOnly ? "text-blue-800 hover:text-blue-950" : "text-blue-600 hover:text-blue-800"}`}

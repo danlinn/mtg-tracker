@@ -93,19 +93,19 @@ export default function PlayerDeckPage() {
       </div>
 
       {/* Commander images */}
-      <div className="flex gap-4 justify-center">
+      <div className="flex gap-3 justify-center">
         {deck.commanderImage && (
           <img
             src={deck.commanderImage}
             alt={deck.commander}
-            className="w-full max-w-xs rounded-lg shadow-md"
+            className={`rounded-lg shadow-md ${deck.commander2Image ? "w-1/2 max-w-[200px]" : "w-full max-w-xs"}`}
           />
         )}
         {deck.commander2Image && deck.commander2 && (
           <img
             src={deck.commander2Image}
             alt={deck.commander2}
-            className="w-full max-w-xs rounded-lg shadow-md"
+            className="w-1/2 max-w-[200px] rounded-lg shadow-md"
           />
         )}
       </div>
