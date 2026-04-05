@@ -21,6 +21,12 @@ interface ScryfallCard {
   id?: string;
 }
 
+function stripSetCode(name: string): string {
+  // Remove set code + collector number: "Sol Ring (C20) 225" -> "Sol Ring"
+  // Also handles "Sol Ring (C20)" and "Sol Ring [C20] 225"
+  return name.replace(/\s*[\(\[]\w+[\)\]]\s*\d*\s*$/, "").trim();
+}
+
 function parseDecklist(decklist: string): { quantity: number; name: string }[] {
   return decklist
     .split("\n")
@@ -29,9 +35,9 @@ function parseDecklist(decklist: string): { quantity: number; name: string }[] {
     .map((line) => {
       const match = line.match(/^(\d+)\s+(.+)$/);
       if (match) {
-        return { quantity: parseInt(match[1]), name: match[2].trim() };
+        return { quantity: parseInt(match[1]), name: stripSetCode(match[2]) };
       }
-      return { quantity: 1, name: line };
+      return { quantity: 1, name: stripSetCode(line) };
     });
 }
 

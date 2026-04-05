@@ -1,0 +1,524 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - link "MTG Tracker" [ref=e5] [cursor=pointer]:
+        - /url: /dashboard
+      - generic [ref=e6]:
+        - link "Dashboard" [ref=e7] [cursor=pointer]:
+          - /url: /dashboard
+        - link "Decks" [ref=e8] [cursor=pointer]:
+          - /url: /decks
+        - link "Games" [ref=e9] [cursor=pointer]:
+          - /url: /games
+        - link "Players" [ref=e10] [cursor=pointer]:
+          - /url: /players
+        - link "Leaderboard" [ref=e11] [cursor=pointer]:
+          - /url: /leaderboard
+        - combobox [ref=e12]:
+          - option "Default" [selected]
+          - option "Old School"
+          - option "Synth"
+          - option "Cyber"
+          - option "Flame"
+          - option "Chris"
+        - button "Sign out" [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e45]:
+      - generic [ref=e46]:
+        - link "← Players" [ref=e47] [cursor=pointer]:
+          - /url: /players
+        - generic [ref=e48]: /
+        - generic [ref=e49]: Dan Linn
+      - heading "Dan Linn" [level=1] [ref=e50]
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - generic [ref=e53]: "7"
+          - generic [ref=e54]: Games
+        - generic [ref=e55]:
+          - generic [ref=e56]: "4"
+          - generic [ref=e57]: Wins
+        - generic [ref=e58]:
+          - generic [ref=e59]: "3"
+          - generic [ref=e60]: Losses
+        - generic [ref=e61]:
+          - generic [ref=e62]: 57%
+          - generic [ref=e63]: Win Rate
+      - generic [ref=e64]:
+        - heading "Decks" [level=2] [ref=e65]
+        - generic [ref=e66]:
+          - link "Leonardo, the Balance Turtle Power Leonardo, the Balance & Michelangelo, the Heart 2W - 1L 67% win rate W U B R G Bracket 1 EDHP 4.68 2-player 67% (3) 3-player — 4-player —" [ref=e67] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnkt0mwd000004jpj88zwv6y
+            - generic [ref=e68]:
+              - img "Leonardo, the Balance" [ref=e69]
+              - generic [ref=e70]:
+                - generic [ref=e71]:
+                  - generic [ref=e72]:
+                    - generic [ref=e73]: Turtle Power
+                    - generic [ref=e74]: Leonardo, the Balance & Michelangelo, the Heart
+                  - generic [ref=e75]:
+                    - generic [ref=e76]: 2W - 1L
+                    - generic [ref=e77]: 67% win rate
+                - generic [ref=e78]:
+                  - generic [ref=e79]:
+                    - generic [ref=e80]: W
+                    - generic [ref=e81]: U
+                    - generic [ref=e82]: B
+                    - generic [ref=e83]: R
+                    - generic [ref=e84]: G
+                  - generic [ref=e85]: Bracket 1
+                  - generic [ref=e86]: EDHP 4.68
+            - generic [ref=e87]:
+              - generic [ref=e88]:
+                - generic [ref=e89]: 2-player
+                - generic [ref=e90]:
+                  - text: 67%
+                  - generic [ref=e91]: (3)
+              - generic [ref=e92]:
+                - generic [ref=e93]: 3-player
+                - generic [ref=e94]: —
+              - generic [ref=e95]:
+                - generic [ref=e96]: 4-player
+                - generic [ref=e97]: —
+          - link "Ygra, Eater of All Feeeed Meeee Ygra, Eater of All 0W - 1L 0% win rate B G Bracket 4 EDHP 7.42 2-player 0% (1) 3-player — 4-player —" [ref=e98] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnktni4e000804jvmtv77lqh
+            - generic [ref=e99]:
+              - img "Ygra, Eater of All" [ref=e100]
+              - generic [ref=e101]:
+                - generic [ref=e102]:
+                  - generic [ref=e103]:
+                    - generic [ref=e104]: Feeeed Meeee
+                    - generic [ref=e105]: Ygra, Eater of All
+                  - generic [ref=e106]:
+                    - generic [ref=e107]: 0W - 1L
+                    - generic [ref=e108]: 0% win rate
+                - generic [ref=e109]:
+                  - generic [ref=e110]:
+                    - generic [ref=e111]: B
+                    - generic [ref=e112]: G
+                  - generic [ref=e113]: Bracket 4
+                  - generic [ref=e114]: EDHP 7.42
+            - generic [ref=e115]:
+              - generic [ref=e116]:
+                - generic [ref=e117]: 2-player
+                - generic [ref=e118]:
+                  - text: 0%
+                  - generic [ref=e119]: (1)
+              - generic [ref=e120]:
+                - generic [ref=e121]: 3-player
+                - generic [ref=e122]: —
+              - generic [ref=e123]:
+                - generic [ref=e124]: 4-player
+                - generic [ref=e125]: —
+          - link "Edgar Markov Vamps Edgar Markov 2W - 0L 100% win rate W B R Bracket 3 EDHP 6.84 2-player 100% (2) 3-player — 4-player —" [ref=e126] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnkt1zix000004l2klevhbti
+            - generic [ref=e127]:
+              - img "Edgar Markov" [ref=e128]
+              - generic [ref=e129]:
+                - generic [ref=e130]:
+                  - generic [ref=e131]:
+                    - generic [ref=e132]: Vamps
+                    - generic [ref=e133]: Edgar Markov
+                  - generic [ref=e134]:
+                    - generic [ref=e135]: 2W - 0L
+                    - generic [ref=e136]: 100% win rate
+                - generic [ref=e137]:
+                  - generic [ref=e138]:
+                    - generic [ref=e139]: W
+                    - generic [ref=e140]: B
+                    - generic [ref=e141]: R
+                  - generic [ref=e142]: Bracket 3
+                  - generic [ref=e143]: EDHP 6.84
+            - generic [ref=e144]:
+              - generic [ref=e145]:
+                - generic [ref=e146]: 2-player
+                - generic [ref=e147]:
+                  - text: 100%
+                  - generic [ref=e148]: (2)
+              - generic [ref=e149]:
+                - generic [ref=e150]: 3-player
+                - generic [ref=e151]: —
+              - generic [ref=e152]:
+                - generic [ref=e153]: 4-player
+                - generic [ref=e154]: —
+          - link "Niv-Mizzet, the Firemind Ping Death Niv-Mizzet, the Firemind 0W - 1L 0% win rate U R Bracket 4 EDHP 6.05 2-player 0% (1) 3-player — 4-player —" [ref=e155] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnksvbot000404i9jrk96d3b
+            - generic [ref=e156]:
+              - img "Niv-Mizzet, the Firemind" [ref=e157]
+              - generic [ref=e158]:
+                - generic [ref=e159]:
+                  - generic [ref=e160]:
+                    - generic [ref=e161]: Ping Death
+                    - generic [ref=e162]: Niv-Mizzet, the Firemind
+                  - generic [ref=e163]:
+                    - generic [ref=e164]: 0W - 1L
+                    - generic [ref=e165]: 0% win rate
+                - generic [ref=e166]:
+                  - generic [ref=e167]:
+                    - generic [ref=e168]: U
+                    - generic [ref=e169]: R
+                  - generic [ref=e170]: Bracket 4
+                  - generic [ref=e171]: EDHP 6.05
+            - generic [ref=e172]:
+              - generic [ref=e173]:
+                - generic [ref=e174]: 2-player
+                - generic [ref=e175]:
+                  - text: 0%
+                  - generic [ref=e176]: (1)
+              - generic [ref=e177]:
+                - generic [ref=e178]: 3-player
+                - generic [ref=e179]: —
+              - generic [ref=e180]:
+                - generic [ref=e181]: 4-player
+                - generic [ref=e182]: —
+          - link "Wolverine, Best There Is Wolverine Wolverine, Best There Is 0W - 0L 0% win rate R G Bracket 3 EDHP 7.40" [ref=e183] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnksyehs000504i959a255s2
+            - generic [ref=e184]:
+              - img "Wolverine, Best There Is" [ref=e185]
+              - generic [ref=e186]:
+                - generic [ref=e187]:
+                  - generic [ref=e188]:
+                    - generic [ref=e189]: Wolverine
+                    - generic [ref=e190]: Wolverine, Best There Is
+                  - generic [ref=e191]:
+                    - generic [ref=e192]: 0W - 0L
+                    - generic [ref=e193]: 0% win rate
+                - generic [ref=e194]:
+                  - generic [ref=e195]:
+                    - generic [ref=e196]: R
+                    - generic [ref=e197]: G
+                  - generic [ref=e198]: Bracket 3
+                  - generic [ref=e199]: EDHP 7.40
+          - link "Havi, the All-Father Krakoan Era X-Men Havi, the All-Father 0W - 0L 0% win rate W R G Bracket 3 EDHP 7.53" [ref=e200] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnkty36d000004jmirkejptx
+            - generic [ref=e201]:
+              - img "Havi, the All-Father" [ref=e202]
+              - generic [ref=e203]:
+                - generic [ref=e204]:
+                  - generic [ref=e205]:
+                    - generic [ref=e206]: Krakoan Era X-Men
+                    - generic [ref=e207]: Havi, the All-Father
+                  - generic [ref=e208]:
+                    - generic [ref=e209]: 0W - 0L
+                    - generic [ref=e210]: 0% win rate
+                - generic [ref=e211]:
+                  - generic [ref=e212]:
+                    - generic [ref=e213]: W
+                    - generic [ref=e214]: R
+                    - generic [ref=e215]: G
+                  - generic [ref=e216]: Bracket 3
+                  - generic [ref=e217]: EDHP 7.53
+          - link "Zaxara, the Exemplary HYYYYDRRAAAA!!! Zaxara, the Exemplary 0W - 0L 0% win rate U B G" [ref=e218] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnksuajy000304i9ys8346ek
+            - generic [ref=e219]:
+              - img "Zaxara, the Exemplary" [ref=e220]
+              - generic [ref=e221]:
+                - generic [ref=e222]:
+                  - generic [ref=e223]:
+                    - generic [ref=e224]: HYYYYDRRAAAA!!!
+                    - generic [ref=e225]: Zaxara, the Exemplary
+                  - generic [ref=e226]:
+                    - generic [ref=e227]: 0W - 0L
+                    - generic [ref=e228]: 0% win rate
+                - generic [ref=e230]:
+                  - generic [ref=e231]: U
+                  - generic [ref=e232]: B
+                  - generic [ref=e233]: G
+          - link "Inspirit, Flagship Vessel Artifacts Inspirit, Flagship Vessel 0W - 0L 0% win rate W U R" [ref=e234] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnkstndf000204i9zwfg1vky
+            - generic [ref=e235]:
+              - img "Inspirit, Flagship Vessel" [ref=e236]
+              - generic [ref=e237]:
+                - generic [ref=e238]:
+                  - generic [ref=e239]:
+                    - generic [ref=e240]: Artifacts
+                    - generic [ref=e241]: Inspirit, Flagship Vessel
+                  - generic [ref=e242]:
+                    - generic [ref=e243]: 0W - 0L
+                    - generic [ref=e244]: 0% win rate
+                - generic [ref=e246]:
+                  - generic [ref=e247]: W
+                  - generic [ref=e248]: U
+                  - generic [ref=e249]: R
+          - link "Norman Osborn // Green Goblin Green Goblin Norman Osborn // Green Goblin 0W - 0L 0% win rate U B R Bracket 2 EDHP 5.06" [ref=e250] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnkto7he000004jmvmpzyd3j
+            - generic [ref=e251]:
+              - img "Norman Osborn // Green Goblin" [ref=e252]
+              - generic [ref=e253]:
+                - generic [ref=e254]:
+                  - generic [ref=e255]:
+                    - generic [ref=e256]: Green Goblin
+                    - generic [ref=e257]: Norman Osborn // Green Goblin
+                  - generic [ref=e258]:
+                    - generic [ref=e259]: 0W - 0L
+                    - generic [ref=e260]: 0% win rate
+                - generic [ref=e261]:
+                  - generic [ref=e262]:
+                    - generic [ref=e263]: U
+                    - generic [ref=e264]: B
+                    - generic [ref=e265]: R
+                  - generic [ref=e266]: Bracket 2
+                  - generic [ref=e267]: EDHP 5.06
+          - link "Brion Stoutarm Giants Brion Stoutarm 0W - 0L 0% win rate W R Bracket 2 EDHP 5.24" [ref=e268] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnktmi90000704jvf0ji8s6t
+            - generic [ref=e269]:
+              - img "Brion Stoutarm" [ref=e270]
+              - generic [ref=e271]:
+                - generic [ref=e272]:
+                  - generic [ref=e273]:
+                    - generic [ref=e274]: Giants
+                    - generic [ref=e275]: Brion Stoutarm
+                  - generic [ref=e276]:
+                    - generic [ref=e277]: 0W - 0L
+                    - generic [ref=e278]: 0% win rate
+                - generic [ref=e279]:
+                  - generic [ref=e280]:
+                    - generic [ref=e281]: W
+                    - generic [ref=e282]: R
+                  - generic [ref=e283]: Bracket 2
+                  - generic [ref=e284]: EDHP 5.24
+          - link "Winter, Cynical Opportunist Death Toll Winter, Cynical Opportunist 0W - 0L 0% win rate B G Bracket 2 EDHP 5.54" [ref=e285] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnktikyf000204jva88f60et
+            - generic [ref=e286]:
+              - img "Winter, Cynical Opportunist" [ref=e287]
+              - generic [ref=e288]:
+                - generic [ref=e289]:
+                  - generic [ref=e290]:
+                    - generic [ref=e291]: Death Toll
+                    - generic [ref=e292]: Winter, Cynical Opportunist
+                  - generic [ref=e293]:
+                    - generic [ref=e294]: 0W - 0L
+                    - generic [ref=e295]: 0% win rate
+                - generic [ref=e296]:
+                  - generic [ref=e297]:
+                    - generic [ref=e298]: B
+                    - generic [ref=e299]: G
+                  - generic [ref=e300]: Bracket 2
+                  - generic [ref=e301]: EDHP 5.54
+          - link "Cosmic Spider-Man Spiderverse Cosmic Spider-Man 0W - 0L 0% win rate W U B R G Bracket 1 EDHP 2.65" [ref=e302] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnktm41l000604jvnn3ua1jw
+            - generic [ref=e303]:
+              - img "Cosmic Spider-Man" [ref=e304]
+              - generic [ref=e305]:
+                - generic [ref=e306]:
+                  - generic [ref=e307]:
+                    - generic [ref=e308]: Spiderverse
+                    - generic [ref=e309]: Cosmic Spider-Man
+                  - generic [ref=e310]:
+                    - generic [ref=e311]: 0W - 0L
+                    - generic [ref=e312]: 0% win rate
+                - generic [ref=e313]:
+                  - generic [ref=e314]:
+                    - generic [ref=e315]: W
+                    - generic [ref=e316]: U
+                    - generic [ref=e317]: B
+                    - generic [ref=e318]: R
+                    - generic [ref=e319]: G
+                  - generic [ref=e320]: Bracket 1
+                  - generic [ref=e321]: EDHP 2.65
+          - link "Ulalek, Fused Atrocity Eldrazi Ulalek, Fused Atrocity 0W - 0L 0% win rate W U B R G Bracket 2 EDHP 5.20" [ref=e322] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnktkddi000304jv4axtxcrw
+            - generic [ref=e323]:
+              - img "Ulalek, Fused Atrocity" [ref=e324]
+              - generic [ref=e325]:
+                - generic [ref=e326]:
+                  - generic [ref=e327]:
+                    - generic [ref=e328]: Eldrazi
+                    - generic [ref=e329]: Ulalek, Fused Atrocity
+                  - generic [ref=e330]:
+                    - generic [ref=e331]: 0W - 0L
+                    - generic [ref=e332]: 0% win rate
+                - generic [ref=e333]:
+                  - generic [ref=e334]:
+                    - generic [ref=e335]: W
+                    - generic [ref=e336]: U
+                    - generic [ref=e337]: B
+                    - generic [ref=e338]: R
+                    - generic [ref=e339]: G
+                  - generic [ref=e340]: Bracket 2
+                  - generic [ref=e341]: EDHP 5.20
+          - link "Inquisitor Greyfax Imperium Forces Inquisitor Greyfax 0W - 0L 0% win rate W U B Bracket 2 EDHP 5.61" [ref=e342] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnktkyl8000404jv66cyfoj0
+            - generic [ref=e343]:
+              - img "Inquisitor Greyfax" [ref=e344]
+              - generic [ref=e345]:
+                - generic [ref=e346]:
+                  - generic [ref=e347]:
+                    - generic [ref=e348]: Imperium Forces
+                    - generic [ref=e349]: Inquisitor Greyfax
+                  - generic [ref=e350]:
+                    - generic [ref=e351]: 0W - 0L
+                    - generic [ref=e352]: 0% win rate
+                - generic [ref=e353]:
+                  - generic [ref=e354]:
+                    - generic [ref=e355]: W
+                    - generic [ref=e356]: U
+                    - generic [ref=e357]: B
+                  - generic [ref=e358]: Bracket 2
+                  - generic [ref=e359]: EDHP 5.61
+          - link "Sygg, River Guide Merfolk Sygg, River Guide 0W - 0L 0% win rate W U Bracket 4 EDHP 5.58" [ref=e360] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnkthhqu000004jvj9ktkx6i
+            - generic [ref=e361]:
+              - img "Sygg, River Guide" [ref=e362]
+              - generic [ref=e363]:
+                - generic [ref=e364]:
+                  - generic [ref=e365]:
+                    - generic [ref=e366]: Merfolk
+                    - generic [ref=e367]: Sygg, River Guide
+                  - generic [ref=e368]:
+                    - generic [ref=e369]: 0W - 0L
+                    - generic [ref=e370]: 0% win rate
+                - generic [ref=e371]:
+                  - generic [ref=e372]:
+                    - generic [ref=e373]: W
+                    - generic [ref=e374]: U
+                  - generic [ref=e375]: Bracket 4
+                  - generic [ref=e376]: EDHP 5.58
+          - link "Peter Parker // Amazing Spider-Man Spidey Peter Parker // Amazing Spider-Man 0W - 0L 0% win rate W U G Bracket 1 EDHP 3.00" [ref=e377] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnktvorz000004ib67triv9y
+            - generic [ref=e378]:
+              - img "Peter Parker // Amazing Spider-Man" [ref=e379]
+              - generic [ref=e380]:
+                - generic [ref=e381]:
+                  - generic [ref=e382]:
+                    - generic [ref=e383]: Spidey
+                    - generic [ref=e384]: Peter Parker // Amazing Spider-Man
+                  - generic [ref=e385]:
+                    - generic [ref=e386]: 0W - 0L
+                    - generic [ref=e387]: 0% win rate
+                - generic [ref=e388]:
+                  - generic [ref=e389]:
+                    - generic [ref=e390]: W
+                    - generic [ref=e391]: U
+                    - generic [ref=e392]: G
+                  - generic [ref=e393]: Bracket 1
+                  - generic [ref=e394]: EDHP 3.00
+          - link "Lord Windgrace Landfall Lord Windgrace 0W - 0L 0% win rate B R G Bracket 4 EDHP 6.47" [ref=e395] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnktd4zf000004lfnv9ckvyp
+            - generic [ref=e396]:
+              - img "Lord Windgrace" [ref=e397]
+              - generic [ref=e398]:
+                - generic [ref=e399]:
+                  - generic [ref=e400]:
+                    - generic [ref=e401]: Landfall
+                    - generic [ref=e402]: Lord Windgrace
+                  - generic [ref=e403]:
+                    - generic [ref=e404]: 0W - 0L
+                    - generic [ref=e405]: 0% win rate
+                - generic [ref=e406]:
+                  - generic [ref=e407]:
+                    - generic [ref=e408]: B
+                    - generic [ref=e409]: R
+                    - generic [ref=e410]: G
+                  - generic [ref=e411]: Bracket 4
+                  - generic [ref=e412]: EDHP 6.47
+          - link "Lathril, Blade of the Elves Elves Lathril, Blade of the Elves 0W - 0L 0% win rate B G Bracket 2 EDHP 5.64" [ref=e413] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnktggea000204lf7lzhxk2m
+            - generic [ref=e414]:
+              - img "Lathril, Blade of the Elves" [ref=e415]
+              - generic [ref=e416]:
+                - generic [ref=e417]:
+                  - generic [ref=e418]:
+                    - generic [ref=e419]: Elves
+                    - generic [ref=e420]: Lathril, Blade of the Elves
+                  - generic [ref=e421]:
+                    - generic [ref=e422]: 0W - 0L
+                    - generic [ref=e423]: 0% win rate
+                - generic [ref=e424]:
+                  - generic [ref=e425]:
+                    - generic [ref=e426]: B
+                    - generic [ref=e427]: G
+                  - generic [ref=e428]: Bracket 2
+                  - generic [ref=e429]: EDHP 5.64
+          - link "Admiral Beckett Brass Aaargh! Admiral Beckett Brass 0W - 0L 0% win rate U B R Bracket 4 EDHP 5.75" [ref=e430] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnktoy41000104jm7bqrm58q
+            - generic [ref=e431]:
+              - img "Admiral Beckett Brass" [ref=e432]
+              - generic [ref=e433]:
+                - generic [ref=e434]:
+                  - generic [ref=e435]:
+                    - generic [ref=e436]: Aaargh!
+                    - generic [ref=e437]: Admiral Beckett Brass
+                  - generic [ref=e438]:
+                    - generic [ref=e439]: 0W - 0L
+                    - generic [ref=e440]: 0% win rate
+                - generic [ref=e441]:
+                  - generic [ref=e442]:
+                    - generic [ref=e443]: U
+                    - generic [ref=e444]: B
+                    - generic [ref=e445]: R
+                  - generic [ref=e446]: Bracket 4
+                  - generic [ref=e447]: EDHP 5.75
+          - link "Abaddon the Despoiler Ruinous Powers Abaddon the Despoiler 0W - 0L 0% win rate U B R Bracket 1 EDHP 4.64" [ref=e448] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnktlguo000504jv61akownz
+            - generic [ref=e449]:
+              - img "Abaddon the Despoiler" [ref=e450]
+              - generic [ref=e451]:
+                - generic [ref=e452]:
+                  - generic [ref=e453]:
+                    - generic [ref=e454]: Ruinous Powers
+                    - generic [ref=e455]: Abaddon the Despoiler
+                  - generic [ref=e456]:
+                    - generic [ref=e457]: 0W - 0L
+                    - generic [ref=e458]: 0% win rate
+                - generic [ref=e459]:
+                  - generic [ref=e460]:
+                    - generic [ref=e461]: U
+                    - generic [ref=e462]: B
+                    - generic [ref=e463]: R
+                  - generic [ref=e464]: Bracket 1
+                  - generic [ref=e465]: EDHP 4.64
+          - link "The Swarmlord Tyranid Swarm The Swarmlord 0W - 0L 0% win rate U R G Bracket 2 EDHP 5.95" [ref=e466] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnkthyjo000104jv4x0cn9yi
+            - generic [ref=e467]:
+              - img "The Swarmlord" [ref=e468]
+              - generic [ref=e469]:
+                - generic [ref=e470]:
+                  - generic [ref=e471]:
+                    - generic [ref=e472]: Tyranid Swarm
+                    - generic [ref=e473]: The Swarmlord
+                  - generic [ref=e474]:
+                    - generic [ref=e475]: 0W - 0L
+                    - generic [ref=e476]: 0% win rate
+                - generic [ref=e477]:
+                  - generic [ref=e478]:
+                    - generic [ref=e479]: U
+                    - generic [ref=e480]: R
+                    - generic [ref=e481]: G
+                  - generic [ref=e482]: Bracket 2
+                  - generic [ref=e483]: EDHP 5.95
+          - link "Szarekh, the Silent King Necron Dynasties Szarekh, the Silent King 0W - 0L 0% win rate B Bracket 2 EDHP 5.37" [ref=e484] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnkth61r000004jm9e1o0a4e
+            - generic [ref=e485]:
+              - img "Szarekh, the Silent King" [ref=e486]
+              - generic [ref=e487]:
+                - generic [ref=e488]:
+                  - generic [ref=e489]:
+                    - generic [ref=e490]: Necron Dynasties
+                    - generic [ref=e491]: Szarekh, the Silent King
+                  - generic [ref=e492]:
+                    - generic [ref=e493]: 0W - 0L
+                    - generic [ref=e494]: 0% win rate
+                - generic [ref=e495]:
+                  - generic [ref=e497]: B
+                  - generic [ref=e498]: Bracket 2
+                  - generic [ref=e499]: EDHP 5.37
+          - link "Commodore Guff Planeswalker Party Commodore Guff 0W - 0L 0% win rate W U R Bracket 3 EDHP 6.03" [ref=e500] [cursor=pointer]:
+            - /url: /players/cmnkssf49000104i9co80kboj/decks/cmnktfu33000104lfam25z5ca
+            - generic [ref=e501]:
+              - img "Commodore Guff" [ref=e502]
+              - generic [ref=e503]:
+                - generic [ref=e504]:
+                  - generic [ref=e505]:
+                    - generic [ref=e506]: Planeswalker Party
+                    - generic [ref=e507]: Commodore Guff
+                  - generic [ref=e508]:
+                    - generic [ref=e509]: 0W - 0L
+                    - generic [ref=e510]: 0% win rate
+                - generic [ref=e511]:
+                  - generic [ref=e512]:
+                    - generic [ref=e513]: W
+                    - generic [ref=e514]: U
+                    - generic [ref=e515]: R
+                  - generic [ref=e516]: Bracket 3
+                  - generic [ref=e517]: EDHP 6.03
+  - alert [ref=e16]

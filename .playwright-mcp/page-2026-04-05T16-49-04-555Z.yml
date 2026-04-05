@@ -1,0 +1,1 @@
+- generic [ref=e2]: "{\"status\":\"ok\",\"database\":\"connected\",\"env\":{\"hasPostgresPrismaUrl\":false,\"hasPostgresUrl\":true,\"hasDatabaseUrl\":true,\"isVercel\":true,\"connStringUsed\":\"POSTGRES_URL\"}}"

@@ -1,0 +1,49 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e18]
+  - navigation [ref=e19]:
+    - generic [ref=e21]:
+      - link "MTG Tracker" [ref=e22] [cursor=pointer]:
+        - /url: /dashboard
+      - generic [ref=e23]:
+        - link "Dashboard" [ref=e24] [cursor=pointer]:
+          - /url: /dashboard
+        - link "Decks" [ref=e25] [cursor=pointer]:
+          - /url: /decks
+        - link "Games" [ref=e26] [cursor=pointer]:
+          - /url: /games
+        - link "Players" [ref=e27] [cursor=pointer]:
+          - /url: /players
+        - link "Leaderboard" [ref=e28] [cursor=pointer]:
+          - /url: /leaderboard
+        - combobox [ref=e29]:
+          - option "Default" [selected]
+          - option "Old School"
+          - option "Synth"
+          - option "Cyber"
+          - option "Flame"
+          - option "Chris"
+        - button "Sign out" [ref=e30]
+  - main [ref=e31]:
+    - generic [ref=e32]:
+      - heading "Dashboard" [level=1] [ref=e33]
+      - generic [ref=e34]:
+        - generic [ref=e35]:
+          - generic [ref=e36]: "0"
+          - generic [ref=e37]: Games
+        - generic [ref=e38]:
+          - generic [ref=e39]: "0"
+          - generic [ref=e40]: Wins
+        - generic [ref=e41]:
+          - generic [ref=e42]: "0"
+          - generic [ref=e43]: Losses
+        - generic [ref=e44]:
+          - generic [ref=e45]: 0%
+          - generic [ref=e46]: Win Rate
+      - generic [ref=e47]:
+        - link "Log Game" [ref=e48] [cursor=pointer]:
+          - /url: /games/new
+        - link "Add Deck" [ref=e49] [cursor=pointer]:
+          - /url: /decks/new
+      - generic [ref=e50]:
+        - paragraph [ref=e51]: No games recorded yet.
+        - paragraph [ref=e52]: Add a deck and log your first game to get started!
