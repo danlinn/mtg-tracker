@@ -6,6 +6,7 @@ export default function VerifyBanner() {
   const [show, setShow] = useState(false);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [sendError, setSendError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -22,11 +23,17 @@ export default function VerifyBanner() {
 
   async function handleResend() {
     setSending(true);
+    setSendError("");
     try {
-      await fetch("/api/resend-verification", { method: "POST" });
-      setSent(true);
+      const res = await fetch("/api/resend-verification", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setSendError(data.error ?? "Failed to send");
+      } else {
+        setSent(true);
+      }
     } catch {
-      // Silently fail
+      setSendError("Network error");
     }
     setSending(false);
   }
@@ -38,6 +45,8 @@ export default function VerifyBanner() {
       Please check your email and verify your account.
       {sent ? (
         <span className="ml-2 text-green-700 font-medium">Sent!</span>
+      ) : sendError ? (
+        <span className="ml-2 text-red-600 font-medium">{sendError}</span>
       ) : (
         <button
           onClick={handleResend}

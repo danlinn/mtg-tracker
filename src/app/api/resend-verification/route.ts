@@ -32,7 +32,13 @@ export async function POST() {
   }
 
   try {
-    await sendVerificationEmail(user.email, user.name, token);
+    const result = await sendVerificationEmail(user.email, user.name, token);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error ?? "Failed to send email" },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({ message: "Verification email sent" });
   } catch (error) {
     console.error("[POST /api/resend-verification] Error:", error);
