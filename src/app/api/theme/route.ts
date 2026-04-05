@@ -15,8 +15,10 @@ export async function GET() {
     select: { theme: true, emailVerified: true },
   });
 
+  const theme = user?.theme && VALID_THEMES.includes(user.theme) ? user.theme : "default";
+
   return NextResponse.json({
-    theme: user?.theme ?? "default",
+    theme,
     emailVerified: user?.emailVerified ?? false,
   });
 }

@@ -2,9 +2,9 @@
 
 import { createContext, useContext, useCallback, useEffect, useSyncExternalStore, ReactNode } from "react";
 
-export type ThemeName = "default" | "old-school" | "synth" | "cyber" | "flame" | "chris" | "phyrexia" | "stained-glass" | "dungeon" | "neon-dynasty" | "retro-frame";
+export type ThemeName = "default" | "synth" | "cyber" | "flame" | "chris" | "phyrexia" | "stained-glass" | "dungeon" | "neon-dynasty";
 
-const VALID_THEMES: ThemeName[] = ["default", "old-school", "synth", "cyber", "flame", "chris", "phyrexia", "stained-glass", "dungeon", "neon-dynasty", "retro-frame"];
+const VALID_THEMES: ThemeName[] = ["default", "synth", "cyber", "flame", "chris", "phyrexia", "stained-glass", "dungeon", "neon-dynasty"];
 
 function isValidTheme(s: string): s is ThemeName {
   return VALID_THEMES.includes(s as ThemeName);

@@ -16,7 +16,6 @@ const navItems = [
 
 const themeLabels: Record<ThemeName, string> = {
   default: "Default",
-  "old-school": "Old School",
   synth: "Synth",
   cyber: "Cyber",
   flame: "Flame",
@@ -25,7 +24,6 @@ const themeLabels: Record<ThemeName, string> = {
   "stained-glass": "Stained Glass",
   dungeon: "Dungeon",
   "neon-dynasty": "Neon Dynasty",
-  "retro-frame": "Retro Frame",
 };
 
 export default function NavBar() {
