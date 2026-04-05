@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Philosopher:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@400;500;600;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Philosopher:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@400;500;600;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
 /* ─── Default (light) theme ─── */
 :root {
@@ -1123,14 +1123,14 @@ body {
 }
 
 [data-theme="chris"] body {
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-family: 'Comic Neue', 'Comic Sans MS', cursive;
   background: #000000;
 }
 
 [data-theme="chris"] h1,
 [data-theme="chris"] h2,
 [data-theme="chris"] h3 {
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+  font-family: 'Comic Neue', 'Comic Sans MS', cursive;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: 0.04em;
@@ -1164,7 +1164,7 @@ body {
 }
 
 [data-theme="chris"] nav .font-bold.text-lg {
-  font-family: 'Comic Sans MS', 'Comic Sans', cursive !important;
+  font-family: 'Comic Neue', 'Comic Sans MS', cursive !important;
   font-weight: 700;
   color: #ffffff !important;
   letter-spacing: 0.08em;
