@@ -1123,14 +1123,14 @@ body {
 }
 
 [data-theme="chris"] body {
-  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
   background: #000000;
 }
 
 [data-theme="chris"] h1,
 [data-theme="chris"] h2,
 [data-theme="chris"] h3 {
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: 0.04em;
