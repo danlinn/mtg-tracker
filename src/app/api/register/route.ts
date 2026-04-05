@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { notifyAdminsNewUser, sendVerificationEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
   let body;
@@ -21,10 +22,19 @@ export async function POST(req: Request) {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 12);
+    const verifyToken = crypto.randomUUID();
 
     const user = await prisma.user.create({
-      data: { email, name, hashedPassword },
+      data: { email, name, hashedPassword, verifyToken },
     });
+
+    // Fire-and-forget: don't block registration on email delivery
+    sendVerificationEmail(email, name, verifyToken).catch((e) =>
+      console.error("[register] Failed to send verification email:", e)
+    );
+    notifyAdminsNewUser(name, email).catch((e) =>
+      console.error("[register] Failed to notify admins:", e)
+    );
 
     return NextResponse.json({
       id: user.id,

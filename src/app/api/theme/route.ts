@@ -12,10 +12,13 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { theme: true },
+    select: { theme: true, emailVerified: true },
   });
 
-  return NextResponse.json({ theme: user?.theme ?? "default" });
+  return NextResponse.json({
+    theme: user?.theme ?? "default",
+    emailVerified: user?.emailVerified ?? false,
+  });
 }
 
 export async function PUT(request: Request) {

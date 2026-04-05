@@ -1,12 +1,22 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const verified = searchParams.get("verified");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -38,6 +48,16 @@ export default function LoginPage() {
           MTG Commander Tracker
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {verified === "true" && (
+            <div className="bg-green-50 text-green-700 px-4 py-2 rounded text-sm">
+              Email verified! You can now sign in.
+            </div>
+          )}
+          {verified === "already" && (
+            <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded text-sm">
+              Email already verified. Sign in below.
+            </div>
+          )}
           {error && (
             <div className="bg-red-50 text-red-600 px-4 py-2 rounded text-sm">
               {error}
