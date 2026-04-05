@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import ColorPips from "@/components/ColorPips";
 import CardGrid, { type DeckCard } from "@/components/CardGrid";
 import RecommendationsModal from "@/components/RecommendationsModal";
@@ -37,8 +38,12 @@ interface DeckDetail {
 
 export default function PlayerDeckPage() {
   const params = useParams();
+  const router = useRouter();
+  const { data: session } = useSession();
+  const currentUserId = (session?.user as { id?: string })?.id;
   const playerId = params.id as string;
   const deckId = params.deckId as string;
+  const isOwner = currentUserId === playerId;
   const [deck, setDeck] = useState<DeckDetail | null>(null);
   const [error, setError] = useState("");
   const [deckCards, setDeckCards] = useState<DeckCard[] | null>(null);
@@ -113,11 +118,33 @@ export default function PlayerDeckPage() {
       </div>
 
       {/* Deck header */}
-      <div>
-        <h1 className="text-2xl font-bold">{deck.name}</h1>
-        <p className="text-gray-500">
-          {deck.commander}{deck.commander2 ? ` & ${deck.commander2}` : ""}
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{deck.name}</h1>
+          <p className="text-gray-500">
+            {deck.commander}{deck.commander2 ? ` & ${deck.commander2}` : ""}
+          </p>
+        </div>
+        {isOwner && (
+          <div className="flex gap-2 flex-shrink-0">
+            <Link
+              href={`/decks/${deckId}/edit`}
+              className="px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={async () => {
+                if (!confirm("Delete this deck?")) return;
+                await fetch(`/api/decks/${deckId}`, { method: "DELETE" });
+                router.push("/decks");
+              }}
+              className="px-3 py-1.5 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+            >
+              Delete
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Color pips and badges */}

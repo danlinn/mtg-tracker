@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 const SCRYFALL_BASE = "https://api.scryfall.com";
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_TTL_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
 interface ScryfallCard {
   name: string;

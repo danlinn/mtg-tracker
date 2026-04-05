@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 
   // Search for popular EDH staples in these colors
   // Scryfall sorts by EDHREC rank when available
-  const query = `f:commander ${colorFilter} -t:basic sort:edhrec`;
+  const query = `f:commander ${colorFilter} -t:basic`;
 
   try {
     const res = await fetch(

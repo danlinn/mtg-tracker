@@ -288,7 +288,7 @@ describe("POST /api/cards/collection", () => {
     mockCacheFindUnique.mockResolvedValue({
       name: "sol ring",
       data: JSON.stringify({ name: "Sol Ring", prices: { usd: "1.00" } }),
-      fetchedAt: new Date(Date.now() - 25 * 60 * 60 * 1000), // 25h ago = stale
+      fetchedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago = stale
     });
     mockFetch.mockResolvedValue({
       ok: true,

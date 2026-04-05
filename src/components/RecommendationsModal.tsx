@@ -35,9 +35,11 @@ export default function RecommendationsModal({
 }) {
   const [cards, setCards] = useState<RecCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [selected, setSelected] = useState<RecCard | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     fetch("/api/cards/recommendations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -47,12 +49,23 @@ export default function RecommendationsModal({
         excludeNames: existingCards,
       }),
     })
-      .then((r) => r.json())
-      .then((data) => {
-        setCards(data.cards ?? []);
-        setLoading(false);
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed");
+        return r.json();
       })
-      .catch(() => setLoading(false));
+      .then((data) => {
+        if (!cancelled) {
+          setCards(data.cards ?? []);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError(true);
+          setLoading(false);
+        }
+      });
+    return () => { cancelled = true; };
   }, [commander, colors, existingCards]);
 
   return (
@@ -73,7 +86,9 @@ export default function RecommendationsModal({
 
         <div className="p-4">
           <h2 className="text-lg font-bold text-gray-900 mb-1">
-            Recommendations for {commander}
+            Recommendations for
+            <br />
+            {commander}
           </h2>
           <p className="text-sm text-gray-500 mb-4">
             Popular EDH cards in your colors that aren&apos;t in your deck yet. Sorted by EDHREC popularity.
@@ -81,6 +96,8 @@ export default function RecommendationsModal({
 
           {loading ? (
             <div className="text-center py-12 text-gray-400">Loading recommendations...</div>
+          ) : error ? (
+            <div className="text-center py-12 text-red-400">Failed to load recommendations. Try again later.</div>
           ) : cards.length === 0 ? (
             <div className="text-center py-12 text-gray-400">No recommendations found.</div>
           ) : (
