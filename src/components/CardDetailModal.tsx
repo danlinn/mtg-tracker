@@ -17,6 +17,8 @@ export default function CardDetailModal({
   onClose: () => void;
 }) {
   const [rulings, setRulings] = useState<Ruling[] | null>(null);
+  const [flipped, setFlipped] = useState(false);
+  const hasDFC = !!card.backImageNormal;
 
   useEffect(() => {
     if (!card.scryfallId) return;
@@ -50,41 +52,53 @@ export default function CardDetailModal({
         </button>
 
         {/* Card image */}
-        {card.imageNormal && (
-          <img
-            src={card.imageNormal}
-            alt={card.name}
-            className="w-full rounded-t-xl"
-          />
-        )}
+        <div className="relative">
+          {(flipped ? card.backImageNormal : card.imageNormal) && (
+            <img
+              src={(flipped ? card.backImageNormal : card.imageNormal)!}
+              alt={flipped ? card.backName ?? card.name : card.name}
+              className="w-full rounded-t-xl"
+            />
+          )}
+          {hasDFC && (
+            <button
+              onClick={() => setFlipped(!flipped)}
+              className="absolute bottom-3 left-3 z-10 px-3 py-1.5 rounded-full bg-black/50 hover:bg-black/70 text-white text-xs font-bold transition-colors shadow-lg"
+            >
+              Flip Card
+            </button>
+          )}
+        </div>
 
         <div className="p-4 space-y-3">
           {/* Header */}
           <div>
-            <h3 className="text-lg font-bold text-gray-900">{card.name}</h3>
-            {card.manaCost && (
+            <h3 className="text-lg font-bold text-gray-900">
+              {flipped ? card.backName ?? card.name : card.name}
+            </h3>
+            {!flipped && card.manaCost && (
               <span className="text-sm text-gray-500">{card.manaCost}</span>
             )}
           </div>
 
           {/* Type line */}
-          {card.typeLine && (
+          {(flipped ? card.backTypeLine : card.typeLine) && (
             <div className="text-sm font-medium text-gray-700">
-              {card.typeLine}
+              {flipped ? card.backTypeLine : card.typeLine}
             </div>
           )}
 
           {/* Oracle text */}
-          {card.oracleText && (
+          {(flipped ? card.backOracleText : card.oracleText) && (
             <div className="text-sm text-gray-600 whitespace-pre-wrap border-t border-gray-100 pt-2">
-              {card.oracleText}
+              {flipped ? card.backOracleText : card.oracleText}
             </div>
           )}
 
           {/* P/T */}
-          {card.power != null && card.toughness != null && (
+          {(flipped ? card.backPower : card.power) != null && (flipped ? card.backToughness : card.toughness) != null && (
             <div className="text-sm font-semibold text-gray-800">
-              {card.power}/{card.toughness}
+              {flipped ? card.backPower : card.power}/{flipped ? card.backToughness : card.toughness}
             </div>
           )}
 

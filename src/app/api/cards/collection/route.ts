@@ -15,7 +15,15 @@ interface ScryfallCard {
   rarity?: string;
   set_name?: string;
   image_uris?: { small?: string; normal?: string; art_crop?: string };
-  card_faces?: { image_uris?: { small?: string; normal?: string; art_crop?: string } }[];
+  card_faces?: {
+    name?: string;
+    mana_cost?: string;
+    type_line?: string;
+    oracle_text?: string;
+    power?: string;
+    toughness?: string;
+    image_uris?: { small?: string; normal?: string; art_crop?: string };
+  }[];
   prices?: { usd?: string | null; usd_foil?: string | null };
   scryfall_uri?: string;
   id?: string;
@@ -91,35 +99,54 @@ export async function POST(req: Request) {
     }
   }
 
-  // Map cards by name for lookup
+  // Map cards by full name AND front face name for DFC matching
   const cardMap = new Map<string, ScryfallCard>();
   for (const card of allCards) {
     cardMap.set(card.name.toLowerCase(), card);
+    // Also map by front face name (before //)
+    if (card.name.includes("//")) {
+      const frontName = card.name.split("//")[0].trim().toLowerCase();
+      if (!cardMap.has(frontName)) {
+        cardMap.set(frontName, card);
+      }
+    }
   }
 
   let totalPrice = 0;
   const cards = entries.map((entry) => {
     const card = cardMap.get(entry.name.toLowerCase());
-    const imageUris = card ? getImageUris(card) : undefined;
+    const frontUris = card ? getImageUris(card) : undefined;
+    const backUris = card?.card_faces?.[1]?.image_uris;
     const priceUsd = card?.prices?.usd ? parseFloat(card.prices.usd) : null;
     const priceFoil = card?.prices?.usd_foil ? parseFloat(card.prices.usd_foil) : null;
     const unitPrice = priceUsd ?? priceFoil ?? null;
     if (unitPrice) totalPrice += unitPrice * entry.quantity;
 
+    // For DFCs, use front face data; provide back face images
+    const frontFace = card?.card_faces?.[0];
+    const backFace = card?.card_faces?.[1];
+
     return {
       quantity: entry.quantity,
       name: entry.name,
       found: !!card,
-      manaCost: card?.mana_cost ?? null,
+      manaCost: card?.mana_cost ?? frontFace?.mana_cost ?? null,
       cmc: card?.cmc ?? null,
       typeLine: card?.type_line ?? null,
-      oracleText: card?.oracle_text ?? null,
-      power: card?.power ?? null,
-      toughness: card?.toughness ?? null,
+      oracleText: card?.oracle_text ?? frontFace?.oracle_text ?? null,
+      power: card?.power ?? frontFace?.power ?? null,
+      toughness: card?.toughness ?? frontFace?.toughness ?? null,
       rarity: card?.rarity ?? null,
       setName: card?.set_name ?? null,
-      imageSmall: imageUris?.small ?? null,
-      imageNormal: imageUris?.normal ?? null,
+      imageSmall: frontUris?.small ?? null,
+      imageNormal: frontUris?.normal ?? null,
+      backImageSmall: backUris?.small ?? null,
+      backImageNormal: backUris?.normal ?? null,
+      backName: backFace?.name ?? null,
+      backOracleText: backFace?.oracle_text ?? null,
+      backTypeLine: backFace?.type_line ?? null,
+      backPower: backFace?.power ?? null,
+      backToughness: backFace?.toughness ?? null,
       priceUsd: priceUsd,
       priceFoil: priceFoil,
       scryfallUri: card?.scryfall_uri ?? null,

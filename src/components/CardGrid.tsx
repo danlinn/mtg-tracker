@@ -17,6 +17,13 @@ export interface DeckCard {
   setName: string | null;
   imageSmall: string | null;
   imageNormal: string | null;
+  backImageSmall: string | null;
+  backImageNormal: string | null;
+  backName: string | null;
+  backOracleText: string | null;
+  backTypeLine: string | null;
+  backPower: string | null;
+  backToughness: string | null;
   priceUsd: number | null;
   priceFoil: number | null;
   scryfallUri: string | null;
