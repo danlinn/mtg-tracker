@@ -979,8 +979,27 @@ body {
 }
 
 [data-theme="flame"] .rounded-lg.border {
-  box-shadow: 0 0 2px rgba(255,42,109,0.2), 0 4px 12px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 16px rgba(140,10,20,0.5), 0 2px 6px rgba(0,0,0,0.4);
   border-color: #30105a !important;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="flame"] .rounded-lg.border::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 15%;
+  background: linear-gradient(0deg, rgba(180,20,20,0.25) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="flame"] .rounded-lg.border > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Buttons — hot gradient */
