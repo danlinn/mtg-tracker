@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 interface PlayerCountStat {
   games: number;
@@ -29,6 +30,8 @@ interface Stats {
 }
 
 export default function DashboardPage() {
+  const { data: session } = useSession();
+  const userId = (session?.user as { id?: string })?.id;
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
@@ -77,7 +80,7 @@ export default function DashboardPage() {
             {stats.deckStats.map((deck) => (
               <Link
                 key={deck.id}
-                href={`/decks/${deck.id}/edit`}
+                href={userId ? `/players/${userId}/decks/${deck.id}` : `/decks/${deck.id}/edit`}
                 className="block p-3 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm transition-all"
               >
                 <div className="flex items-center justify-between">
