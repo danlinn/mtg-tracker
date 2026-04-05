@@ -50,10 +50,12 @@ export async function POST(req: Request) {
         cmc?: number;
         type_line?: string;
         oracle_text?: string;
+        power?: string;
+        toughness?: string;
         rarity?: string;
         edhrec_rank?: number;
         image_uris?: { small?: string; normal?: string };
-        card_faces?: { image_uris?: { small?: string; normal?: string } }[];
+        card_faces?: { oracle_text?: string; image_uris?: { small?: string; normal?: string } }[];
         prices?: { usd?: string | null; usd_foil?: string | null };
         scryfall_uri?: string;
       }) => {
@@ -63,6 +65,9 @@ export async function POST(req: Request) {
           manaCost: card.mana_cost ?? null,
           cmc: card.cmc ?? null,
           typeLine: card.type_line ?? null,
+          oracleText: card.oracle_text ?? card.card_faces?.[0]?.oracle_text ?? null,
+          power: card.power ?? null,
+          toughness: card.toughness ?? null,
           rarity: card.rarity ?? null,
           edhrecRank: card.edhrec_rank ?? null,
           imageSmall: imageUris?.small ?? null,

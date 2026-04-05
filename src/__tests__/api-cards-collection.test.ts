@@ -180,6 +180,22 @@ describe("POST /api/cards/collection", () => {
     expect(reqBody.identifiers[1].name).toBe("lightning bolt");
   });
 
+  it("strips foil markers from card names", async () => {
+    const POST = await getHandler();
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{ name: "Riverpyre Verge", prices: { usd: "22.42" }, image_uris: { small: "http://img/rv" }, id: "rv1" }],
+      }),
+    });
+
+    const res = await POST(makeRequest({ decklist: "1 Riverpyre Verge (DFT) 503 *F*" }));
+    const data = await res.json();
+    expect(data.cards[0].name).toBe("Riverpyre Verge");
+    expect(data.cards[0].found).toBe(true);
+    expect(data.cards[0].priceUsd).toBe(22.42);
+  });
+
   it("strips set codes in bracket format", async () => {
     const POST = await getHandler();
     mockFetch.mockResolvedValue({

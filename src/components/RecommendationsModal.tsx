@@ -7,6 +7,9 @@ interface RecCard {
   manaCost: string | null;
   cmc: number | null;
   typeLine: string | null;
+  oracleText: string | null;
+  power: string | null;
+  toughness: string | null;
   rarity: string | null;
   edhrecRank: number | null;
   imageSmall: string | null;
@@ -168,6 +171,12 @@ export default function RecommendationsModal({
                   )}
                   {selected.typeLine && (
                     <div className="text-sm text-gray-600 mt-1">{selected.typeLine}</div>
+                  )}
+                  {selected.oracleText && (
+                    <div className="text-xs text-gray-500 mt-1 whitespace-pre-wrap">{selected.oracleText}</div>
+                  )}
+                  {selected.power != null && selected.toughness != null && (
+                    <div className="text-sm font-semibold text-gray-800 mt-1">{selected.power}/{selected.toughness}</div>
                   )}
                   <div className="flex gap-3 mt-2 text-xs text-gray-500">
                     {selected.edhrecRank && (

@@ -32,7 +32,10 @@ interface ScryfallCard {
 }
 
 function stripSetCode(name: string): string {
-  return name.replace(/\s*[\(\[]\w+[\)\]]\s*\d*\s*$/, "").trim();
+  return name
+    .replace(/\s*\*[fF]\*\s*$/, "")            // Remove foil marker *F*
+    .replace(/\s*[\(\[]\w+[\)\]]\s*\d*\s*$/, "") // Remove set code (C21) 7
+    .trim();
 }
 
 function parseDecklist(decklist: string): { quantity: number; name: string }[] {
