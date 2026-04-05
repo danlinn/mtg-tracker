@@ -1164,7 +1164,7 @@ body {
 }
 
 [data-theme="chris"] nav .font-bold.text-lg {
-  font-family: 'Space Grotesk', system-ui, sans-serif !important;
+  font-family: 'Comic Sans MS', 'Comic Sans', cursive !important;
   font-weight: 700;
   color: #ffffff !important;
   letter-spacing: 0.08em;
