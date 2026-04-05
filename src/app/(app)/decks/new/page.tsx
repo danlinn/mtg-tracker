@@ -30,6 +30,8 @@ export default function NewDeckPage() {
   const [decklist, setDecklist] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [moxfieldUrl, setMoxfieldUrl] = useState("");
+  const [importing, setImporting] = useState(false);
 
   function buildEdhpUrl() {
     if (!decklist.trim()) return null;
@@ -69,6 +71,42 @@ export default function NewDeckPage() {
     }
   }
 
+  async function handleMoxfieldImport() {
+    if (!moxfieldUrl.trim()) return;
+    setImporting(true);
+    setError("");
+    try {
+      const res = await fetch("/api/import/moxfield", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: moxfieldUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to import from Moxfield");
+        setImporting(false);
+        return;
+      }
+      if (data.name) setName(data.name);
+      if (data.commanders?.[0]) setCommander(data.commanders[0]);
+      if (data.commanders?.[1]) {
+        setCommander2(data.commanders[1]);
+        setShowPartner(true);
+      }
+      if (data.decklist) setDecklist(data.decklist);
+      if (data.colorIdentity) {
+        const newColors: Record<string, boolean> = { W: false, U: false, B: false, R: false, G: false };
+        data.colorIdentity.forEach((c: string) => {
+          if (newColors[c] !== undefined) newColors[c] = true;
+        });
+        setColors(newColors);
+      }
+    } catch {
+      setError("Failed to import from Moxfield");
+    }
+    setImporting(false);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -101,6 +139,28 @@ export default function NewDeckPage() {
   return (
     <div className="max-w-md mx-auto">
       <h1 className="text-2xl font-bold mb-6">New Deck</h1>
+
+      {/* Moxfield Import */}
+      <div className="mb-6 p-3 border border-gray-200 rounded-lg bg-gray-50">
+        <div className="text-sm font-medium mb-2">Import from Moxfield</div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={moxfieldUrl}
+            onChange={(e) => setMoxfieldUrl(e.target.value)}
+            placeholder="https://www.moxfield.com/decks/..."
+            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+          />
+          <button
+            type="button"
+            onClick={handleMoxfieldImport}
+            disabled={importing || !moxfieldUrl.trim()}
+            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          >
+            {importing ? "Importing..." : "Import"}
+          </button>
+        </div>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div className="bg-red-50 text-red-600 px-4 py-2 rounded text-sm">

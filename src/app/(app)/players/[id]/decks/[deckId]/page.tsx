@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import ColorPips from "@/components/ColorPips";
+import CardGrid, { type DeckCard } from "@/components/CardGrid";
 
 interface PlayerCountStat {
   games: number;
@@ -39,6 +40,8 @@ export default function PlayerDeckPage() {
   const deckId = params.deckId as string;
   const [deck, setDeck] = useState<DeckDetail | null>(null);
   const [error, setError] = useState("");
+  const [deckCards, setDeckCards] = useState<DeckCard[] | null>(null);
+  const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
     fetch(`/api/players/decks/${deckId}`)
@@ -46,7 +49,22 @@ export default function PlayerDeckPage() {
         if (!r.ok) throw new Error("Deck not found");
         return r.json();
       })
-      .then(setDeck)
+      .then((d: DeckDetail) => {
+        setDeck(d);
+        if (d.decklist) {
+          fetch("/api/cards/collection", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ decklist: d.decklist }),
+          })
+            .then((r) => r.json())
+            .then((data) => {
+              setDeckCards(data.cards ?? []);
+              setTotalPrice(data.totalPrice ?? 0);
+            })
+            .catch(() => {});
+        }
+      })
       .catch(() => setError("Deck not found"));
   }, [deckId]);
 
@@ -160,13 +178,12 @@ export default function PlayerDeckPage() {
         </div>
       )}
 
-      {/* Decklist */}
-      {deck.decklist ? (
-        <div>
-          <h2 className="text-lg font-semibold mb-2">Decklist</h2>
-          <pre className="bg-white border border-gray-200 rounded-lg p-4 text-sm font-mono whitespace-pre-wrap text-gray-800 max-h-96 overflow-y-auto">
-            {deck.decklist}
-          </pre>
+      {/* Card grid */}
+      {deckCards ? (
+        <CardGrid cards={deckCards} totalPrice={totalPrice} />
+      ) : deck.decklist ? (
+        <div className="text-center py-6 text-gray-400 text-sm">
+          Loading cards...
         </div>
       ) : (
         <div className="text-center py-6 text-gray-400 text-sm">
