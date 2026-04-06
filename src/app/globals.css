@@ -2006,61 +2006,72 @@ body {
    ═══════════════════════════════════════════════ */
 
 [data-theme="grixis"] {
-  --background: #060a06;
-  --foreground: #c0d0b8;
-  --card-bg: #0e140c;
-  --card-border: #1a2a14;
-  --accent: #4aaa30;
-  --accent-hover: #60c848;
-  --muted: #486840;
-  --t-text-700: #90b880;
-  --t-text-400: #283a20;
+  --background: #0a0806;
+  --foreground: #c8c0a8;
+  --card-bg: #141008;
+  --card-border: #2a2010;
+  --accent: #5aaa30;
+  --accent-hover: #70c848;
+  --muted: #5a6838;
+  --t-text-700: #a0a880;
+  --t-text-400: #303820;
 }
 
 [data-theme="grixis"] body {
   font-family: 'Cinzel', Georgia, serif;
-  background-color: #060a06;
+  background-color: #0a0806;
   background-image:
-    radial-gradient(ellipse at 25% 15%, rgba(30,80,20,0.1) 0%, transparent 50%),
-    radial-gradient(ellipse at 75% 85%, rgba(10,40,10,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 25% 15%, rgba(40,60,10,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 75% 85%, rgba(30,20,5,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(50,30,10,0.06) 0%, transparent 60%),
     repeating-linear-gradient(
       0deg,
-      rgba(10,18,8,0.7) 0px, rgba(10,18,8,0.7) 2px,
-      rgba(8,14,6,0.9) 2px, rgba(8,14,6,0.9) 5px,
-      rgba(12,20,10,0.6) 5px, rgba(12,20,10,0.6) 7px
+      rgba(18,14,8,0.8) 0px, rgba(18,14,8,0.8) 2px,
+      rgba(12,10,5,0.95) 2px, rgba(12,10,5,0.95) 4px,
+      rgba(20,16,10,0.7) 4px, rgba(20,16,10,0.7) 7px,
+      rgba(14,12,6,0.85) 7px, rgba(14,12,6,0.85) 9px
     ),
     repeating-linear-gradient(
       90deg,
-      transparent 0px, transparent 6px,
-      rgba(0,0,0,0.12) 6px, rgba(0,0,0,0.12) 7px,
-      transparent 7px, transparent 15px,
-      rgba(20,40,10,0.08) 15px, rgba(20,40,10,0.08) 16px
+      transparent 0px, transparent 5px,
+      rgba(30,20,8,0.2) 5px, rgba(30,20,8,0.2) 6px,
+      transparent 6px, transparent 12px,
+      rgba(0,0,0,0.15) 12px, rgba(0,0,0,0.15) 13px,
+      transparent 13px, transparent 20px,
+      rgba(40,30,10,0.1) 20px, rgba(40,30,10,0.1) 21px
     );
   background-attachment: fixed;
 }
 
-/* Slime drip + grit overlay */
+/* Slime drips + mud splatter overlay */
 [data-theme="grixis"] body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.06;
+  opacity: 0.1;
   background:
     repeating-linear-gradient(
       175deg,
-      transparent 0px, transparent 30px,
-      rgba(40,80,20,0.4) 30px,
-      rgba(40,80,20,0.15) 33px,
-      transparent 36px
+      transparent 0px, transparent 25px,
+      rgba(50,80,20,0.5) 25px,
+      rgba(40,60,15,0.2) 28px,
+      transparent 32px
     ),
     repeating-linear-gradient(
-      185deg,
-      transparent 0px, transparent 50px,
-      rgba(20,60,10,0.3) 50px,
-      rgba(20,60,10,0.1) 52px,
-      transparent 55px
+      183deg,
+      transparent 0px, transparent 40px,
+      rgba(60,40,15,0.4) 40px,
+      rgba(50,30,10,0.15) 43px,
+      transparent 47px
+    ),
+    repeating-linear-gradient(
+      170deg,
+      transparent 0px, transparent 60px,
+      rgba(30,60,10,0.3) 60px,
+      rgba(30,60,10,0.1) 62px,
+      transparent 65px
     );
 }
 
@@ -2070,8 +2081,8 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.03;
-  background: url("data:image/svg+xml,%3Csvg width='6' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='2' fill='%23ffffff' opacity='0.15'/%3E%3Crect x='3' y='3' width='1' height='1' fill='%23ffffff' opacity='0.1'/%3E%3C/svg%3E") repeat;
+  opacity: 0.08;
+  background: url("data:image/svg+xml,%3Csvg width='10' height='10' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='2' fill='%23806030' opacity='0.2'/%3E%3Crect x='5' y='3' width='1' height='1' fill='%23405020' opacity='0.25'/%3E%3Crect x='2' y='7' width='3' height='1' fill='%23604020' opacity='0.15'/%3E%3Crect x='7' y='8' width='1' height='2' fill='%23304010' opacity='0.2'/%3E%3C/svg%3E") repeat;
 }
 
 [data-theme="grixis"] main,
@@ -2092,11 +2103,11 @@ body {
 
 /* Cards — gritty with slimy green glow */
 [data-theme="grixis"] .rounded-lg.border {
-  border-color: #1a2a14 !important;
+  border-color: #2a2010 !important;
   box-shadow:
-    0 0 8px rgba(40,80,20,0.15),
+    0 0 8px rgba(50,40,15,0.2),
     0 4px 12px rgba(0,0,0,0.6),
-    inset 0 0 20px rgba(10,30,8,0.4);
+    inset 0 0 25px rgba(20,15,5,0.5);
   position: relative;
   overflow: hidden;
 }
@@ -2108,9 +2119,10 @@ body {
   pointer-events: none;
   z-index: 0;
   background:
-    linear-gradient(180deg, rgba(20,50,10,0.08) 0%, transparent 25%, transparent 85%, rgba(30,70,15,0.12) 100%),
-    radial-gradient(ellipse at 80% 95%, rgba(40,80,20,0.08) 0%, transparent 40%),
-    url("data:image/svg+xml,%3Csvg width='8' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='1' height='1' fill='%23304020' opacity='0.3'/%3E%3Crect x='4' y='3' width='2' height='1' fill='%23203010' opacity='0.2'/%3E%3Crect x='2' y='6' width='1' height='2' fill='%23405020' opacity='0.15'/%3E%3C/svg%3E") repeat;
+    linear-gradient(180deg, rgba(40,30,10,0.1) 0%, transparent 20%, transparent 80%, rgba(30,50,10,0.15) 100%),
+    radial-gradient(ellipse at 80% 95%, rgba(50,40,15,0.1) 0%, transparent 40%),
+    radial-gradient(ellipse at 10% 10%, rgba(40,60,15,0.06) 0%, transparent 40%),
+    url("data:image/svg+xml,%3Csvg width='12' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='2' fill='%23503818' opacity='0.25'/%3E%3Crect x='6' y='3' width='3' height='1' fill='%23304020' opacity='0.2'/%3E%3Crect x='2' y='8' width='1' height='3' fill='%23604820' opacity='0.18'/%3E%3Crect x='9' y='9' width='2' height='2' fill='%23405020' opacity='0.15'/%3E%3Crect x='4' y='5' width='1' height='1' fill='%23806030' opacity='0.12'/%3E%3C/svg%3E") repeat;
 }
 
 [data-theme="grixis"] .rounded-lg.border > * {
@@ -2135,9 +2147,9 @@ body {
 
 /* Nav */
 [data-theme="grixis"] nav.bg-gray-900 {
-  background: linear-gradient(180deg, #0a100a 0%, #060a06 100%) !important;
-  border-bottom: 2px solid #1a3014;
-  box-shadow: 0 2px 16px rgba(10,30,8,0.5);
+  background: linear-gradient(180deg, #100c06 0%, #0a0806 100%) !important;
+  border-bottom: 2px solid #2a2010;
+  box-shadow: 0 2px 16px rgba(20,15,5,0.6);
 }
 
 [data-theme="grixis"] nav .font-bold.text-lg {
