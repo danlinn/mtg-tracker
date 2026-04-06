@@ -24,6 +24,7 @@ const themeLabels: Record<ThemeName, string> = {
   "stained-glass": "Stained Glass",
   dungeon: "Dungeon",
   "neon-dynasty": "Neon Dynasty",
+  grixis: "Grixis",
 };
 
 export default function NavBar() {
