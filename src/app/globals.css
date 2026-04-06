@@ -1316,7 +1316,7 @@ body {
 }
 
 [data-theme="phyrexia"] body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Orbitron', 'Courier New', monospace;
   background:
     radial-gradient(ellipse at 30% 20%, rgba(74,255,74,0.04) 0%, transparent 50%),
     radial-gradient(ellipse at 70% 80%, rgba(74,255,74,0.03) 0%, transparent 50%),
@@ -1326,10 +1326,12 @@ body {
 [data-theme="phyrexia"] h1,
 [data-theme="phyrexia"] h2,
 [data-theme="phyrexia"] h3 {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Orbitron', monospace;
   font-weight: 700;
   color: #4aff4a;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.9em;
   text-shadow: 0 0 16px rgba(74,255,74,0.5), 0 0 40px rgba(74,255,74,0.2);
 }
 
@@ -1361,10 +1363,12 @@ body {
 }
 
 [data-theme="phyrexia"] nav .font-bold.text-lg {
+  font-family: 'Orbitron', monospace !important;
   font-weight: 700;
   color: #4aff4a !important;
   text-shadow: 0 0 12px rgba(74,255,74,0.6), 0 0 30px rgba(74,255,74,0.3);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 [data-theme="phyrexia"] nav .bg-gray-700 {
@@ -2014,7 +2018,7 @@ body {
 }
 
 [data-theme="grixis"] body {
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: 'Cinzel', Georgia, serif;
   background-color: #060a06;
   background-image:
     radial-gradient(ellipse at 25% 15%, rgba(30,80,20,0.1) 0%, transparent 50%),
@@ -2079,7 +2083,7 @@ body {
 [data-theme="grixis"] h1,
 [data-theme="grixis"] h2,
 [data-theme="grixis"] h3 {
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: 'Cinzel', Georgia, serif;
   font-weight: 700;
   color: #50c030;
   text-shadow: 0 0 15px rgba(60,160,30,0.4), 0 2px 4px rgba(0,0,0,0.7);
@@ -2104,8 +2108,9 @@ body {
   pointer-events: none;
   z-index: 0;
   background:
-    linear-gradient(180deg, rgba(20,50,10,0.06) 0%, transparent 25%, transparent 85%, rgba(30,70,15,0.1) 100%),
-    radial-gradient(ellipse at 80% 95%, rgba(40,80,20,0.06) 0%, transparent 40%);
+    linear-gradient(180deg, rgba(20,50,10,0.08) 0%, transparent 25%, transparent 85%, rgba(30,70,15,0.12) 100%),
+    radial-gradient(ellipse at 80% 95%, rgba(40,80,20,0.08) 0%, transparent 40%),
+    url("data:image/svg+xml,%3Csvg width='8' height='8' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='1' height='1' fill='%23304020' opacity='0.3'/%3E%3Crect x='4' y='3' width='2' height='1' fill='%23203010' opacity='0.2'/%3E%3Crect x='2' y='6' width='1' height='2' fill='%23405020' opacity='0.15'/%3E%3C/svg%3E") repeat;
 }
 
 [data-theme="grixis"] .rounded-lg.border > * {
@@ -2136,7 +2141,7 @@ body {
 }
 
 [data-theme="grixis"] nav .font-bold.text-lg {
-  font-family: 'Space Grotesk', system-ui, sans-serif !important;
+  font-family: 'Cinzel', Georgia, serif !important;
   font-weight: 700;
   color: #50c030 !important;
   text-shadow: 0 0 12px rgba(60,160,30,0.5);
