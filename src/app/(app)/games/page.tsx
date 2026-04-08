@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { getWinLabel as getWinLabelRaw } from "@/lib/win-labels";
 
@@ -30,6 +31,8 @@ function getWinLabel(game: Game): { text: string; color: string } | null {
 }
 
 export default function GamesPage() {
+  const { data: session } = useSession();
+  const isAdmin = (session?.user as { role?: string })?.role === "admin";
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -50,6 +53,15 @@ export default function GamesPage() {
       });
     return () => { cancelled = true; };
   }, [page, perPage]);
+
+  async function handleDelete(id: string) {
+    if (!confirm("Delete this game? This cannot be undone.")) return;
+    const res = await fetch(`/api/admin/games/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setGames((prev) => prev.filter((g) => g.id !== id));
+      setTotal((t) => t - 1);
+    }
+  }
 
   if (loading) {
     return <div className="text-center py-12 text-gray-500">Loading...</div>;
@@ -98,6 +110,22 @@ export default function GamesPage() {
                     <span className="text-sm font-medium text-green-600">
                       Winner: {winner?.user.name}
                     </span>
+                    {isAdmin && (
+                      <div className="flex gap-1">
+                        <Link
+                          href={`/games/${game.id}/edit`}
+                          className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(game.id)}
+                          className="text-xs px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
