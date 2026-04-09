@@ -20,15 +20,14 @@ export async function GET(req: Request) {
     select: {
       id: true,
       name: true,
-      _count: { select: { gameEntries: true } },
       gameEntries: {
-        where: { isWinner: true },
         select: {
-          id: true,
+          isWinner: true,
           game: {
             select: {
               players: {
                 select: {
+                  id: true,
                   isWinner: true,
                   deck: { select: { bracket: true, edhp: true } },
                 },
@@ -46,25 +45,54 @@ export async function GET(req: Request) {
       let bigWins = 0;
       let easyWins = 0;
 
+      const byPlayerCount: Record<number, { games: number; wins: number }> = {
+        2: { games: 0, wins: 0 },
+        3: { games: 0, wins: 0 },
+        4: { games: 0, wins: 0 },
+      };
+
       for (const entry of user.gameEntries) {
-        const label = getWinLabel(entry.game.players);
-        if (label === "nice") niceWins++;
-        else if (label === "big") bigWins++;
-        else if (label === "easy") easyWins++;
+        const playerCount = entry.game.players.length;
+        if (playerCount >= 2 && playerCount <= 4) {
+          byPlayerCount[playerCount].games++;
+          if (entry.isWinner) {
+            byPlayerCount[playerCount].wins++;
+          }
+        }
+
+        if (entry.isWinner) {
+          const label = getWinLabel(entry.game.players);
+          if (label === "nice") niceWins++;
+          else if (label === "big") bigWins++;
+          else if (label === "easy") easyWins++;
+        }
+      }
+
+      const totalGames = user.gameEntries.length;
+      const totalWins = user.gameEntries.filter((e) => e.isWinner).length;
+
+      const winRateByPlayerCount: Record<number, { games: number; wins: number; winRate: number }> = {};
+      for (const count of [2, 3, 4]) {
+        const stat = byPlayerCount[count];
+        if (stat.games > 0) {
+          winRateByPlayerCount[count] = {
+            games: stat.games,
+            wins: stat.wins,
+            winRate: Math.round((stat.wins / stat.games) * 100),
+          };
+        }
       }
 
       return {
         id: user.id,
         name: user.name,
-        games: user._count.gameEntries,
-        wins: user.gameEntries.length,
-        winRate:
-          user._count.gameEntries > 0
-            ? Math.round((user.gameEntries.length / user._count.gameEntries) * 100)
-            : 0,
+        games: totalGames,
+        wins: totalWins,
+        winRate: totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0,
         niceWins,
         bigWins,
         easyWins,
+        winRateByPlayerCount,
       };
     })
     .sort((a, b) => b.wins - a.wins || b.winRate - a.winRate);
