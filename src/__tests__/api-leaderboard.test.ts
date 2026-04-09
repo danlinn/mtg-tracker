@@ -23,16 +23,26 @@ function makeRequest(params = "") {
   return new Request(`http://localhost/api/leaderboard${params ? `?${params}` : ""}`);
 }
 
-// Helper: create a winning game entry with players
-function winEntry(winBracket: number | null = null, loserBracket: number | null = null) {
+// Helper: create a game entry (win or loss) with a given number of players
+function gameEntry(
+  isWinner: boolean,
+  playerCount = 2,
+  winBracket: number | null = null,
+  loserBracket: number | null = null
+) {
+  const players = [
+    { id: `p-${Math.random()}`, isWinner: true, deck: { bracket: winBracket, edhp: null } },
+  ];
+  for (let i = 1; i < playerCount; i++) {
+    players.push({
+      id: `p-${Math.random()}`,
+      isWinner: false,
+      deck: { bracket: loserBracket, edhp: null },
+    });
+  }
   return {
-    id: `w-${Math.random()}`,
-    game: {
-      players: [
-        { isWinner: true, deck: { bracket: winBracket, edhp: null } },
-        { isWinner: false, deck: { bracket: loserBracket, edhp: null } },
-      ],
-    },
+    isWinner,
+    game: { players },
   };
 }
 
@@ -63,8 +73,14 @@ describe("GET /api/leaderboard", () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
     mockUserFindMany.mockResolvedValue([
-      { id: "u1", name: "Alice", _count: { gameEntries: 2 }, gameEntries: [winEntry()] },
-      { id: "u2", name: "Bob", _count: { gameEntries: 3 }, gameEntries: [winEntry(), winEntry()] },
+      {
+        id: "u1", name: "Alice",
+        gameEntries: [gameEntry(true), gameEntry(false)],  // 1 win, 1 loss
+      },
+      {
+        id: "u2", name: "Bob",
+        gameEntries: [gameEntry(true), gameEntry(true), gameEntry(false)],  // 2 wins, 1 loss
+      },
     ]);
 
     const res = await GET(makeRequest());
@@ -78,20 +94,27 @@ describe("GET /api/leaderboard", () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
     mockUserFindMany.mockResolvedValue([
-      { id: "u1", name: "Alice", _count: { gameEntries: 3 }, gameEntries: [winEntry(), winEntry()] },
+      {
+        id: "u1", name: "Alice",
+        gameEntries: [gameEntry(true), gameEntry(true), gameEntry(false)],  // 2/3 = 67%
+      },
     ]);
 
     const res = await GET(makeRequest());
     const data = await res.json();
     expect(data.entries[0].winRate).toBe(67);
     expect(data.entries[0].games).toBe(3);
+    expect(data.entries[0].wins).toBe(2);
   });
 
   it("paginates results", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
     mockUserFindMany.mockResolvedValue([
-      { id: "u1", name: "Alice", _count: { gameEntries: 5 }, gameEntries: [winEntry(), winEntry(), winEntry()] },
+      {
+        id: "u1", name: "Alice",
+        gameEntries: [gameEntry(true), gameEntry(true), gameEntry(false), gameEntry(false), gameEntry(false)],
+      },
     ]);
 
     const res = await GET(makeRequest("page=1&perPage=20"));
@@ -108,12 +131,12 @@ describe("GET /api/leaderboard", () => {
       {
         id: "u1",
         name: "Alice",
-        _count: { gameEntries: 5 },
         gameEntries: [
-          winEntry(3, 4),  // Nice win (1 bracket diff)
-          winEntry(1, 4),  // Big win (3 bracket diff)
-          winEntry(4, 2),  // Easy win (2 brackets above)
-          winEntry(3, 3),  // Normal win (no diff)
+          gameEntry(true, 2, 3, 4),   // Nice win (1 bracket diff)
+          gameEntry(true, 2, 1, 4),   // Big win (3 bracket diff)
+          gameEntry(true, 2, 4, 2),   // Easy win (2 brackets above)
+          gameEntry(true, 2, 3, 3),   // Normal win (no diff)
+          gameEntry(false, 2),         // A loss
         ],
       },
     ]);
@@ -123,5 +146,31 @@ describe("GET /api/leaderboard", () => {
     expect(data.entries[0].niceWins).toBe(1);
     expect(data.entries[0].bigWins).toBe(1);
     expect(data.entries[0].easyWins).toBe(1);
+  });
+
+  it("calculates winRateByPlayerCount", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockUserFindMany.mockResolvedValue([
+      {
+        id: "u1",
+        name: "Alice",
+        gameEntries: [
+          gameEntry(true, 2),   // 2-player win
+          gameEntry(false, 2),  // 2-player loss
+          gameEntry(true, 3),   // 3-player win
+          gameEntry(false, 3),  // 3-player loss
+          gameEntry(false, 3),  // 3-player loss
+          gameEntry(true, 4),   // 4-player win
+        ],
+      },
+    ]);
+
+    const res = await GET(makeRequest());
+    const data = await res.json();
+    const pc = data.entries[0].winRateByPlayerCount;
+    expect(pc[2]).toEqual({ games: 2, wins: 1, winRate: 50 });
+    expect(pc[3]).toEqual({ games: 3, wins: 1, winRate: 33 });
+    expect(pc[4]).toEqual({ games: 1, wins: 1, winRate: 100 });
   });
 });
