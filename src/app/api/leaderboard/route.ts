@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
 import { getWinLabel } from "@/lib/win-labels";
+import { getActivePlaygroupId, getPlaygroupIdsForUser } from "@/lib/playgroup";
 
 export async function GET(req: Request) {
   const userId = await getCurrentUserId();
@@ -15,12 +16,24 @@ export async function GET(req: Request) {
     ? Number(searchParams.get("perPage"))
     : 20;
 
+  const activePlaygroupId = await getActivePlaygroupId();
+  let gameFilter = {};
+  if (activePlaygroupId) {
+    gameFilter = { game: { playgroupId: activePlaygroupId } };
+  } else {
+    const pgIds = await getPlaygroupIdsForUser(userId);
+    if (pgIds.length > 0) {
+      gameFilter = { game: { playgroupId: { in: pgIds } } };
+    }
+  }
+
   const users = await prisma.user.findMany({
-    where: { gameEntries: { some: {} } },
+    where: { gameEntries: { some: gameFilter } },
     select: {
       id: true,
       name: true,
       gameEntries: {
+        where: gameFilter,
         select: {
           isWinner: true,
           game: {

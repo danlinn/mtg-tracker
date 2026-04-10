@@ -27,7 +27,7 @@ export const authOptions: NextAuthOptions = {
 
         if (!isValid) return null;
 
-        return { id: user.id, email: user.email, name: user.name, role: user.role };
+        return { id: user.id, email: user.email, name: user.name, role: user.role, status: user.status };
       },
     }),
   ],
@@ -41,13 +41,16 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role ?? "user";
+        token.status = (user as { status?: string }).status ?? "pending";
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as { id: string; role: string }).id = token.id as string;
-        (session.user as { id: string; role: string }).role = (token.role as string) ?? "user";
+        const u = session.user as { id: string; role: string; status: string };
+        u.id = token.id as string;
+        u.role = (token.role as string) ?? "user";
+        u.status = (token.status as string) ?? "pending";
       }
       return session;
     },

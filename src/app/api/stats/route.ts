@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
 import { calculateDeckStats, sortByLastPlayed } from "@/lib/deck-stats";
+import { getActivePlaygroupId, getPlaygroupIdsForUser } from "@/lib/playgroup";
 
 export async function GET() {
   const userId = await getCurrentUserId();
@@ -9,9 +10,20 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const activePlaygroupId = await getActivePlaygroupId();
+  let gameFilter = {};
+  if (activePlaygroupId) {
+    gameFilter = { game: { playgroupId: activePlaygroupId } };
+  } else {
+    const pgIds = await getPlaygroupIdsForUser(userId);
+    if (pgIds.length > 0) {
+      gameFilter = { game: { playgroupId: { in: pgIds } } };
+    }
+  }
+
   const [totalGames, wins, decks] = await Promise.all([
-    prisma.gamePlayer.count({ where: { userId } }),
-    prisma.gamePlayer.count({ where: { userId, isWinner: true } }),
+    prisma.gamePlayer.count({ where: { userId, ...gameFilter } }),
+    prisma.gamePlayer.count({ where: { userId, isWinner: true, ...gameFilter } }),
     prisma.deck.findMany({
       where: { userId },
       include: {

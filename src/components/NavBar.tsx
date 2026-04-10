@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import { useTheme, ThemeName } from "@/lib/theme";
+import PlaygroupSwitcher from "@/components/PlaygroupSwitcher";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
@@ -61,6 +62,7 @@ export default function NavBar() {
                 {item.label}
               </Link>
             ))}
+            <PlaygroupSwitcher />
             <select
               value={theme}
               onChange={(e) => setTheme(e.target.value as ThemeName)}
@@ -128,6 +130,10 @@ export default function NavBar() {
                 {item.label}
               </Link>
             ))}
+            <div className="px-3 py-2 flex items-center justify-between">
+              <span className="text-sm text-gray-400">Group</span>
+              <PlaygroupSwitcher />
+            </div>
             <div className="px-3 py-2 flex items-center justify-between">
               <span className="text-sm text-gray-400">Theme</span>
               <select

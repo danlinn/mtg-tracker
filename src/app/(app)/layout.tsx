@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth-helpers";
 import NavBar from "@/components/NavBar";
 import VerifyBanner from "@/components/VerifyBanner";
+import PendingBanner from "@/components/PendingBanner";
 
 export default async function AppLayout({
   children,
@@ -17,6 +18,7 @@ export default async function AppLayout({
     <>
       <NavBar />
       <VerifyBanner />
+      <PendingBanner />
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
         {children}
       </main>

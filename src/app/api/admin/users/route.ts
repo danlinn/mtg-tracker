@@ -13,6 +13,7 @@ export async function GET() {
       email: true,
       name: true,
       role: true,
+      status: true,
       createdAt: true,
       _count: { select: { decks: true, gameEntries: true } },
     },

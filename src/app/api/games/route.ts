@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
+import { getActivePlaygroupId, getPlaygroupIdsForUser } from "@/lib/playgroup";
 
 export async function GET(req: Request) {
   const userId = await getCurrentUserId();
@@ -14,7 +15,20 @@ export async function GET(req: Request) {
     ? Number(searchParams.get("perPage"))
     : 20;
 
-  const where = { players: { some: { userId } } };
+  const activePlaygroupId = await getActivePlaygroupId();
+
+  // Scope by playgroup: specific group, or all user's groups
+  let playgroupFilter = {};
+  if (activePlaygroupId) {
+    playgroupFilter = { playgroupId: activePlaygroupId };
+  } else {
+    const pgIds = await getPlaygroupIdsForUser(userId);
+    if (pgIds.length > 0) {
+      playgroupFilter = { playgroupId: { in: pgIds } };
+    }
+  }
+
+  const where = { players: { some: { userId } }, ...playgroupFilter };
 
   const [games, total] = await Promise.all([
     prisma.game.findMany({
@@ -56,7 +70,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { playedAt, players, notes, asterisk } = body;
+  const { playedAt, players, notes, asterisk, playgroupId } = body;
 
   if (!players || players.length < 2 || players.length > 4) {
     return NextResponse.json(
@@ -85,6 +99,7 @@ export async function POST(req: Request) {
           playedAt: gameDate,
           notes: notes?.trim() || null,
           asterisk: !!asterisk,
+          playgroupId: playgroupId || (await getActivePlaygroupId()) || null,
           players: {
             create: players.map(
               (p: { userId: string; deckId: string; isWinner: boolean }) => ({

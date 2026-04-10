@@ -13,14 +13,62 @@ model User {
   name           String
   hashedPassword String
   role           String   @default("user")
+  status         String   @default("pending")
   theme          String   @default("default")
   emailVerified  Boolean  @default(false)
   verifyToken    String?  @unique
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  decks       Deck[]
-  gameEntries GamePlayer[]
+  decks              Deck[]
+  gameEntries        GamePlayer[]
+  playgroupMembers   PlaygroupMember[]
+  sentInvites        PlaygroupInvite[]  @relation("InviteSender")
+}
+
+model Playgroup {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members PlaygroupMember[]
+  games   Game[]
+  invites PlaygroupInvite[]
+}
+
+model PlaygroupMember {
+  id        String   @id @default(cuid())
+  role      String   @default("member")
+  joinedAt  DateTime @default(now())
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  playgroupId String
+  playgroup   Playgroup @relation(fields: [playgroupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, playgroupId])
+  @@index([playgroupId])
+}
+
+model PlaygroupInvite {
+  id        String    @id @default(cuid())
+  token     String    @unique @default(cuid())
+  email     String?
+  expiresAt DateTime?
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  playgroupId String
+  playgroup   Playgroup @relation(fields: [playgroupId], references: [id], onDelete: Cascade)
+
+  invitedById String
+  invitedBy   User   @relation("InviteSender", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([playgroupId])
+  @@index([token])
 }
 
 model Deck {
@@ -56,12 +104,17 @@ model Game {
   notes     String?
   asterisk  Boolean  @default(false)
 
+  playgroupId String?
+  playgroup   Playgroup? @relation(fields: [playgroupId], references: [id], onDelete: SetNull)
+
   players GamePlayer[]
+
+  @@index([playgroupId])
 }
 
 model CardCache {
   name      String   @id
-  data      String   // JSON blob
+  data      String
   fetchedAt DateTime @default(now())
 }
 
