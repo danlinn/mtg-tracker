@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/auth-helpers";
+import { getCurrentUserId, isAdmin } from "@/lib/auth-helpers";
 import { isPlaygroupMember } from "@/lib/playgroup";
 
 export async function GET(
@@ -14,7 +14,7 @@ export async function GET(
 
   const { id } = await params;
 
-  if (!(await isPlaygroupMember(userId, id))) {
+  if (!(await isAdmin()) && !(await isPlaygroupMember(userId, id))) {
     return NextResponse.json({ error: "Not a member" }, { status: 403 });
   }
 

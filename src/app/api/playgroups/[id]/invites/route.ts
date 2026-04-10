@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUserId } from "@/lib/auth-helpers";
-import { isPlaygroupAdmin, isPlaygroupMember } from "@/lib/playgroup";
+import { getCurrentUserId, isAdmin } from "@/lib/auth-helpers";
+import { isPlaygroupMember } from "@/lib/playgroup";
 import { sendEmail } from "@/lib/email";
 
 const INVITE_TTL_DAYS = 7;
@@ -17,7 +17,7 @@ export async function GET(
 
   const { id } = await params;
 
-  if (!(await isPlaygroupMember(userId, id))) {
+  if (!(await isAdmin()) && !(await isPlaygroupMember(userId, id))) {
     return NextResponse.json({ error: "Not a member" }, { status: 403 });
   }
 
@@ -44,7 +44,7 @@ export async function POST(
   const { id } = await params;
 
   // Any member can invite
-  if (!(await isPlaygroupMember(userId, id))) {
+  if (!(await isAdmin()) && !(await isPlaygroupMember(userId, id))) {
     return NextResponse.json({ error: "Not a member" }, { status: 403 });
   }
 
