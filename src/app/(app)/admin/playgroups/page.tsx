@@ -109,23 +109,6 @@ export default function AdminPlaygroupsPage() {
     loadMembers(playgroupId);
   }
 
-  async function handleBackfill(playgroupId: string, pgName: string) {
-    if (!confirm(`Assign all unassigned games to "${pgName}" and add all users as members?`)) return;
-    const res = await fetch("/api/admin/backfill-playgroup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ playgroupId, addAllUsers: true }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      alert(`Done! ${data.gamesAssigned} games assigned, ${data.membersAdded} members added, ${data.usersApproved} users approved.`);
-      // Refresh playgroup list
-      fetch("/api/admin/playgroups").then((r) => r.json()).then(setPlaygroups);
-    } else {
-      alert("Backfill failed");
-    }
-  }
-
   if (loading) return <div className="text-center py-12 text-gray-500">Loading...</div>;
 
   return (
@@ -174,12 +157,6 @@ export default function AdminPlaygroupsPage() {
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => handleBackfill(pg.id, pg.name)}
-                  className="text-xs px-3 py-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                >
-                  Backfill
-                </button>
-                <button
                   onClick={() => loadMembers(pg.id)}
                   className="text-xs px-3 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                 >
@@ -197,25 +174,25 @@ export default function AdminPlaygroupsPage() {
             {expandedId === pg.id && (
               <div className="border-t border-gray-200 p-4 space-y-3">
                 {/* Add member */}
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <select
                     value={addUserId}
                     onChange={(e) => setAddUserId(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+                    className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm min-w-0"
                   >
                     <option value="">Add member...</option>
                     {users
                       .filter((u) => !members.some((m) => m.user.id === u.id))
                       .map((u) => (
                         <option key={u.id} value={u.id}>
-                          {u.name} ({u.email})
+                          {u.name}
                         </option>
                       ))}
                   </select>
                   <button
                     onClick={() => handleAddMember(pg.id)}
                     disabled={!addUserId}
-                    className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm disabled:opacity-50"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 shrink-0"
                   >
                     Add
                   </button>
