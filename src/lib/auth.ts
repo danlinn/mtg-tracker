@@ -43,6 +43,18 @@ export const authOptions: NextAuthOptions = {
         token.role = (user as { role?: string }).role ?? "user";
         token.status = (user as { status?: string }).status ?? "pending";
       }
+      // Refresh role and status from DB on every request
+      // so admin approval / role changes take effect immediately
+      if (token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true, status: true },
+        });
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.status = dbUser.status;
+        }
+      }
       return token;
     },
     async session({ session, token }) {
