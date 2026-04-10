@@ -13,16 +13,16 @@ export default function PlaygroupSwitcher() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/playgroups")
-      .then((r) => r.json())
-      .then((data) => {
-        setPlaygroups(data);
+    Promise.all([
+      fetch("/api/playgroups").then((r) => r.json()),
+      fetch("/api/playgroups/active").then((r) => r.json()),
+    ])
+      .then(([pgData, activeData]) => {
+        setPlaygroups(Array.isArray(pgData) ? pgData : []);
+        setActive(activeData.playgroupId ?? "all");
         setLoading(false);
       })
       .catch(() => setLoading(false));
-
-    // Read current from cookie via a helper endpoint would be needed,
-    // but we can also just read from the select default
   }, []);
 
   async function handleSwitch(playgroupId: string) {
@@ -32,13 +32,11 @@ export default function PlaygroupSwitcher() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ playgroupId }),
     });
-    // Refresh the page to re-fetch scoped data
     window.location.reload();
   }
 
   if (loading || playgroups.length === 0) return null;
 
-  // Only show switcher if user has 1+ playgroups
   if (playgroups.length === 1) {
     return (
       <span className="text-xs text-gray-400 truncate max-w-[100px]">

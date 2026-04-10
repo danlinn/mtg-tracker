@@ -19,24 +19,18 @@ export default function AdminPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link
           href="/admin/pending"
-          className={`block p-6 rounded-lg border transition-colors ${
-            pendingCount > 0
-              ? "border-yellow-300 bg-yellow-50 hover:border-yellow-400"
-              : "border-gray-200 bg-white hover:border-blue-400"
-          }`}
+          className="block p-6 rounded-lg border border-gray-200 bg-white hover:border-blue-400 transition-colors"
         >
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Pending Approvals</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Pending Approvals
             {pendingCount > 0 && (
-              <span className="bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">
+              <span className="ml-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full align-middle">
                 {pendingCount}
               </span>
             )}
-          </div>
+          </h2>
           <p className="text-sm text-gray-500 mt-1">
-            {pendingCount > 0
-              ? `${pendingCount} user${pendingCount > 1 ? "s" : ""} waiting for approval`
-              : "No pending registrations"}
+            Approve or reject new user registrations
           </p>
         </Link>
         <Link
