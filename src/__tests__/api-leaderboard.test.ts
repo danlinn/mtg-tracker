@@ -5,9 +5,9 @@ jest.mock("@/lib/auth-helpers", () => ({
   getCurrentUserId: () => mockGetCurrentUserId(),
 }));
 
+const mockGetActivePlaygroupId = jest.fn();
 jest.mock("@/lib/playgroup", () => ({
-  getActivePlaygroupId: () => Promise.resolve(null),
-  getPlaygroupIdsForUser: () => Promise.resolve([]),
+  getActivePlaygroupId: () => mockGetActivePlaygroupId(),
 }));
 
 const mockUserFindMany = jest.fn();
@@ -54,6 +54,7 @@ function gameEntry(
 describe("GET /api/leaderboard", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetActivePlaygroupId.mockResolvedValue(null);
   });
 
   it("returns 401 when not authenticated", async () => {
@@ -179,5 +180,56 @@ describe("GET /api/leaderboard", () => {
     expect(pc[2]).toEqual({ games: 2, wins: 1, winRate: 50 });
     expect(pc[3]).toEqual({ games: 3, wins: 1, winRate: 33 });
     expect(pc[4]).toEqual({ games: 1, wins: 1, winRate: 100 });
+  });
+
+  it("All Groups view (no active playgroup) shows all games including unassigned", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockGetActivePlaygroupId.mockResolvedValue(null); // All Groups
+
+    mockUserFindMany.mockResolvedValue([
+      {
+        id: "u1",
+        name: "Alice",
+        gameEntries: [
+          gameEntry(true, 2),   // game with null playgroupId
+          gameEntry(false, 2),
+        ],
+      },
+    ]);
+
+    const res = await GET(makeRequest());
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.entries).toHaveLength(1);
+    expect(data.entries[0].games).toBe(2);
+    expect(data.entries[0].wins).toBe(1);
+    // Verify the query was called WITHOUT a game.playgroupId filter
+    expect(mockUserFindMany).toHaveBeenCalledTimes(1);
+    const callArgs = mockUserFindMany.mock.calls[0][0] as { where: { gameEntries: { some: Record<string, unknown> } } };
+    expect(callArgs.where.gameEntries.some).toEqual({});
+  });
+
+  it("specific playgroup filter only shows games in that group", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockGetActivePlaygroupId.mockResolvedValue("pg-mtg4"); // Specific group
+
+    mockUserFindMany.mockResolvedValue([
+      {
+        id: "u1",
+        name: "Alice",
+        gameEntries: [gameEntry(true, 2)],
+      },
+    ]);
+
+    const res = await GET(makeRequest());
+    expect(res.status).toBe(200);
+    // Verify the query includes the playgroup filter
+    expect(mockUserFindMany).toHaveBeenCalledTimes(1);
+    const callArgs = mockUserFindMany.mock.calls[0][0] as { where: { gameEntries: { some: { game: { playgroupId: string } } } } };
+    expect(callArgs.where.gameEntries.some).toEqual({
+      game: { playgroupId: "pg-mtg4" },
+    });
   });
 });

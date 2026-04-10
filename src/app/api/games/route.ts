@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
-import { getActivePlaygroupId, getPlaygroupIdsForUser } from "@/lib/playgroup";
+import { getActivePlaygroupId } from "@/lib/playgroup";
 
 export async function GET(req: Request) {
   const userId = await getCurrentUserId();
@@ -17,16 +17,11 @@ export async function GET(req: Request) {
 
   const activePlaygroupId = await getActivePlaygroupId();
 
-  // Scope by playgroup: specific group, or all user's groups
-  let playgroupFilter = {};
-  if (activePlaygroupId) {
-    playgroupFilter = { playgroupId: activePlaygroupId };
-  } else {
-    const pgIds = await getPlaygroupIdsForUser(userId);
-    if (pgIds.length > 0) {
-      playgroupFilter = { playgroupId: { in: pgIds } };
-    }
-  }
+  // Only filter when a specific playgroup is selected
+  // "All Groups" (null) shows all the user's games
+  const playgroupFilter = activePlaygroupId
+    ? { playgroupId: activePlaygroupId }
+    : {};
 
   const where = { players: { some: { userId } }, ...playgroupFilter };
 
