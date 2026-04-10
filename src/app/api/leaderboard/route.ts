@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
 import { getWinLabel } from "@/lib/win-labels";
-import { getActivePlaygroupId } from "@/lib/playgroup";
+import { getActivePlaygroupId, getPlaygroupIdsForUser } from "@/lib/playgroup";
 
 export async function GET(req: Request) {
   const userId = await getCurrentUserId();
@@ -17,11 +17,22 @@ export async function GET(req: Request) {
     : 20;
 
   const activePlaygroupId = await getActivePlaygroupId();
-  // Only filter when a specific playgroup is selected
-  // "All Groups" (null) shows everything
-  const gameFilter = activePlaygroupId
-    ? { game: { playgroupId: activePlaygroupId } }
-    : {};
+  // Specific group: filter to that group
+  // All groups: filter to games in user's groups or unassigned
+  let gameFilter;
+  if (activePlaygroupId) {
+    gameFilter = { game: { playgroupId: activePlaygroupId } };
+  } else {
+    const pgIds = await getPlaygroupIdsForUser(userId);
+    gameFilter = {
+      game: {
+        OR: [
+          { playgroupId: { in: pgIds } },
+          { playgroupId: null },
+        ],
+      },
+    };
+  }
 
   const users = await prisma.user.findMany({
     where: { gameEntries: { some: gameFilter } },

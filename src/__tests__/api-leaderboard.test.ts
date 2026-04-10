@@ -6,8 +6,10 @@ jest.mock("@/lib/auth-helpers", () => ({
 }));
 
 const mockGetActivePlaygroupId = jest.fn();
+const mockGetPlaygroupIdsForUser = jest.fn();
 jest.mock("@/lib/playgroup", () => ({
   getActivePlaygroupId: () => mockGetActivePlaygroupId(),
+  getPlaygroupIdsForUser: () => mockGetPlaygroupIdsForUser(),
 }));
 
 const mockUserFindMany = jest.fn();
@@ -55,6 +57,7 @@ describe("GET /api/leaderboard", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetActivePlaygroupId.mockResolvedValue(null);
+    mockGetPlaygroupIdsForUser.mockResolvedValue(["pg1"]);
   });
 
   it("returns 401 when not authenticated", async () => {
@@ -204,10 +207,10 @@ describe("GET /api/leaderboard", () => {
     expect(data.entries).toHaveLength(1);
     expect(data.entries[0].games).toBe(2);
     expect(data.entries[0].wins).toBe(1);
-    // Verify the query was called WITHOUT a game.playgroupId filter
+    // Verify query filters by user's playgroups (including null for unassigned)
     expect(mockUserFindMany).toHaveBeenCalledTimes(1);
-    const callArgs = mockUserFindMany.mock.calls[0][0] as { where: { gameEntries: { some: Record<string, unknown> } } };
-    expect(callArgs.where.gameEntries.some).toEqual({});
+    const callArgs = mockUserFindMany.mock.calls[0][0] as { where: { gameEntries: { some: { game: unknown } } } };
+    expect(callArgs.where.gameEntries.some.game).toBeDefined();
   });
 
   it("specific playgroup filter only shows games in that group", async () => {

@@ -64,7 +64,7 @@ describe("POST /api/admin/backfill-playgroup", () => {
     const res = await POST(makeRequest({ playgroupId: "pg1" }));
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data.count).toBe(15);
+    expect(data.gamesAssigned).toBe(15);
     expect(data.message).toContain("MTG4");
   });
 });

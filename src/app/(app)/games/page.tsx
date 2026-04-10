@@ -16,6 +16,7 @@ interface Game {
   playedAt: string;
   notes: string | null;
   asterisk: boolean;
+  playgroup: { id: string; name: string } | null;
   players: GamePlayer[];
 }
 
@@ -100,6 +101,9 @@ export default function GamesPage() {
                   <span className="text-sm text-gray-500">
                     {new Date(game.playedAt).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" })}
                     {game.asterisk && <span className="text-yellow-500 ml-1" title="Asterisk">*</span>}
+                    {game.playgroup && (
+                      <span className="ml-2 text-xs text-gray-400">{game.playgroup.name}</span>
+                    )}
                   </span>
                   <div className="flex items-center gap-2">
                     {winLabel && (
