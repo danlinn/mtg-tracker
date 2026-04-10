@@ -109,6 +109,23 @@ export default function AdminPlaygroupsPage() {
     loadMembers(playgroupId);
   }
 
+  async function handleBackfill(playgroupId: string, pgName: string) {
+    if (!confirm(`Assign all unassigned games to "${pgName}" and add all users as members?`)) return;
+    const res = await fetch("/api/admin/backfill-playgroup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playgroupId, addAllUsers: true }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      alert(`Done! ${data.gamesAssigned} games assigned, ${data.membersAdded} members added, ${data.usersApproved} users approved.`);
+      // Refresh playgroup list
+      fetch("/api/admin/playgroups").then((r) => r.json()).then(setPlaygroups);
+    } else {
+      alert("Backfill failed");
+    }
+  }
+
   if (loading) return <div className="text-center py-12 text-gray-500">Loading...</div>;
 
   return (
@@ -156,6 +173,12 @@ export default function AdminPlaygroupsPage() {
                 </div>
               </div>
               <div className="flex gap-2">
+                <button
+                  onClick={() => handleBackfill(pg.id, pg.name)}
+                  className="text-xs px-3 py-1 rounded bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                >
+                  Backfill
+                </button>
                 <button
                   onClick={() => loadMembers(pg.id)}
                   className="text-xs px-3 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
