@@ -95,7 +95,7 @@ export async function GET(req: Request) {
         winRateByPlayerCount,
       };
     })
-    .sort((a, b) => b.wins - a.wins || b.winRate - a.winRate);
+    .sort((a, b) => b.winRate - a.winRate || b.wins - a.wins);
 
   const total = leaderboard.length;
   const paged = leaderboard.slice((page - 1) * perPage, page * perPage);

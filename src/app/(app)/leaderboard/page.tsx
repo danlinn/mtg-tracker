@@ -57,11 +57,11 @@ export default function LeaderboardPage() {
 
   const sorted = [...entries].sort((a, b) => {
     if (playerCountFilter === "all") {
-      return b.wins - a.wins || b.winRate - a.winRate;
+      return b.winRate - a.winRate || b.wins - a.wins;
     }
     const aStats = getFilteredStats(a, playerCountFilter);
     const bStats = getFilteredStats(b, playerCountFilter);
-    return bStats.wins - aStats.wins || bStats.winRate - aStats.winRate;
+    return bStats.winRate - aStats.winRate || bStats.wins - aStats.wins;
   });
 
   if (loading) {

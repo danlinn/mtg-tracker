@@ -69,17 +69,17 @@ describe("GET /api/leaderboard", () => {
     expect(data.total).toBe(0);
   });
 
-  it("sorts by wins descending, then winRate", async () => {
+  it("sorts by winRate descending, then wins as tiebreaker", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
     mockUserFindMany.mockResolvedValue([
       {
         id: "u1", name: "Alice",
-        gameEntries: [gameEntry(true), gameEntry(false)],  // 1 win, 1 loss
+        gameEntries: [gameEntry(true), gameEntry(false), gameEntry(false)],  // 1/3 = 33%
       },
       {
         id: "u2", name: "Bob",
-        gameEntries: [gameEntry(true), gameEntry(true), gameEntry(false)],  // 2 wins, 1 loss
+        gameEntries: [gameEntry(true), gameEntry(true), gameEntry(false)],  // 2/3 = 67%
       },
     ]);
 
@@ -87,7 +87,9 @@ describe("GET /api/leaderboard", () => {
     const data = await res.json();
     expect(data.entries).toHaveLength(2);
     expect(data.entries[0].name).toBe("Bob");
-    expect(data.entries[0].wins).toBe(2);
+    expect(data.entries[0].winRate).toBe(67);
+    expect(data.entries[1].name).toBe("Alice");
+    expect(data.entries[1].winRate).toBe(33);
   });
 
   it("calculates winRate correctly", async () => {
