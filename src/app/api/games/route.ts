@@ -16,21 +16,16 @@ export async function GET(req: Request) {
     : 20;
 
   const activePlaygroupId = await getActivePlaygroupId();
+  const userPgIds = activePlaygroupId ? null : await getPlaygroupIdsForUser(userId);
 
-  // Specific group: filter to that group
-  // All groups: filter to games in user's groups or unassigned games the user played in
+  // Build where clause
   let where;
   if (activePlaygroupId) {
+    // Specific playgroup: simple filter
     where = { players: { some: { userId } }, playgroupId: activePlaygroupId };
   } else {
-    const pgIds = await getPlaygroupIdsForUser(userId);
-    where = {
-      players: { some: { userId } },
-      OR: [
-        { playgroupId: { in: pgIds } },
-        { playgroupId: null },
-      ],
-    };
+    // All groups: get all user's games, filter by playgroup membership in code
+    where = { players: { some: { userId } } };
   }
 
   const [games, total] = await Promise.all([

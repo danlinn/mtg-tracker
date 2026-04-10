@@ -17,41 +17,36 @@ export async function GET(req: Request) {
     : 20;
 
   const activePlaygroupId = await getActivePlaygroupId();
-  // Specific group: filter to that group
-  // All groups: filter to games in user's groups or unassigned
-  let gameFilter;
+
+  // Build game filter at DB level
+  let gameWhere: Record<string, unknown> = {};
   if (activePlaygroupId) {
-    gameFilter = { game: { playgroupId: activePlaygroupId } };
+    gameWhere = { playgroupId: activePlaygroupId };
   } else {
     const pgIds = await getPlaygroupIdsForUser(userId);
-    gameFilter = {
-      game: {
-        OR: [
-          { playgroupId: { in: pgIds } },
-          { playgroupId: null },
-        ],
-      },
-    };
+    if (pgIds.length > 0) {
+      // Games in user's groups OR unassigned (null)
+      gameWhere = { OR: [{ playgroupId: { in: pgIds } }, { playgroupId: null }] };
+    }
+    // else: no playgroups = no filter, show everything
   }
 
-  const users = await prisma.user.findMany({
-    where: { gameEntries: { some: gameFilter } },
+  // Get all game entries matching the playgroup filter, grouped by user
+  const entries = await prisma.gamePlayer.findMany({
+    where: {
+      game: gameWhere,
+    },
     select: {
-      id: true,
-      name: true,
-      gameEntries: {
-        where: gameFilter,
+      isWinner: true,
+      userId: true,
+      user: { select: { id: true, name: true } },
+      game: {
         select: {
-          isWinner: true,
-          game: {
+          players: {
             select: {
-              players: {
-                select: {
-                  id: true,
-                  isWinner: true,
-                  deck: { select: { bracket: true, edhp: true } },
-                },
-              },
+              id: true,
+              isWinner: true,
+              deck: { select: { bracket: true, edhp: true } },
             },
           },
         },
@@ -59,8 +54,26 @@ export async function GET(req: Request) {
     },
   });
 
-  const leaderboard = users
-    .map((user) => {
+  // Group by user
+  const userMap = new Map<string, {
+    name: string;
+    entries: typeof entries;
+  }>();
+
+  for (const entry of entries) {
+    const existing = userMap.get(entry.userId);
+    if (existing) {
+      existing.entries.push(entry);
+    } else {
+      userMap.set(entry.userId, {
+        name: entry.user.name,
+        entries: [entry],
+      });
+    }
+  }
+
+  const leaderboard = Array.from(userMap.entries())
+    .map(([id, { name, entries: userEntries }]) => {
       let niceWins = 0;
       let bigWins = 0;
       let easyWins = 0;
@@ -71,7 +84,7 @@ export async function GET(req: Request) {
         4: { games: 0, wins: 0 },
       };
 
-      for (const entry of user.gameEntries) {
+      for (const entry of userEntries) {
         const playerCount = entry.game.players.length;
         if (playerCount >= 2 && playerCount <= 4) {
           byPlayerCount[playerCount].games++;
@@ -88,8 +101,8 @@ export async function GET(req: Request) {
         }
       }
 
-      const totalGames = user.gameEntries.length;
-      const totalWins = user.gameEntries.filter((e) => e.isWinner).length;
+      const totalGames = userEntries.length;
+      const totalWins = userEntries.filter((e) => e.isWinner).length;
 
       const winRateByPlayerCount: Record<number, { games: number; wins: number; winRate: number }> = {};
       for (const count of [2, 3, 4]) {
@@ -104,8 +117,8 @@ export async function GET(req: Request) {
       }
 
       return {
-        id: user.id,
-        name: user.name,
+        id,
+        name,
         games: totalGames,
         wins: totalWins,
         winRate: totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0,

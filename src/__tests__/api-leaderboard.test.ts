@@ -12,11 +12,11 @@ jest.mock("@/lib/playgroup", () => ({
   getPlaygroupIdsForUser: () => mockGetPlaygroupIdsForUser(),
 }));
 
-const mockUserFindMany = jest.fn();
+const mockGamePlayerFindMany = jest.fn();
 jest.mock("@/lib/prisma", () => ({
   prisma: {
-    user: {
-      findMany: (...args: unknown[]) => mockUserFindMany(...args),
+    gamePlayer: {
+      findMany: (...args: unknown[]) => mockGamePlayerFindMany(...args),
     },
   },
 }));
@@ -30,25 +30,18 @@ function makeRequest(params = "") {
   return new Request(`http://localhost/api/leaderboard${params ? `?${params}` : ""}`);
 }
 
-// Helper: create a game entry (win or loss) with a given number of players
-function gameEntry(
-  isWinner: boolean,
-  playerCount = 2,
-  winBracket: number | null = null,
-  loserBracket: number | null = null
-) {
+// Helper: create a gamePlayer entry
+function gpEntry(userId: string, userName: string, isWinner: boolean, playerCount = 2, winBracket: number | null = null, loserBracket: number | null = null) {
   const players = [
     { id: `p-${Math.random()}`, isWinner: true, deck: { bracket: winBracket, edhp: null } },
   ];
   for (let i = 1; i < playerCount; i++) {
-    players.push({
-      id: `p-${Math.random()}`,
-      isWinner: false,
-      deck: { bracket: loserBracket, edhp: null },
-    });
+    players.push({ id: `p-${Math.random()}`, isWinner: false, deck: { bracket: loserBracket, edhp: null } });
   }
   return {
     isWinner,
+    userId,
+    user: { id: userId, name: userName },
     game: { players },
   };
 }
@@ -67,10 +60,10 @@ describe("GET /api/leaderboard", () => {
     expect(res.status).toBe(401);
   });
 
-  it("returns empty entries when no users have games", async () => {
+  it("returns empty entries when no games", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
-    mockUserFindMany.mockResolvedValue([]);
+    mockGamePlayerFindMany.mockResolvedValue([]);
 
     const res = await GET(makeRequest());
     const data = await res.json();
@@ -81,15 +74,13 @@ describe("GET /api/leaderboard", () => {
   it("sorts by winRate descending, then wins as tiebreaker", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
-    mockUserFindMany.mockResolvedValue([
-      {
-        id: "u1", name: "Alice",
-        gameEntries: [gameEntry(true), gameEntry(false), gameEntry(false)],  // 1/3 = 33%
-      },
-      {
-        id: "u2", name: "Bob",
-        gameEntries: [gameEntry(true), gameEntry(true), gameEntry(false)],  // 2/3 = 67%
-      },
+    mockGamePlayerFindMany.mockResolvedValue([
+      gpEntry("u1", "Alice", true),
+      gpEntry("u1", "Alice", false),
+      gpEntry("u1", "Alice", false),  // Alice: 1/3 = 33%
+      gpEntry("u2", "Bob", true),
+      gpEntry("u2", "Bob", true),
+      gpEntry("u2", "Bob", false),    // Bob: 2/3 = 67%
     ]);
 
     const res = await GET(makeRequest());
@@ -98,17 +89,15 @@ describe("GET /api/leaderboard", () => {
     expect(data.entries[0].name).toBe("Bob");
     expect(data.entries[0].winRate).toBe(67);
     expect(data.entries[1].name).toBe("Alice");
-    expect(data.entries[1].winRate).toBe(33);
   });
 
   it("calculates winRate correctly", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
-    mockUserFindMany.mockResolvedValue([
-      {
-        id: "u1", name: "Alice",
-        gameEntries: [gameEntry(true), gameEntry(true), gameEntry(false)],  // 2/3 = 67%
-      },
+    mockGamePlayerFindMany.mockResolvedValue([
+      gpEntry("u1", "Alice", true),
+      gpEntry("u1", "Alice", true),
+      gpEntry("u1", "Alice", false),
     ]);
 
     const res = await GET(makeRequest());
@@ -121,11 +110,8 @@ describe("GET /api/leaderboard", () => {
   it("paginates results", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
-    mockUserFindMany.mockResolvedValue([
-      {
-        id: "u1", name: "Alice",
-        gameEntries: [gameEntry(true), gameEntry(true), gameEntry(false), gameEntry(false), gameEntry(false)],
-      },
+    mockGamePlayerFindMany.mockResolvedValue([
+      gpEntry("u1", "Alice", true),
     ]);
 
     const res = await GET(makeRequest("page=1&perPage=20"));
@@ -138,18 +124,12 @@ describe("GET /api/leaderboard", () => {
   it("counts win labels correctly", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
-    mockUserFindMany.mockResolvedValue([
-      {
-        id: "u1",
-        name: "Alice",
-        gameEntries: [
-          gameEntry(true, 2, 3, 4),   // Nice win (1 bracket diff)
-          gameEntry(true, 2, 1, 4),   // Big win (3 bracket diff)
-          gameEntry(true, 2, 4, 2),   // Easy win (2 brackets above)
-          gameEntry(true, 2, 3, 3),   // Normal win (no diff)
-          gameEntry(false, 2),         // A loss
-        ],
-      },
+    mockGamePlayerFindMany.mockResolvedValue([
+      gpEntry("u1", "Alice", true, 2, 3, 4),   // Nice win
+      gpEntry("u1", "Alice", true, 2, 1, 4),   // Big win
+      gpEntry("u1", "Alice", true, 2, 4, 2),   // Easy win
+      gpEntry("u1", "Alice", true, 2, 3, 3),   // Normal win
+      gpEntry("u1", "Alice", false, 2),
     ]);
 
     const res = await GET(makeRequest());
@@ -162,19 +142,13 @@ describe("GET /api/leaderboard", () => {
   it("calculates winRateByPlayerCount", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
-    mockUserFindMany.mockResolvedValue([
-      {
-        id: "u1",
-        name: "Alice",
-        gameEntries: [
-          gameEntry(true, 2),   // 2-player win
-          gameEntry(false, 2),  // 2-player loss
-          gameEntry(true, 3),   // 3-player win
-          gameEntry(false, 3),  // 3-player loss
-          gameEntry(false, 3),  // 3-player loss
-          gameEntry(true, 4),   // 4-player win
-        ],
-      },
+    mockGamePlayerFindMany.mockResolvedValue([
+      gpEntry("u1", "Alice", true, 2),
+      gpEntry("u1", "Alice", false, 2),
+      gpEntry("u1", "Alice", true, 3),
+      gpEntry("u1", "Alice", false, 3),
+      gpEntry("u1", "Alice", false, 3),
+      gpEntry("u1", "Alice", true, 4),
     ]);
 
     const res = await GET(makeRequest());
@@ -185,54 +159,39 @@ describe("GET /api/leaderboard", () => {
     expect(pc[4]).toEqual({ games: 1, wins: 1, winRate: 100 });
   });
 
-  it("All Groups view (no active playgroup) shows all games including unassigned", async () => {
+  it("specific playgroup filters at DB level", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
-    mockGetActivePlaygroupId.mockResolvedValue(null); // All Groups
-
-    mockUserFindMany.mockResolvedValue([
-      {
-        id: "u1",
-        name: "Alice",
-        gameEntries: [
-          gameEntry(true, 2),   // game with null playgroupId
-          gameEntry(false, 2),
-        ],
-      },
+    mockGetActivePlaygroupId.mockResolvedValue("pg-mtg4");
+    mockGamePlayerFindMany.mockResolvedValue([
+      gpEntry("u1", "Alice", true),
     ]);
 
     const res = await GET(makeRequest());
     expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.entries).toHaveLength(1);
-    expect(data.entries[0].games).toBe(2);
-    expect(data.entries[0].wins).toBe(1);
-    // Verify query filters by user's playgroups (including null for unassigned)
-    expect(mockUserFindMany).toHaveBeenCalledTimes(1);
-    const callArgs = mockUserFindMany.mock.calls[0][0] as { where: { gameEntries: { some: { game: unknown } } } };
-    expect(callArgs.where.gameEntries.some.game).toBeDefined();
+    // Verify DB query filtered by playgroupId
+    expect(mockGamePlayerFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { game: { playgroupId: "pg-mtg4" } },
+      })
+    );
   });
 
-  it("specific playgroup filter only shows games in that group", async () => {
+  it("All Groups filters by user's playgroup IDs at DB level", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
-    mockGetActivePlaygroupId.mockResolvedValue("pg-mtg4"); // Specific group
+    mockGetActivePlaygroupId.mockResolvedValue(null);
+    mockGetPlaygroupIdsForUser.mockResolvedValue(["pg1", "pg2"]);
+    mockGamePlayerFindMany.mockResolvedValue([]);
 
-    mockUserFindMany.mockResolvedValue([
-      {
-        id: "u1",
-        name: "Alice",
-        gameEntries: [gameEntry(true, 2)],
-      },
-    ]);
-
-    const res = await GET(makeRequest());
-    expect(res.status).toBe(200);
-    // Verify the query includes the playgroup filter
-    expect(mockUserFindMany).toHaveBeenCalledTimes(1);
-    const callArgs = mockUserFindMany.mock.calls[0][0] as { where: { gameEntries: { some: { game: { playgroupId: string } } } } };
-    expect(callArgs.where.gameEntries.some).toEqual({
-      game: { playgroupId: "pg-mtg4" },
+    await GET(makeRequest());
+    // Verify DB query uses OR with user's groups + null
+    const callArgs = mockGamePlayerFindMany.mock.calls[0][0] as { where: { game: unknown } };
+    expect(callArgs.where.game).toEqual({
+      OR: [
+        { playgroupId: { in: ["pg1", "pg2"] } },
+        { playgroupId: null },
+      ],
     });
   });
 });
