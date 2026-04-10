@@ -13,6 +13,7 @@ const navItems = [
   { href: "/games", label: "Games" },
   { href: "/players", label: "Players" },
   { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/playgroups", label: "Groups" },
 ];
 
 const themeLabels: Record<ThemeName, string> = {
