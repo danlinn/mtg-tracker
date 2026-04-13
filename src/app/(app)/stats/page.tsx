@@ -46,15 +46,36 @@ interface PlayerOption {
   name: string;
 }
 
-const COLOR_META: Record<ColorKey, { label: string; hex: string }> = {
-  W: { label: "White", hex: "#f5f5dc" },
-  U: { label: "Blue", hex: "#3b82f6" },
-  B: { label: "Black", hex: "#525252" },
-  R: { label: "Red", hex: "#ef4444" },
-  G: { label: "Green", hex: "#22c55e" },
+// Matches the deck page gradient palette (B, U, R, G, W order)
+const COLOR_META: Record<ColorKey, { label: string; hex: string; textColor: string }> = {
+  W: { label: "White", hex: "#f5f5f4", textColor: "#1a1a1a" },
+  U: { label: "Blue", hex: "#60a5fa", textColor: "#ffffff" },
+  B: { label: "Black", hex: "#404040", textColor: "#f5f5f4" },
+  R: { label: "Red", hex: "#f87171", textColor: "#ffffff" },
+  G: { label: "Green", hex: "#4ade80", textColor: "#ffffff" },
 };
 
 const COLOR_KEYS: ColorKey[] = ["W", "U", "B", "R", "G"];
+// Same gradient order as decks page: Black, Blue, Red, Green, White
+const GRADIENT_ORDER: ColorKey[] = ["B", "U", "R", "G", "W"];
+const COLORLESS_HEX = "#9ca3af";
+
+function comboId(combo: string): string {
+  return combo === "Colorless" ? "g-colorless" : `g-${combo}`;
+}
+
+// Build gradient stops in the same BURGW order used by deck cards
+function comboStops(combo: string): { offset: string; color: string }[] {
+  if (combo === "Colorless") return [{ offset: "0%", color: COLORLESS_HEX }];
+  const chars = combo.split("") as ColorKey[];
+  // Reorder to BURGW so the gradient matches deck card gradients
+  const ordered = GRADIENT_ORDER.filter((c) => chars.includes(c));
+  if (ordered.length === 1) return [{ offset: "0%", color: COLOR_META[ordered[0]].hex }];
+  return ordered.map((c, i) => ({
+    offset: `${(i / (ordered.length - 1)) * 100}%`,
+    color: COLOR_META[c].hex,
+  }));
+}
 
 export default function StatsPage() {
   const { data: session } = useSession();
@@ -138,7 +159,9 @@ export default function StatsPage() {
     for (const g of filteredGames) {
       const activeColors = COLOR_KEYS.filter((c) => g.deck.colors[c]);
       if (colorCountFilter && activeColors.length !== Number(colorCountFilter)) continue;
-      const key = activeColors.length === 0 ? "Colorless" : activeColors.join("");
+      // Use BURGW ordering so combo names match MTG conventions
+      const orderedCombo = GRADIENT_ORDER.filter((c) => activeColors.includes(c));
+      const key = orderedCombo.length === 0 ? "Colorless" : orderedCombo.join("");
       counts[key] = (counts[key] ?? 0) + 1;
     }
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
@@ -287,7 +310,7 @@ export default function StatsPage() {
               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                 colorFilter[c] ? "ring-2 ring-blue-500 ring-offset-2 scale-110" : "opacity-50"
               }`}
-              style={{ backgroundColor: COLOR_META[c].hex, color: c === "W" ? "#111" : "#fff" }}
+              style={{ backgroundColor: COLOR_META[c].hex, color: COLOR_META[c].textColor }}
             >
               {c}
             </button>
@@ -336,6 +359,25 @@ export default function StatsPage() {
         ) : (
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
+              <defs>
+                {colorUsage.map((entry) => {
+                  const stops = comboStops(entry.name);
+                  return (
+                    <linearGradient
+                      key={comboId(entry.name)}
+                      id={comboId(entry.name)}
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
+                      {stops.map((s, i) => (
+                        <stop key={i} offset={s.offset} stopColor={s.color} />
+                      ))}
+                    </linearGradient>
+                  );
+                })}
+              </defs>
               <Pie
                 data={colorUsage}
                 dataKey="value"
@@ -345,15 +387,14 @@ export default function StatsPage() {
                 outerRadius={80}
                 label={({ name, value }) => `${name} (${value})`}
               >
-                {colorUsage.map((entry, i) => {
-                  // Gradient-ish color from the combo's colors
-                  const firstColor = entry.name[0] as ColorKey | undefined;
-                  const hex =
-                    firstColor && COLOR_META[firstColor]
-                      ? COLOR_META[firstColor].hex
-                      : `hsl(${(i * 60) % 360}, 60%, 55%)`;
-                  return <Cell key={entry.name} fill={hex} />;
-                })}
+                {colorUsage.map((entry) => (
+                  <Cell
+                    key={entry.name}
+                    fill={`url(#${comboId(entry.name)})`}
+                    stroke="#ffffff"
+                    strokeWidth={1}
+                  />
+                ))}
               </Pie>
               <Tooltip />
             </PieChart>
