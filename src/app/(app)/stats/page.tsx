@@ -60,6 +60,17 @@ const COLOR_KEYS: ColorKey[] = ["W", "U", "B", "R", "G"];
 const GRADIENT_ORDER: ColorKey[] = ["B", "U", "R", "G", "W"];
 const COLORLESS_HEX = "#9ca3af";
 
+// Recharts tooltip styling — dark background with white text for readability
+const TOOLTIP_STYLE = {
+  backgroundColor: "#111827",
+  border: "1px solid #374151",
+  borderRadius: "6px",
+  color: "#ffffff",
+  fontSize: "12px",
+};
+const TOOLTIP_LABEL_STYLE = { color: "#ffffff", fontWeight: 600 };
+const TOOLTIP_ITEM_STYLE = { color: "#e5e7eb" };
+
 function comboId(combo: string): string {
   return combo === "Colorless" ? "g-colorless" : `g-${combo}`;
 }
@@ -329,7 +340,12 @@ export default function StatsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="date" fontSize={10} />
               <YAxis domain={[0, 100]} fontSize={10} />
-              <Tooltip />
+              <Tooltip
+                contentStyle={TOOLTIP_STYLE}
+                labelStyle={TOOLTIP_LABEL_STYLE}
+                itemStyle={TOOLTIP_ITEM_STYLE}
+                cursor={{ fill: "rgba(59, 130, 246, 0.1)" }}
+              />
               <Line type="monotone" dataKey="winRate" stroke="#3b82f6" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
@@ -404,7 +420,12 @@ export default function StatsPage() {
                   />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip
+                contentStyle={TOOLTIP_STYLE}
+                labelStyle={TOOLTIP_LABEL_STYLE}
+                itemStyle={TOOLTIP_ITEM_STYLE}
+                cursor={{ fill: "rgba(59, 130, 246, 0.1)" }}
+              />
             </PieChart>
           </ResponsiveContainer>
         )}
@@ -421,7 +442,12 @@ export default function StatsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="color" fontSize={12} />
               <YAxis domain={[0, 100]} fontSize={10} />
-              <Tooltip />
+              <Tooltip
+                contentStyle={TOOLTIP_STYLE}
+                labelStyle={TOOLTIP_LABEL_STYLE}
+                itemStyle={TOOLTIP_ITEM_STYLE}
+                cursor={{ fill: "rgba(59, 130, 246, 0.1)" }}
+              />
               <Bar dataKey="winRate">
                 {winRateByColor.map((entry) => (
                   <Cell
@@ -446,7 +472,12 @@ export default function StatsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="label" fontSize={12} />
               <YAxis fontSize={10} />
-              <Tooltip />
+              <Tooltip
+                contentStyle={TOOLTIP_STYLE}
+                labelStyle={TOOLTIP_LABEL_STYLE}
+                itemStyle={TOOLTIP_ITEM_STYLE}
+                cursor={{ fill: "rgba(59, 130, 246, 0.1)" }}
+              />
               <Legend />
               <Bar dataKey="count" name="Wins">
                 {winLabels.map((entry) => (
