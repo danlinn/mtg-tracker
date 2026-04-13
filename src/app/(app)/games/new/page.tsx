@@ -15,9 +15,63 @@ interface PlayerEntry {
   isWinner: boolean;
 }
 
+const ADD_DECK = "__add_deck__";
+const FORM_DRAFT_KEY = "mtg-log-game-draft";
+const LAST_GAME_KEY_PREFIX = "mtg-last-game-";
+
+interface SavedDraft {
+  playerCount: number;
+  players: PlayerEntry[];
+  playedAt: string;
+  notes: string;
+  asterisk: boolean;
+  activePlaygroupId: string;
+}
+
+function loadDraft(): SavedDraft | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(FORM_DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveDraft(draft: SavedDraft) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(draft));
+}
+
+function clearDraft() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(FORM_DRAFT_KEY);
+}
+
+function loadLastGame(playgroupId: string): { playerCount: number; players: PlayerEntry[] } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(LAST_GAME_KEY_PREFIX + playgroupId);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveLastGame(playgroupId: string, playerCount: number, players: PlayerEntry[]) {
+  if (typeof window === "undefined") return;
+  // Save without winners so prefill doesn't carry last game's winner
+  const playersNoWinner = players.map((p) => ({ ...p, isWinner: false }));
+  localStorage.setItem(
+    LAST_GAME_KEY_PREFIX + playgroupId,
+    JSON.stringify({ playerCount, players: playersNoWinner })
+  );
+}
+
 export default function NewGamePage() {
   const router = useRouter();
   const [users, setUsers] = useState<UserWithDecks[]>([]);
+  const [activePlaygroupId, setActivePlaygroupId] = useState<string>("all");
   const [playerCount, setPlayerCount] = useState(4);
   const [players, setPlayers] = useState<PlayerEntry[]>(
     Array.from({ length: 4 }, () => ({ userId: "", deckId: "", isWinner: false }))
@@ -29,11 +83,39 @@ export default function NewGamePage() {
   const [asterisk, setAsterisk] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [initialized, setInitialized] = useState(false);
 
+  // Load active playgroup and users on mount
   useEffect(() => {
-    fetch("/api/users")
-      .then((r) => r.json())
-      .then(setUsers);
+    async function init() {
+      const activeRes = await fetch("/api/playgroups/active");
+      const activeData = activeRes.ok ? await activeRes.json() : { playgroupId: "all" };
+      const pgId = activeData.playgroupId ?? "all";
+      setActivePlaygroupId(pgId);
+
+      const usersRes = await fetch(`/api/users?playgroupId=${pgId}`);
+      const usersData = usersRes.ok ? await usersRes.json() : [];
+      setUsers(Array.isArray(usersData) ? usersData : []);
+
+      // Priority: draft (returning from Add Deck) > last game for playgroup > default
+      const draft = loadDraft();
+      if (draft && draft.activePlaygroupId === pgId) {
+        setPlayerCount(draft.playerCount);
+        setPlayers(draft.players);
+        setPlayedAt(draft.playedAt);
+        setNotes(draft.notes);
+        setAsterisk(draft.asterisk);
+        clearDraft();
+      } else {
+        const last = loadLastGame(pgId);
+        if (last) {
+          setPlayerCount(last.playerCount);
+          setPlayers(last.players);
+        }
+      }
+      setInitialized(true);
+    }
+    init();
   }, []);
 
   function updatePlayer(index: number, field: keyof PlayerEntry, value: string | boolean) {
@@ -73,6 +155,23 @@ export default function NewGamePage() {
     return users.find((u) => u.id === userId)?.decks ?? [];
   }
 
+  function handleDeckChange(index: number, value: string) {
+    if (value === ADD_DECK) {
+      // Save current form state and navigate to add deck
+      saveDraft({
+        playerCount,
+        players,
+        playedAt,
+        notes,
+        asterisk,
+        activePlaygroupId,
+      });
+      router.push("/decks/new?returnTo=/games/new");
+      return;
+    }
+    updatePlayer(index, "deckId", value);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -105,7 +204,14 @@ export default function NewGamePage() {
       return;
     }
 
+    // Save as last game for this playgroup
+    saveLastGame(activePlaygroupId, playerCount, activePlayers);
+    clearDraft();
     router.push("/games");
+  }
+
+  if (!initialized) {
+    return <div className="text-center py-12 text-gray-500">Loading...</div>;
   }
 
   return (
@@ -184,7 +290,7 @@ export default function NewGamePage() {
             {player.userId && (
               <select
                 value={player.deckId}
-                onChange={(e) => updatePlayer(index, "deckId", e.target.value)}
+                onChange={(e) => handleDeckChange(index, e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
               >
                 <option value="">Select deck...</option>
@@ -193,6 +299,7 @@ export default function NewGamePage() {
                     {d.name} ({d.commander}){d.edhp != null || d.bracket != null ? ` p:${d.edhp != null ? d.edhp.toFixed(2) : "-"}/b:${d.bracket ?? "-"}` : ""}
                   </option>
                 ))}
+                <option value={ADD_DECK}>+ Add Deck...</option>
               </select>
             )}
           </div>

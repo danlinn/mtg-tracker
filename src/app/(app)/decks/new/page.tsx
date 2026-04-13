@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import CommanderSearch from "@/components/CommanderSearch";
 
 const COLORS = [
@@ -15,7 +15,17 @@ const COLORS = [
 const COLOR_MAP: Record<string, string> = { W: "W", U: "U", B: "B", R: "R", G: "G" };
 
 export default function NewDeckPage() {
+  return (
+    <Suspense>
+      <NewDeckForm />
+    </Suspense>
+  );
+}
+
+function NewDeckForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
   const [name, setName] = useState("");
   const [commander, setCommander] = useState("");
   const [commanderImage, setCommanderImage] = useState<string | null>(null);
@@ -133,7 +143,7 @@ export default function NewDeckPage() {
       return;
     }
 
-    router.push("/decks");
+    router.push(returnTo || "/decks");
   }
 
   return (

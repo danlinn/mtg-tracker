@@ -19,6 +19,10 @@ async function getHandler() {
   return mod.GET;
 }
 
+function makeRequest(query = "") {
+  return new Request(`http://localhost/api/users${query ? `?${query}` : ""}`);
+}
+
 describe("GET /api/users", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -27,11 +31,11 @@ describe("GET /api/users", () => {
   it("returns 401 when not authenticated", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue(null);
-    const res = await GET();
+    const res = await GET(makeRequest());
     expect(res.status).toBe(401);
   });
 
-  it("returns all users with decks", async () => {
+  it("returns all users with decks when no playgroup filter", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
     mockUserFindMany.mockResolvedValue([
@@ -39,12 +43,37 @@ describe("GET /api/users", () => {
       { id: "u2", name: "Bob", decks: [] },
     ]);
 
-    const res = await GET();
+    const res = await GET(makeRequest());
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data).toHaveLength(2);
-    expect(data[0].name).toBe("Alice");
-    expect(data[0].decks).toHaveLength(1);
-    expect(data[1].decks).toHaveLength(0);
+    // Should not have a playgroup filter
+    expect(mockUserFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: {} })
+    );
+  });
+
+  it("returns all users when playgroupId=all", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockUserFindMany.mockResolvedValue([]);
+
+    await GET(makeRequest("playgroupId=all"));
+    expect(mockUserFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: {} })
+    );
+  });
+
+  it("filters by playgroup membership when specific playgroup given", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockUserFindMany.mockResolvedValue([]);
+
+    await GET(makeRequest("playgroupId=pg-mtg4"));
+    expect(mockUserFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { playgroupMembers: { some: { playgroupId: "pg-mtg4" } } },
+      })
+    );
   });
 });

@@ -121,7 +121,10 @@ export default function AdminUsersPage() {
               </div>
             ) : (
               <div className="flex items-center justify-between">
-                <div>
+                <Link
+                  href={`/admin/users/${user.id}`}
+                  className="flex-1 hover:opacity-70 transition-opacity"
+                >
                   <div className="font-medium text-gray-900">
                     {user.name}{" "}
                     {user.role === "admin" && (
@@ -134,8 +137,8 @@ export default function AdminUsersPage() {
                   <div className="text-xs text-gray-400 mt-1">
                     {user._count.decks} decks, {user._count.gameEntries} games
                   </div>
-                </div>
-                <div className="flex gap-3 items-center">
+                </Link>
+                <div className="flex gap-3 items-center shrink-0">
                   <button
                     onClick={() => startEdit(user)}
                     className="text-blue-600 hover:text-blue-800 text-sm"
