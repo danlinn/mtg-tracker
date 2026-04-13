@@ -19,5 +19,23 @@
 - All mutation endpoints have try-catch with proper error responses
 - Auth check: `getCurrentUserId()` returns null if not authenticated -> return 401
 
+## Playgroup Scoping (IMPORTANT)
+Every query that returns games, players, or stats MUST go through the playgroup
+helpers in `src/lib/playgroup.ts`. Never write a bare `prisma.game.findMany` or
+`prisma.gamePlayer.findMany` in a user-facing endpoint.
+
+Use these helpers:
+- `buildGameWhere(userId)` — returns Prisma `where` for games (specific group or user's groups + unassigned)
+- `buildGamePlayerWhere(userId)` — same, nested under `game` key for GamePlayer
+- `getActivePlaygroupId()` — returns the active playgroup from cookie, or null for "All Groups"
+- `getPlaygroupIdsForUser(userId)` — user's playgroup memberships
+
+**Scope-relevant tables:** Game, GamePlayer, and User listings (via playgroupMembers).
+**NOT scope-relevant:** Deck (user-owned), admin routes, register/verify/theme/health.
+
+When adding a new endpoint that reads games/stats/players, grep for `buildGameWhere`
+in similar endpoints and follow the same pattern. The cookie-based active playgroup
+context flows automatically — never pass playgroup IDs around manually.
+
 ## Timezone
 - All date displays use `America/Los_Angeles` (Pacific time)

@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
+import {
+  getActivePlaygroupId,
+  getPlaygroupIdsForUser,
+} from "@/lib/playgroup";
 
 export async function GET(req: Request) {
   const userId = await getCurrentUserId();
@@ -9,14 +13,38 @@ export async function GET(req: Request) {
   }
 
   const { searchParams } = new URL(req.url);
-  const playgroupId = searchParams.get("playgroupId");
+  // Explicit override: ?playgroupId=X or ?playgroupId=all
+  const override = searchParams.get("playgroupId");
 
-  // If playgroupId is "all" or missing, return all users
-  // Otherwise filter to members of the given playgroup
-  const where =
-    playgroupId && playgroupId !== "all"
-      ? { playgroupMembers: { some: { playgroupId } } }
-      : {};
+  // Default: respect the active playgroup from cookie context, same as
+  // all other scoped queries. "all" skips filtering entirely.
+  let scopeId: string | null;
+  if (override) {
+    scopeId = override === "all" ? null : override;
+  } else {
+    scopeId = await getActivePlaygroupId();
+  }
+
+  let where = {};
+  if (scopeId) {
+    // Specific playgroup: only members of that group
+    where = { playgroupMembers: { some: { playgroupId: scopeId } } };
+  } else if (override !== "all") {
+    // "All Groups" active (or no cookie) — scope to the current viewer's
+    // playgroups so we don't leak users from unrelated groups.
+    const pgIds = await getPlaygroupIdsForUser(userId);
+    if (pgIds.length > 0) {
+      where = {
+        OR: [
+          { playgroupMembers: { some: { playgroupId: { in: pgIds } } } },
+          // Always include self even if not in any group yet
+          { id: userId },
+        ],
+      };
+    }
+    // If the user has no playgroups and no override, return all users
+    // (first-time user seeding — same behavior as leaderboard).
+  }
 
   const users = await prisma.user.findMany({
     where,

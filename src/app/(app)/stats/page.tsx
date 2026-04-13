@@ -361,20 +361,28 @@ export default function StatsPage() {
             <PieChart>
               <defs>
                 {colorUsage.map((entry) => {
-                  const stops = comboStops(entry.name);
+                  // Radial gradient: center -> edge.
+                  // Stops reversed so the first color is at the edge, last at center.
+                  const stops = comboStops(entry.name).slice().reverse();
+                  // Re-space the offsets evenly after reversal
+                  const respaced = stops.map((s, i) => ({
+                    ...s,
+                    offset: `${(i / Math.max(stops.length - 1, 1)) * 100}%`,
+                  }));
                   return (
-                    <linearGradient
+                    <radialGradient
                       key={comboId(entry.name)}
                       id={comboId(entry.name)}
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
+                      cx="50%"
+                      cy="50%"
+                      r="50%"
+                      fx="50%"
+                      fy="50%"
                     >
-                      {stops.map((s, i) => (
+                      {respaced.map((s, i) => (
                         <stop key={i} offset={s.offset} stopColor={s.color} />
                       ))}
-                    </linearGradient>
+                    </radialGradient>
                   );
                 })}
               </defs>
