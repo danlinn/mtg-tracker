@@ -175,7 +175,15 @@ export default function StatsPage() {
       const key = orderedCombo.length === 0 ? "Colorless" : orderedCombo.join("");
       counts[key] = (counts[key] ?? 0) + 1;
     }
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+    // Sort descending by color count so 5-color lands at top of pie
+    // (recharts draws clockwise from startAngle=90 = 12 o'clock).
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => {
+        const aLen = a.name === "Colorless" ? 0 : a.name.length;
+        const bLen = b.name === "Colorless" ? 0 : b.name.length;
+        return bLen - aLen;
+      });
   }, [filteredGames, colorCountFilter]);
 
   // Win rate per color
@@ -415,6 +423,8 @@ export default function StatsPage() {
                 cx="50%"
                 cy="50%"
                 outerRadius={80}
+                startAngle={90}
+                endAngle={-270}
                 label={({ name, value }) => `${name} (${value})`}
               >
                 {colorUsage.map((entry) => (
@@ -467,6 +477,36 @@ export default function StatsPage() {
         )}
       </div>
 
+      {/* Color Usage — how many games each color has appeared in (across all combos) */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <h2 className="font-semibold text-gray-900 mb-3">Color Usage</h2>
+        {filteredGames.length === 0 ? (
+          <div className="text-center text-gray-400 text-sm py-8">No data</div>
+        ) : (
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={winRateByColor} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis dataKey="color" fontSize={12} />
+              <YAxis fontSize={10} allowDecimals={false} />
+              <Tooltip
+                contentStyle={TOOLTIP_STYLE}
+                labelStyle={TOOLTIP_LABEL_STYLE}
+                itemStyle={TOOLTIP_ITEM_STYLE}
+                cursor={{ fill: "rgba(59, 130, 246, 0.1)" }}
+              />
+              <Bar dataKey="games" name="Games">
+                {winRateByColor.map((entry) => (
+                  <Cell
+                    key={entry.color}
+                    fill={entry.games === 0 ? "#e5e7eb" : entry.hex}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
       {/* Win Labels */}
       <div className="bg-white border border-gray-200 rounded-lg p-4">
         <h2 className="font-semibold text-gray-900 mb-3">Win Types</h2>
@@ -477,7 +517,7 @@ export default function StatsPage() {
             <BarChart data={winLabels} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="label" fontSize={12} />
-              <YAxis fontSize={10} />
+              <YAxis fontSize={10} allowDecimals={false} />
               <Tooltip
                 contentStyle={TOOLTIP_STYLE}
                 labelStyle={TOOLTIP_LABEL_STYLE}
