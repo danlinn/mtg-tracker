@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
 import { calculateDeckStats, sortByLastPlayed } from "@/lib/deck-stats";
+import { buildGamePlayerWhere } from "@/lib/playgroup";
 
 export async function GET(
   _req: Request,
@@ -23,13 +24,19 @@ export async function GET(
     return NextResponse.json({ error: "Player not found" }, { status: 404 });
   }
 
+  // Scope player stats to the current user's active playgroup context
+  const gamePlayerWhere = await buildGamePlayerWhere(currentUserId);
+
   const [totalGames, wins, decks] = await Promise.all([
-    prisma.gamePlayer.count({ where: { userId: id } }),
-    prisma.gamePlayer.count({ where: { userId: id, isWinner: true } }),
+    prisma.gamePlayer.count({ where: { userId: id, ...gamePlayerWhere } }),
+    prisma.gamePlayer.count({
+      where: { userId: id, isWinner: true, ...gamePlayerWhere },
+    }),
     prisma.deck.findMany({
       where: { userId: id },
       include: {
         gameEntries: {
+          where: gamePlayerWhere,
           select: {
             isWinner: true,
             game: {

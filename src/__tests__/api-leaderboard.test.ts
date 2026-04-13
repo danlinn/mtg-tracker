@@ -5,11 +5,9 @@ jest.mock("@/lib/auth-helpers", () => ({
   getCurrentUserId: () => mockGetCurrentUserId(),
 }));
 
-const mockGetActivePlaygroupId = jest.fn();
-const mockGetPlaygroupIdsForUser = jest.fn();
+const mockBuildGameWhere = jest.fn();
 jest.mock("@/lib/playgroup", () => ({
-  getActivePlaygroupId: () => mockGetActivePlaygroupId(),
-  getPlaygroupIdsForUser: () => mockGetPlaygroupIdsForUser(),
+  buildGameWhere: (...args: unknown[]) => mockBuildGameWhere(...args),
 }));
 
 const mockGamePlayerFindMany = jest.fn();
@@ -49,8 +47,10 @@ function gpEntry(userId: string, userName: string, isWinner: boolean, playerCoun
 describe("GET /api/leaderboard", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetActivePlaygroupId.mockResolvedValue(null);
-    mockGetPlaygroupIdsForUser.mockResolvedValue(["pg1"]);
+    // Default: "All Groups" returns games from user's groups + null
+    mockBuildGameWhere.mockResolvedValue({
+      OR: [{ playgroupId: { in: ["pg1"] } }, { playgroupId: null }],
+    });
   });
 
   it("returns 401 when not authenticated", async () => {
@@ -159,17 +159,16 @@ describe("GET /api/leaderboard", () => {
     expect(pc[4]).toEqual({ games: 1, wins: 1, winRate: 100 });
   });
 
-  it("specific playgroup filters at DB level", async () => {
+  it("passes buildGameWhere result to the DB query", async () => {
     const GET = await getHandler();
     mockGetCurrentUserId.mockResolvedValue("user-1");
-    mockGetActivePlaygroupId.mockResolvedValue("pg-mtg4");
+    mockBuildGameWhere.mockResolvedValue({ playgroupId: "pg-mtg4" });
     mockGamePlayerFindMany.mockResolvedValue([
       gpEntry("u1", "Alice", true),
     ]);
 
     const res = await GET(makeRequest());
     expect(res.status).toBe(200);
-    // Verify DB query filtered by playgroupId
     expect(mockGamePlayerFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { game: { playgroupId: "pg-mtg4" } },
@@ -177,21 +176,12 @@ describe("GET /api/leaderboard", () => {
     );
   });
 
-  it("All Groups filters by user's playgroup IDs at DB level", async () => {
+  it("calls buildGameWhere with current userId", async () => {
     const GET = await getHandler();
-    mockGetCurrentUserId.mockResolvedValue("user-1");
-    mockGetActivePlaygroupId.mockResolvedValue(null);
-    mockGetPlaygroupIdsForUser.mockResolvedValue(["pg1", "pg2"]);
+    mockGetCurrentUserId.mockResolvedValue("user-42");
     mockGamePlayerFindMany.mockResolvedValue([]);
 
     await GET(makeRequest());
-    // Verify DB query uses OR with user's groups + null
-    const callArgs = mockGamePlayerFindMany.mock.calls[0][0] as { where: { game: unknown } };
-    expect(callArgs.where.game).toEqual({
-      OR: [
-        { playgroupId: { in: ["pg1", "pg2"] } },
-        { playgroupId: null },
-      ],
-    });
+    expect(mockBuildGameWhere).toHaveBeenCalledWith("user-42");
   });
 });

@@ -149,6 +149,115 @@ describe("POST /api/cards/collection", () => {
     expect(data.cards[0].imageSmall).toBe("http://img/front");
   });
 
+  it("handles split cards like Fire // Ice (image_uris at top level)", async () => {
+    // Split cards have image_uris at top level (rotated full card image)
+    // and card_faces entries, but each face's image_uris is typically null.
+    const POST = await getHandler();
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{
+          name: "Fire // Ice",
+          image_uris: { small: "http://img/fire-ice-small", normal: "http://img/fire-ice-normal" },
+          card_faces: [
+            { name: "Fire", image_uris: null },
+            { name: "Ice", image_uris: null },
+          ],
+          prices: { usd: "1.50" },
+          color_identity: ["U", "R"],
+          type_line: "Instant // Instant",
+          id: "fire-ice-id",
+          scryfall_uri: "http://scryfall/fire-ice",
+        }],
+      }),
+    });
+
+    const res = await POST(makeRequest({ decklist: "1 Fire // Ice" }));
+    const data = await res.json();
+    expect(data.cards).toHaveLength(1);
+    expect(data.cards[0].found).toBe(true);
+    expect(data.cards[0].name).toBe("Fire // Ice");
+    expect(data.cards[0].imageSmall).toBe("http://img/fire-ice-small");
+    expect(data.cards[0].imageNormal).toBe("http://img/fire-ice-normal");
+    expect(data.totalPrice).toBe(1.5);
+  });
+
+  it("matches split card when decklist has only the front face name", async () => {
+    // e.g. "1 Fire" in decklist should resolve to "Fire // Ice"
+    // via the front-name mapping after the initial lookup.
+    const POST = await getHandler();
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{
+          name: "Fire // Ice",
+          image_uris: { small: "http://img/fire-ice", normal: "http://img/fire-ice-n" },
+          prices: { usd: "1.50" },
+          id: "fi",
+          scryfall_uri: "http://scryfall/fi",
+        }],
+      }),
+    });
+
+    const res = await POST(makeRequest({ decklist: "1 Fire" }));
+    const data = await res.json();
+    expect(data.cards[0].found).toBe(true);
+    expect(data.cards[0].imageSmall).toBe("http://img/fire-ice");
+  });
+
+  it("handles Aftermath-style split cards (Commit // Memory)", async () => {
+    // Aftermath cards are a variant of split cards
+    const POST = await getHandler();
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{
+          name: "Commit // Memory",
+          image_uris: { small: "http://img/cm-small", normal: "http://img/cm-normal" },
+          card_faces: [
+            { name: "Commit", type_line: "Instant" },
+            { name: "Memory", type_line: "Sorcery" },
+          ],
+          prices: { usd: "0.75" },
+          color_identity: ["U"],
+          id: "cm-id",
+          scryfall_uri: "http://scryfall/cm",
+        }],
+      }),
+    });
+
+    const res = await POST(makeRequest({ decklist: "1 Commit // Memory" }));
+    const data = await res.json();
+    expect(data.cards[0].found).toBe(true);
+    expect(data.cards[0].imageSmall).toBe("http://img/cm-small");
+    expect(data.cards[0].name).toBe("Commit // Memory");
+  });
+
+  it("strips Fire // Ice set code correctly", async () => {
+    // Regression test: the set-code strip regex should not accidentally
+    // strip the // from split cards
+    const POST = await getHandler();
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{
+          name: "Fire // Ice",
+          image_uris: { small: "http://img/fi" },
+          prices: { usd: "1.00" },
+          id: "fi2",
+          scryfall_uri: "http://scryfall/fi2",
+        }],
+      }),
+    });
+
+    const res = await POST(makeRequest({
+      decklist: "1 Fire // Ice (APC) 128",
+    }));
+    const data = await res.json();
+    expect(data.cards[0].name).toBe("Fire // Ice");
+    expect(data.cards[0].found).toBe(true);
+  });
+
   it("strips set codes from card names", async () => {
     const POST = await getHandler();
     mockFetch.mockResolvedValue({

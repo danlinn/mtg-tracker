@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
 import { calculateDeckStats } from "@/lib/deck-stats";
+import { buildGamePlayerWhere } from "@/lib/playgroup";
 
 export async function GET(
   _req: Request,
@@ -14,11 +15,15 @@ export async function GET(
 
   const { id } = await params;
 
+  // Scope deck's game entries to the current user's active playgroup context
+  const gamePlayerWhere = await buildGamePlayerWhere(currentUserId);
+
   const deck = await prisma.deck.findUnique({
     where: { id },
     include: {
       user: { select: { id: true, name: true } },
       gameEntries: {
+        where: gamePlayerWhere,
         select: {
           isWinner: true,
           game: {

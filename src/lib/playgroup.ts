@@ -59,6 +59,40 @@ export async function getPlaygroupIdsForUser(userId: string): Promise<string[]> 
   return memberships.map((m) => m.playgroupId);
 }
 
+/**
+ * Returns a Prisma `where` clause for filtering games by the current
+ * user's playgroup context:
+ * - Specific playgroup active: { playgroupId: X }
+ * - "All Groups" active: games in user's playgroups OR unassigned games
+ */
+export async function buildGameWhere(
+  userId: string
+): Promise<Record<string, unknown>> {
+  const activePlaygroupId = await getActivePlaygroupId();
+  if (activePlaygroupId) {
+    return { playgroupId: activePlaygroupId };
+  }
+  const pgIds = await getPlaygroupIdsForUser(userId);
+  if (pgIds.length === 0) {
+    // No memberships — show only unassigned games
+    return { playgroupId: null };
+  }
+  return {
+    OR: [{ playgroupId: { in: pgIds } }, { playgroupId: null }],
+  };
+}
+
+/**
+ * Same as buildGameWhere but nested under `game` key for filtering
+ * GamePlayer entries.
+ */
+export async function buildGamePlayerWhere(
+  userId: string
+): Promise<Record<string, unknown>> {
+  const gameWhere = await buildGameWhere(userId);
+  return { game: gameWhere };
+}
+
 export async function requireApprovedUser(): Promise<string | null> {
   const userId = await getCurrentUserId();
   if (!userId) return null;

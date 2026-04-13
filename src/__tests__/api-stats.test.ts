@@ -5,6 +5,10 @@ jest.mock("@/lib/auth-helpers", () => ({
   getCurrentUserId: () => mockGetCurrentUserId(),
 }));
 
+jest.mock("@/lib/playgroup", () => ({
+  buildGamePlayerWhere: () => Promise.resolve({}),
+}));
+
 const mockGamePlayerCount = jest.fn();
 const mockDeckFindMany = jest.fn();
 jest.mock("@/lib/prisma", () => ({

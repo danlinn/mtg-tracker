@@ -7,8 +7,8 @@ jest.mock("@/lib/auth-helpers", () => ({
 }));
 
 jest.mock("@/lib/playgroup", () => ({
+  buildGameWhere: () => Promise.resolve({}),
   getActivePlaygroupId: () => Promise.resolve(null),
-  getPlaygroupIdsForUser: () => Promise.resolve(["pg1"]),
 }));
 
 // Mock prisma

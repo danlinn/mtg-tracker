@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
 import { getWinLabel } from "@/lib/win-labels";
-import { getActivePlaygroupId, getPlaygroupIdsForUser } from "@/lib/playgroup";
+import { buildGameWhere } from "@/lib/playgroup";
 
 export async function GET(req: Request) {
   const userId = await getCurrentUserId();
@@ -16,20 +16,7 @@ export async function GET(req: Request) {
     ? Number(searchParams.get("perPage"))
     : 20;
 
-  const activePlaygroupId = await getActivePlaygroupId();
-
-  // Build game filter at DB level
-  let gameWhere: Record<string, unknown> = {};
-  if (activePlaygroupId) {
-    gameWhere = { playgroupId: activePlaygroupId };
-  } else {
-    const pgIds = await getPlaygroupIdsForUser(userId);
-    if (pgIds.length > 0) {
-      // Games in user's groups OR unassigned (null)
-      gameWhere = { OR: [{ playgroupId: { in: pgIds } }, { playgroupId: null }] };
-    }
-    // else: no playgroups = no filter, show everything
-  }
+  const gameWhere = await buildGameWhere(userId);
 
   // Get all game entries matching the playgroup filter, grouped by user
   const entries = await prisma.gamePlayer.findMany({

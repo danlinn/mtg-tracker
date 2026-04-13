@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
-import { getActivePlaygroupId, getPlaygroupIdsForUser } from "@/lib/playgroup";
+import { buildGameWhere, getActivePlaygroupId } from "@/lib/playgroup";
 
 export async function GET(req: Request) {
   const userId = await getCurrentUserId();
@@ -15,18 +15,8 @@ export async function GET(req: Request) {
     ? Number(searchParams.get("perPage"))
     : 20;
 
-  const activePlaygroupId = await getActivePlaygroupId();
-  const userPgIds = activePlaygroupId ? null : await getPlaygroupIdsForUser(userId);
-
-  // Build where clause
-  let where;
-  if (activePlaygroupId) {
-    // Specific playgroup: simple filter
-    where = { players: { some: { userId } }, playgroupId: activePlaygroupId };
-  } else {
-    // All groups: get all user's games, filter by playgroup membership in code
-    where = { players: { some: { userId } } };
-  }
+  const gameWhere = await buildGameWhere(userId);
+  const where = { players: { some: { userId } }, ...gameWhere };
 
   const [games, total] = await Promise.all([
     prisma.game.findMany({
