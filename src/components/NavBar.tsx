@@ -12,6 +12,7 @@ const navItems = [
   { href: "/decks", label: "Decks" },
   { href: "/games", label: "Games" },
   { href: "/players", label: "Players" },
+  { href: "/stats", label: "Stats" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/playgroups", label: "Groups" },
 ];
