@@ -389,9 +389,15 @@ export default function StatsPage() {
                     <radialGradient
                       key={comboId(entry.name)}
                       id={comboId(entry.name)}
+                      // userSpaceOnUse = use SVG viewport coords instead of
+                      // each slice's bounding box. All slices now share a
+                      // gradient centered on the actual pie center.
+                      gradientUnits="userSpaceOnUse"
                       cx="50%"
                       cy="50%"
-                      r="50%"
+                      // Pie's outerRadius is 80 — radius of 80 matches the
+                      // edge of the pie exactly
+                      r={80}
                       fx="50%"
                       fy="50%"
                     >
