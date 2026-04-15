@@ -319,12 +319,19 @@ export default function TrackerPage() {
     return () => { document.body.style.overflow = prev; };
   }, [setupDone]);
 
+  // A player is out of the game if they hit 0 life OR took 21+ from
+  // a single commander. Tap zones still work while eliminated, so the
+  // player can be revived (drop the offending commander damage below
+  // 21, or +1 their life back above 0).
+  const isAlive = (p: Player) =>
+    p.life > 0 && !Object.values(p.damage).some((d) => d >= 21);
+
   // Winner detection: when exactly one player is alive, pop the log
   // overlay. Keeping it as an overlay (instead of navigating away)
   // means the user can close it and revive someone by tapping +1 life.
   const aliveIndices = players
     .map((p, i) => ({ p, i }))
-    .filter(({ p }) => p.life > 0)
+    .filter(({ p }) => isAlive(p))
     .map(({ i }) => i);
   const winnerIdx = aliveIndices.length === 1 ? aliveIndices[0] : null;
 
@@ -571,7 +578,7 @@ export default function TrackerPage() {
   // Game layout
   const opponents = (idx: number) =>
     players.map((p, i) => ({ index: i, player: p })).filter((p) => p.index !== idx);
-  const isDead = (p: Player) => p.life <= 0;
+  const isDead = (p: Player) => !isAlive(p);
 
   const deckLabelFor = (p: Player) => {
     if (!p.userId || !p.deckId) return "";
