@@ -20,25 +20,57 @@ interface UserWithDecks {
   decks: { id: string; name: string; commander: string }[];
 }
 
-// MTG mana-symbol palette
-const MANA_META: Record<ColorKey, { label: string; bg: string; text: string }> = {
-  W: { label: "W", bg: "#f5f5f4", text: "#1a1a1a" },
-  U: { label: "U", bg: "#60a5fa", text: "#ffffff" },
-  B: { label: "B", bg: "#404040", text: "#f5f5f4" },
-  R: { label: "R", bg: "#f87171", text: "#ffffff" },
-  G: { label: "G", bg: "#4ade80", text: "#ffffff" },
-  C: { label: "C", bg: "#9ca3af", text: "#ffffff" },
+// Gem-toned MTG palette. Each color's `hex` is used for backgrounds
+// and gradients; Scryfall's official mana SVG is used for the icon.
+const MANA_META: Record<
+  ColorKey,
+  { label: string; hex: string; text: string; svg: string }
+> = {
+  W: { label: "W", hex: "#e8dfb8", text: "#2d261a", svg: "https://svgs.scryfall.io/card-symbols/W.svg" }, // pearl
+  U: { label: "U", hex: "#0e6bb0", text: "#ffffff", svg: "https://svgs.scryfall.io/card-symbols/U.svg" }, // sapphire
+  B: { label: "B", hex: "#1c1a1a", text: "#e8dfb8", svg: "https://svgs.scryfall.io/card-symbols/B.svg" }, // onyx
+  R: { label: "R", hex: "#b21e35", text: "#ffffff", svg: "https://svgs.scryfall.io/card-symbols/R.svg" }, // ruby
+  G: { label: "G", hex: "#1d6b3a", text: "#ffffff", svg: "https://svgs.scryfall.io/card-symbols/G.svg" }, // emerald
+  C: { label: "C", hex: "#8a8a8a", text: "#ffffff", svg: "https://svgs.scryfall.io/card-symbols/C.svg" }, // colorless
 };
 
+// Defaults for seats 1-4 (gem order)
 const DEFAULT_ICONS: ColorKey[] = ["R", "U", "G", "B"];
 const COLOR_KEYS: ColorKey[] = ["W", "U", "B", "R", "G", "C"];
+// Gradient order: Black, Blue, Red, Green, White — matches the deck cards
+const GRADIENT_ORDER: ColorKey[] = ["B", "U", "R", "G", "W"];
+const COMBO_KEYS: ColorKey[] = ["W", "U", "B", "R", "G"]; // WUBRG only (no C in combos)
 
-const BG_PRESETS = [
-  "#7f1d1d", "#9a3412", "#854d0e", "#166534", "#0c4a6e",
-  "#1e3a8a", "#4c1d95", "#831843", "#450a0a", "#111827",
-  "#0f172a", "#1f2937", "#f87171", "#fbbf24", "#4ade80",
-  "#60a5fa", "#a78bfa", "#f472b6",
-];
+// Generate a CSS background for a given combo of colors.
+// Single color = solid; multi-color = linear gradient in BURGW order.
+function bgForCombo(combo: ColorKey[]): string {
+  if (combo.length === 0) return MANA_META.C.hex;
+  const ordered = GRADIENT_ORDER.filter((c) => combo.includes(c));
+  if (ordered.length === 1) return MANA_META[ordered[0]].hex;
+  return `linear-gradient(135deg, ${ordered.map((c) => MANA_META[c].hex).join(", ")})`;
+}
+
+// All 31 non-empty subsets of WUBRG + colorless = 32 presets
+function allCombos(): { key: string; combo: ColorKey[]; bg: string }[] {
+  const out: { key: string; combo: ColorKey[]; bg: string }[] = [
+    { key: "C", combo: [], bg: MANA_META.C.hex },
+  ];
+  for (let mask = 1; mask < 1 << 5; mask++) {
+    const combo: ColorKey[] = [];
+    COMBO_KEYS.forEach((c, i) => {
+      if (mask & (1 << i)) combo.push(c);
+    });
+    const ordered = GRADIENT_ORDER.filter((c) => combo.includes(c));
+    out.push({ key: ordered.join(""), combo: ordered, bg: bgForCombo(combo) });
+  }
+  // Sort by: color count ascending, then by GRADIENT_ORDER index of first color
+  return out.sort((a, b) => {
+    if (a.combo.length !== b.combo.length) return a.combo.length - b.combo.length;
+    return a.key.localeCompare(b.key);
+  });
+}
+
+const BG_PRESETS = allCombos();
 
 // Matches the /games/new page's localStorage draft shape
 const FORM_DRAFT_KEY = "mtg-log-game-draft";
@@ -49,7 +81,7 @@ function makePlayers(count: number, startLife: number): Player[] {
     return {
       life: startLife,
       icon,
-      bgColor: MANA_META[icon].bg,
+      bgColor: MANA_META[icon].hex,
       damage: {},
       userId: "",
       deckId: "",
@@ -58,13 +90,21 @@ function makePlayers(count: number, startLife: number): Player[] {
 }
 
 function textOn(bg: string): string {
-  const hex = bg.replace("#", "");
-  if (hex.length < 6) return "#ffffff";
+  // Gradients: sample the first hex in the string
+  const match = bg.match(/#[0-9a-fA-F]{6}/);
+  if (!match) return "#ffffff";
+  const hex = match[0].replace("#", "");
   const r = parseInt(hex.slice(0, 2), 16);
   const g = parseInt(hex.slice(2, 4), 16);
   const b = parseInt(hex.slice(4, 6), 16);
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
   return brightness > 150 ? "#111827" : "#ffffff";
+}
+
+// Determine the right CSS property for a color value that may be a
+// hex, rgb(), or a `linear-gradient(...)` expression.
+function backgroundStyle(bg: string): React.CSSProperties {
+  return { background: bg };
 }
 
 interface PlayerBoxProps {
@@ -98,7 +138,7 @@ function PlayerBox({
     <div
       className="relative w-full h-full overflow-hidden select-none"
       style={{
-        backgroundColor: player.bgColor,
+        background: player.bgColor,
         color: textColor,
         transform: rotate ? "rotate(180deg)" : undefined,
         filter: dead ? "grayscale(1)" : undefined,
@@ -139,11 +179,11 @@ function PlayerBox({
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onPickIcon(); }}
-        className="absolute top-2 left-2 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md z-10"
-        style={{ backgroundColor: iconMeta.bg, color: iconMeta.text }}
+        className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white shadow-md z-10 p-1 flex items-center justify-center"
         aria-label="Change player icon"
       >
-        {iconMeta.label}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={iconMeta.svg} alt={iconMeta.label} className="w-full h-full" />
       </button>
 
       <button
@@ -172,7 +212,7 @@ function PlayerBox({
                 className={`relative flex-1 max-w-[120px] h-20 rounded-lg overflow-hidden border-2 select-none ${
                   isLethal ? "border-red-500" : "border-white/30"
                 }`}
-                style={{ backgroundColor: oppMeta.bg, color: oppMeta.text }}
+                style={{ backgroundColor: oppMeta.hex, color: oppMeta.text }}
               >
                 <button
                   type="button"
@@ -191,7 +231,10 @@ function PlayerBox({
                   <span className="text-[10px] font-bold opacity-70">▼</span>
                 </button>
                 <div className="absolute inset-0 flex items-center justify-center gap-1.5 pointer-events-none">
-                  <span className="text-lg font-bold">{oppMeta.label}</span>
+                  <span className="w-6 h-6 rounded-full bg-white p-0.5 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={oppMeta.svg} alt={oppMeta.label} className="w-full h-full" />
+                  </span>
                   <span className="text-2xl font-bold tabular-nums">{dmg}</span>
                 </div>
               </div>
@@ -536,25 +579,31 @@ export default function TrackerPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="font-semibold text-gray-900">Pick a color</h3>
-            <div className="grid grid-cols-6 gap-2">
-              {BG_PRESETS.map((c) => (
+            <div className="grid grid-cols-6 gap-2 max-h-80 overflow-y-auto">
+              {BG_PRESETS.map((preset) => (
                 <button
-                  key={c}
+                  key={preset.key}
                   onClick={() => {
-                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: c }));
+                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: preset.bg }));
                     setColorPickerFor(null);
                   }}
-                  className="w-full aspect-square rounded-lg border border-gray-200"
-                  style={{ backgroundColor: c }}
-                  aria-label={c}
-                />
+                  className="w-full aspect-square rounded-lg border border-gray-300 flex items-end justify-center text-[10px] font-bold p-0.5"
+                  style={backgroundStyle(preset.bg)}
+                  aria-label={preset.key}
+                >
+                  <span className="px-1 rounded bg-black/40 text-white">{preset.key}</span>
+                </button>
               ))}
             </div>
             <div>
               <label className="text-sm text-gray-600 block mb-1">Custom:</label>
               <input
                 type="color"
-                value={players[colorPickerFor].bgColor}
+                value={
+                  players[colorPickerFor].bgColor.startsWith("#")
+                    ? players[colorPickerFor].bgColor
+                    : "#000000"
+                }
                 onChange={(e) => {
                   const v = e.target.value;
                   updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: v }));
@@ -592,11 +641,11 @@ export default function TrackerPage() {
                       updatePlayer(iconPickerFor, (p) => ({ ...p, icon: c }));
                       setIconPickerFor(null);
                     }}
-                    className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold shadow-md"
-                    style={{ backgroundColor: meta.bg, color: meta.text }}
+                    className="w-14 h-14 rounded-full bg-white shadow-md p-1.5 flex items-center justify-center"
                     aria-label={meta.label}
                   >
-                    {meta.label}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={meta.svg} alt={meta.label} className="w-full h-full" />
                   </button>
                 );
               })}
