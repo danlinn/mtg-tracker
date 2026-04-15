@@ -177,7 +177,10 @@ function PlayerBox({
         aria-label={`Player ${index + 1} -1 life`}
       />
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+      <div
+        className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+        style={{ paddingBottom: opponents.length > 0 ? "6rem" : 0 }}
+      >
         <div className="text-7xl sm:text-8xl font-bold tabular-nums" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>
           {player.life}
         </div>
@@ -196,7 +199,7 @@ function PlayerBox({
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onOpenColor(); }}
-        className="absolute top-2 right-2 w-10 h-10 rounded-full shadow-md z-10 border-2"
+        className="absolute top-2 right-2 w-5 h-5 rounded-full shadow-md z-10 border"
         style={{
           background: "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
           borderColor: textColor,
@@ -206,7 +209,7 @@ function PlayerBox({
 
       {opponents.length > 0 && (
         <div
-          className="absolute bottom-0 left-0 right-0 flex items-stretch justify-center gap-2 px-2 pb-2 pt-1 z-10"
+          className="absolute bottom-0 left-0 right-0 flex items-stretch justify-start gap-2 px-2 pb-2 pt-1 z-10"
           style={{ backgroundColor: "rgba(0,0,0,0.25)" }}
         >
           {opponents.map((opp) => {
@@ -265,6 +268,7 @@ export default function TrackerPage() {
   const [players, setPlayers] = useState<Player[]>(saved?.players ?? []);
   const [users, setUsers] = useState<UserWithDecks[]>([]);
   const [colorPickerFor, setColorPickerFor] = useState<number | null>(null);
+  const [confirmAction, setConfirmAction] = useState<"reset" | "newGame" | null>(null);
   const [seatAssignments, setSeatAssignments] = useState<
     { userId: string; deckId: string }[]
   >(saved?.seatAssignments ?? []);
@@ -353,7 +357,6 @@ export default function TrackerPage() {
   }
 
   function handleReset() {
-    if (!confirm("Reset the game?")) return;
     setPlayers((prev) =>
       prev.map((p) => ({ ...p, life: startLife, damage: {} }))
     );
@@ -576,20 +579,90 @@ export default function TrackerPage() {
     <>
       {layout}
 
-      <div className="fixed top-16 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-3">
         <button
-          onClick={handleReset}
-          className="px-3 py-1.5 rounded-full bg-gray-900/80 text-white text-xs font-medium backdrop-blur"
+          type="button"
+          onClick={() => setConfirmAction("reset")}
+          className="w-12 h-12 rounded-full bg-gray-900/80 text-white backdrop-blur shadow-lg flex items-center justify-center active:bg-gray-900"
+          aria-label="Reset game"
         >
-          Reset
+          <svg
+            className="w-6 h-6"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 12a9 9 0 1 0 3-6.7" />
+            <polyline points="3 3 3 9 9 9" />
+          </svg>
         </button>
         <button
-          onClick={handleNewGame}
-          className="px-3 py-1.5 rounded-full bg-gray-900/80 text-white text-xs font-medium backdrop-blur"
+          type="button"
+          onClick={() => setConfirmAction("newGame")}
+          className="w-12 h-12 rounded-full bg-gray-900/80 text-white backdrop-blur shadow-lg flex items-center justify-center active:bg-gray-900"
+          aria-label="New game"
         >
-          New Game
+          <svg
+            className="w-6 h-6"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
         </button>
       </div>
+
+      {confirmAction && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4"
+          onClick={() => setConfirmAction(null)}
+        >
+          <div
+            className="bg-white rounded-lg p-5 max-w-sm w-full space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-semibold text-gray-900 text-lg">
+              {confirmAction === "reset" ? "Reset the game?" : "Start a new game?"}
+            </h3>
+            <p className="text-sm text-gray-600">
+              {confirmAction === "reset"
+                ? "Life totals and commander damage will be reset. Player assignments stay."
+                : "The current game will be discarded and you'll return to setup."}
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmAction(null)}
+                className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirmAction === "reset") {
+                    handleReset();
+                  } else {
+                    handleNewGame();
+                  }
+                  setConfirmAction(null);
+                }}
+                className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-medium"
+              >
+                {confirmAction === "reset" ? "Reset" : "New Game"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {colorPickerFor !== null && (
         <div

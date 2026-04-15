@@ -15,6 +15,8 @@ import { describe, it, expect, jest } from "@jest/globals";
 import { render, screen, fireEvent } from "@testing-library/react";
 import NavBar from "@/components/NavBar";
 import React from "react";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 // Mock next-auth
 jest.mock("next-auth/react", () => ({
@@ -104,10 +106,8 @@ describe("NavBar", () => {
   it("drops sticky positioning on /tracker for desktop", () => {
     // Regression guard: tracker pages need the nav to get out of the way
     // on desktop so the game area can fill the viewport.
-    const fs = require("fs") as typeof import("fs");
-    const path = require("path") as typeof import("path");
-    const src = fs.readFileSync(
-      path.join(process.cwd(), "src/components/NavBar.tsx"),
+    const src = readFileSync(
+      join(process.cwd(), "src/components/NavBar.tsx"),
       "utf8"
     );
     // Source should recognize /tracker path and override to lg:static
@@ -119,10 +119,8 @@ describe("NavBar", () => {
     // Defense-in-depth: the bug-prone dynamic ResizeObserver-based
     // width measurement must not return. If you need responsive
     // behavior beyond the CSS breakpoint, do it a different way.
-    const fs = require("fs") as typeof import("fs");
-    const path = require("path") as typeof import("path");
-    const src = fs.readFileSync(
-      path.join(process.cwd(), "src/components/NavBar.tsx"),
+    const src = readFileSync(
+      join(process.cwd(), "src/components/NavBar.tsx"),
       "utf8"
     );
     // No ResizeObserver in NavBar
@@ -135,10 +133,8 @@ describe("NavBar", () => {
     // Without re-mocking next-auth across tests (which breaks jest
     // module cache), verify via source inspection that the admin item
     // is conditionally appended based on role.
-    const fs = require("fs") as typeof import("fs");
-    const path = require("path") as typeof import("path");
-    const src = fs.readFileSync(
-      path.join(process.cwd(), "src/components/NavBar.tsx"),
+    const src = readFileSync(
+      join(process.cwd(), "src/components/NavBar.tsx"),
       "utf8"
     );
     expect(src).toMatch(/userRole\s*===\s*"admin"/);

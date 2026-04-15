@@ -1,5 +1,5 @@
 import { describe, it, expect } from "@jest/globals";
-import { readFileSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import { join } from "path";
 
 /**
@@ -43,24 +43,21 @@ describe("no horizontal scroll safety net", () => {
    * the pages, but it flags suspicious patterns early.
    */
   it("no page uses whitespace-nowrap on a container without overflow handling", () => {
-    const fs = require("fs") as typeof import("fs");
-    const path = require("path") as typeof import("path");
-
     function walk(dir: string): string[] {
       const out: string[] = [];
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const full = path.join(dir, entry.name);
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name);
         if (entry.isDirectory()) out.push(...walk(full));
         else if (entry.name === "page.tsx") out.push(full);
       }
       return out;
     }
 
-    const files = walk(path.join(process.cwd(), "src/app"));
+    const files = walk(join(process.cwd(), "src/app"));
 
     const offenders: string[] = [];
     for (const file of files) {
-      const content = fs.readFileSync(file, "utf8");
+      const content = readFileSync(file, "utf8");
       // Pattern: whitespace-nowrap on a container that doesn't also have
       // overflow-hidden / truncate / min-w-0 / overflow-x-auto. Heuristic
       // — false positives are fine; false negatives are not.
