@@ -44,8 +44,15 @@ export default function NavBar() {
 
   // Breakpoint: lg (1024px). Below that → hamburger. Pure CSS — no JS
   // measurement — so the nav can never ping-pong between states.
+  //
+  // On /tracker, we drop the sticky behavior on desktop so the tracker
+  // can use the full viewport without the nav eating 104px of vertical
+  // space. Mobile stays sticky (nav is only 56px there).
+  const isTracker = pathname === "/tracker";
+  const navPositionClass = isTracker ? "sticky top-0 lg:static" : "sticky top-0";
+
   return (
-    <nav className="bg-gray-900 text-white sticky top-0 z-50">
+    <nav className={`bg-gray-900 text-white z-50 ${navPositionClass}`}>
       <div className="w-full px-4">
         {/* Top row */}
         <div className="flex items-center justify-between h-14 gap-4">

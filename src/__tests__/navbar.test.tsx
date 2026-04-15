@@ -101,6 +101,20 @@ describe("NavBar", () => {
     expect(screen.queryByTestId("mobile-menu")).toBeNull();
   });
 
+  it("drops sticky positioning on /tracker for desktop", () => {
+    // Regression guard: tracker pages need the nav to get out of the way
+    // on desktop so the game area can fill the viewport.
+    const fs = require("fs") as typeof import("fs");
+    const path = require("path") as typeof import("path");
+    const src = fs.readFileSync(
+      path.join(process.cwd(), "src/components/NavBar.tsx"),
+      "utf8"
+    );
+    // Source should recognize /tracker path and override to lg:static
+    expect(src).toMatch(/pathname\s*===\s*"\/tracker"/);
+    expect(src).toMatch(/lg:static/);
+  });
+
   it("does not include legacy dynamic measurement code (prevents regression)", () => {
     // Defense-in-depth: the bug-prone dynamic ResizeObserver-based
     // width measurement must not return. If you need responsive
