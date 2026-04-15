@@ -75,6 +75,43 @@ const BG_PRESETS = allCombos();
 // Matches the /games/new page's localStorage draft shape
 const FORM_DRAFT_KEY = "mtg-log-game-draft";
 
+// Per-tab session persistence so navigating to other pages doesn't
+// wipe the in-flight game. Cleared only on "New Game" or when the
+// browser tab closes.
+const SESSION_KEY = "mtg-tracker-session";
+
+interface TrackerSession {
+  setupDone: boolean;
+  playerCount: number;
+  startLife: number;
+  players: Player[];
+  seatAssignments: { userId: string; deckId: string }[];
+}
+
+function loadSession(): TrackerSession | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveSession(session: TrackerSession) {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  } catch {
+    // Non-fatal
+  }
+}
+
+function clearSession() {
+  if (typeof window === "undefined") return;
+  sessionStorage.removeItem(SESSION_KEY);
+}
+
 function makePlayers(count: number, startLife: number): Player[] {
   return Array.from({ length: count }, (_, i) => {
     const icon = DEFAULT_ICONS[i % DEFAULT_ICONS.length];
@@ -248,17 +285,24 @@ function PlayerBox({
 
 export default function TrackerPage() {
   const router = useRouter();
-  const [setupDone, setSetupDone] = useState(false);
-  const [playerCount, setPlayerCount] = useState(4);
-  const [startLife, setStartLife] = useState(40);
-  const [players, setPlayers] = useState<Player[]>([]);
+  // Hydrate from sessionStorage if we have a game in progress this tab
+  const saved = typeof window !== "undefined" ? loadSession() : null;
+  const [setupDone, setSetupDone] = useState(saved?.setupDone ?? false);
+  const [playerCount, setPlayerCount] = useState(saved?.playerCount ?? 4);
+  const [startLife, setStartLife] = useState(saved?.startLife ?? 40);
+  const [players, setPlayers] = useState<Player[]>(saved?.players ?? []);
   const [users, setUsers] = useState<UserWithDecks[]>([]);
   const [colorPickerFor, setColorPickerFor] = useState<number | null>(null);
   const [iconPickerFor, setIconPickerFor] = useState<number | null>(null);
   const [seatAssignments, setSeatAssignments] = useState<
     { userId: string; deckId: string }[]
-  >([]);
+  >(saved?.seatAssignments ?? []);
   const autoLogTriggeredRef = useRef(false);
+
+  // Persist to sessionStorage on every relevant change
+  useEffect(() => {
+    saveSession({ setupDone, playerCount, startLife, players, seatAssignments });
+  }, [setupDone, playerCount, startLife, players, seatAssignments]);
 
   // Load users (scoped to active playgroup via helper)
   useEffect(() => {
@@ -320,6 +364,8 @@ export default function TrackerPage() {
         activePlaygroupId,
       };
       localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(draft));
+      // Clear the tracker session so returning to /tracker starts fresh
+      clearSession();
       router.push("/games/new");
     })();
   }, [setupDone, players, router]);
@@ -345,7 +391,9 @@ export default function TrackerPage() {
 
   function handleNewGame() {
     setSetupDone(false);
+    setPlayers([]);
     autoLogTriggeredRef.current = false;
+    clearSession();
   }
 
   const updatePlayer = useCallback(
