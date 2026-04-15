@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "jest src/__tests__/api",
+    "test": "jest --testPathIgnorePatterns=src/__tests__/e2e",
     "test:e2e": "jest src/__tests__/e2e --testTimeout=15000",
     "test:all": "jest --testTimeout=15000"
   },

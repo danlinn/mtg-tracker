@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme, ThemeName } from "@/lib/theme";
 import PlaygroupSwitcher from "@/components/PlaygroupSwitcher";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/tracker", label: "Tracker" },
+  { href: "/tracker", label: "Game Tracker" },
   { href: "/decks", label: "Decks" },
   { href: "/games", label: "Games" },
   { href: "/players", label: "Players" },
@@ -34,24 +34,70 @@ const themeLabels: Record<ThemeName, string> = {
 export default function NavBar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [overflows, setOverflows] = useState(false);
   const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
   const userRole = (session?.user as { role?: string })?.role;
+
+  const barRef = useRef<HTMLDivElement>(null);
+  const brandRef = useRef<HTMLAnchorElement>(null);
+  const desktopRef = useRef<HTMLDivElement>(null);
 
   const allNavItems = userRole === "admin"
     ? [...navItems, { href: "/admin", label: "Admin" }]
     : navItems;
 
+  // Detect if the desktop nav would overflow the available bar width.
+  // When it does, collapse to the hamburger even above the md breakpoint.
+  useEffect(() => {
+    const bar = barRef.current;
+    const brand = brandRef.current;
+    const desktop = desktopRef.current;
+    if (!bar || !brand || !desktop) return;
+
+    function check() {
+      if (!bar || !brand || !desktop) return;
+      // Temporarily let the desktop nav render so we can measure
+      const barWidth = bar.clientWidth;
+      const brandWidth = brand.clientWidth;
+      const gapAndPadding = 64; // breathing room
+      const available = barWidth - brandWidth - gapAndPadding;
+      // scrollWidth of the desktop container = its actual content width
+      // regardless of whether it's currently `hidden`
+      const contentWidth = desktop.scrollWidth;
+      setOverflows(contentWidth > available);
+    }
+
+    const ro = new ResizeObserver(check);
+    ro.observe(bar);
+    check();
+    return () => ro.disconnect();
+  }, [allNavItems.length]);
+
+  // Show desktop bar when there's enough room; hamburger otherwise
+  const showDesktop = !overflows;
+
   return (
     <nav className="bg-gray-900 text-white sticky top-0 z-50">
-      <div className="max-w-5xl mx-auto px-4">
-        <div className="flex items-center justify-between h-14">
-          <Link href="/dashboard" className="font-bold text-lg">
+      <div className="w-full px-4">
+        <div ref={barRef} className="flex items-center justify-between h-14">
+          <Link ref={brandRef} href="/dashboard" className="font-bold text-lg whitespace-nowrap">
             MTG Tracker
           </Link>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-4">
+          {/* Desktop nav — measured even when hidden so we can detect overflow */}
+          <div
+            ref={desktopRef}
+            className={`items-center gap-4 whitespace-nowrap ${
+              showDesktop ? "flex" : "hidden"
+            }`}
+            style={
+              !showDesktop
+                ? { position: "absolute", visibility: "hidden", pointerEvents: "none" }
+                : undefined
+            }
+            aria-hidden={!showDesktop}
+          >
             {allNavItems.map((item) => (
               <Link
                 key={item.href}
@@ -85,40 +131,42 @@ export default function NavBar() {
             </button>
           </div>
 
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {/* Hamburger — shown whenever desktop nav doesn't fit */}
+          {!showDesktop && (
+            <button
+              className="p-2"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
             >
-              {menuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                {menuOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
+          )}
         </div>
 
-        {/* Mobile menu */}
-        {menuOpen && (
-          <div className="md:hidden pb-3 space-y-1">
+        {/* Collapsed menu panel */}
+        {!showDesktop && menuOpen && (
+          <div className="pb-3 space-y-1">
             {allNavItems.map((item) => (
               <Link
                 key={item.href}
