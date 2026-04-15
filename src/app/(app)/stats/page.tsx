@@ -18,6 +18,7 @@ import {
   Legend,
 } from "recharts";
 import ManaSymbol from "@/components/ManaSymbol";
+import { useThemePalette } from "@/lib/theme";
 
 type ColorKey = "W" | "U" | "B" | "R" | "G";
 
@@ -47,19 +48,19 @@ interface PlayerOption {
   name: string;
 }
 
-// Matches the deck page gradient palette (B, U, R, G, W order)
-const COLOR_META: Record<ColorKey, { label: string; hex: string; textColor: string }> = {
-  W: { label: "White", hex: "#f5f5f4", textColor: "#1a1a1a" },
-  U: { label: "Blue", hex: "#60a5fa", textColor: "#ffffff" },
-  B: { label: "Black", hex: "#404040", textColor: "#f5f5f4" },
-  R: { label: "Red", hex: "#f87171", textColor: "#ffffff" },
-  G: { label: "Green", hex: "#4ade80", textColor: "#ffffff" },
+// Labels are theme-independent; actual hex values come from the active
+// theme palette via useThemePalette() inside the component.
+const COLOR_LABELS: Record<ColorKey, string> = {
+  W: "White",
+  U: "Blue",
+  B: "Black",
+  R: "Red",
+  G: "Green",
 };
 
 const COLOR_KEYS: ColorKey[] = ["W", "U", "B", "R", "G"];
 // Same gradient order as decks page: Black, Blue, Red, Green, White
 const GRADIENT_ORDER: ColorKey[] = ["B", "U", "R", "G", "W"];
-const COLORLESS_HEX = "#9ca3af";
 
 // Recharts tooltip styling — dark background with white text for readability
 const TOOLTIP_STYLE = {
@@ -77,21 +78,37 @@ function comboId(combo: string): string {
 }
 
 // Build gradient stops in the same BURGW order used by deck cards
-function comboStops(combo: string): { offset: string; color: string }[] {
-  if (combo === "Colorless") return [{ offset: "0%", color: COLORLESS_HEX }];
+function comboStops(
+  combo: string,
+  paletteHex: Record<ColorKey | "C", string>
+): { offset: string; color: string }[] {
+  if (combo === "Colorless") return [{ offset: "0%", color: paletteHex.C }];
   const chars = combo.split("") as ColorKey[];
   // Reorder to BURGW so the gradient matches deck card gradients
   const ordered = GRADIENT_ORDER.filter((c) => chars.includes(c));
-  if (ordered.length === 1) return [{ offset: "0%", color: COLOR_META[ordered[0]].hex }];
+  if (ordered.length === 1) return [{ offset: "0%", color: paletteHex[ordered[0]] }];
   return ordered.map((c, i) => ({
     offset: `${(i / (ordered.length - 1)) * 100}%`,
-    color: COLOR_META[c].hex,
+    color: paletteHex[c],
   }));
 }
 
 export default function StatsPage() {
   const { data: session } = useSession();
   const selfId = (session?.user as { id?: string })?.id ?? "";
+  const palette = useThemePalette();
+  // Flattened palette hex for convenient lookups + radial gradients
+  const paletteHex = useMemo(
+    () => ({
+      W: palette.W.hex,
+      U: palette.U.hex,
+      B: palette.B.hex,
+      R: palette.R.hex,
+      G: palette.G.hex,
+      C: palette.C.hex,
+    }),
+    [palette]
+  );
 
   const [playerId, setPlayerId] = useState<string>("");
   const [players, setPlayers] = useState<PlayerOption[]>([]);
@@ -206,12 +223,12 @@ export default function StatsPage() {
     }
     return COLOR_KEYS.map((c) => ({
       color: c,
-      label: COLOR_META[c].label,
+      label: COLOR_LABELS[c],
       winRate: stats[c].games > 0 ? Math.round((stats[c].wins / stats[c].games) * 100) : 0,
       games: stats[c].games,
-      hex: COLOR_META[c].hex,
+      hex: palette[c].hex,
     }));
-  }, [filteredGames]);
+  }, [filteredGames, palette]);
 
   // Win labels
   const winLabels = useMemo(() => {
@@ -330,9 +347,9 @@ export default function StatsPage() {
               className={`rounded-full transition-all ${
                 colorFilter[c] ? "ring-2 ring-blue-500 ring-offset-2 scale-110" : ""
               }`}
-              title={COLOR_META[c].label}
+              title={COLOR_LABELS[c]}
             >
-              <ManaSymbol color={c} size="sm" active={colorFilter[c]} title={COLOR_META[c].label} />
+              <ManaSymbol color={c} size="sm" active={colorFilter[c]} title={COLOR_LABELS[c]} />
             </button>
           ))}
         </div>
@@ -388,7 +405,7 @@ export default function StatsPage() {
                 {colorUsage.map((entry) => {
                   // Radial gradient: center -> edge.
                   // Stops reversed so the first color is at the edge, last at center.
-                  const stops = comboStops(entry.name).slice().reverse();
+                  const stops = comboStops(entry.name, paletteHex).slice().reverse();
                   // Re-space the offsets evenly after reversal
                   const respaced = stops.map((s, i) => ({
                     ...s,

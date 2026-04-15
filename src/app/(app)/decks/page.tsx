@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ColorPips from "@/components/ColorPips";
 import ManaSymbol, { type ManaColor } from "@/components/ManaSymbol";
+import { useThemePalette } from "@/lib/theme";
+import type { Palette } from "@/lib/themePalettes";
 
 interface Deck {
   id: string;
@@ -37,28 +39,32 @@ const FILTER_COLORS: { key: (typeof COLOR_KEYS)[number]; color: ManaColor; label
 ];
 
 // Gradient order: Black, Blue, Red, Green, White
-const MTG_COLORS: { key: (typeof COLOR_KEYS)[number]; hex: string }[] = [
-  { key: "colorB", hex: "#404040" },
-  { key: "colorU", hex: "#60a5fa" },
-  { key: "colorR", hex: "#f87171" },
-  { key: "colorG", hex: "#4ade80" },
-  { key: "colorW", hex: "#f5f5f4" },
+const GRADIENT_ORDER: { key: (typeof COLOR_KEYS)[number]; paletteKey: "B" | "U" | "R" | "G" | "W" }[] = [
+  { key: "colorB", paletteKey: "B" },
+  { key: "colorU", paletteKey: "U" },
+  { key: "colorR", paletteKey: "R" },
+  { key: "colorG", paletteKey: "G" },
+  { key: "colorW", paletteKey: "W" },
 ];
 
-function deckGradient(deck: Deck): React.CSSProperties {
-  const active = MTG_COLORS.filter((c) => deck[c.key]).map((c) => c.hex);
+function deckGradient(deck: Deck, palette: Palette): React.CSSProperties {
+  const active = GRADIENT_ORDER.filter((c) => deck[c.key]).map((c) => palette[c.paletteKey]);
   if (active.length === 0) return {};
   const isWhiteOnly = deck.colorW && !deck.colorB && !deck.colorU && !deck.colorR && !deck.colorG;
   const isBlackOnly = deck.colorB && !deck.colorW && !deck.colorU && !deck.colorR && !deck.colorG;
-  const textColor = isBlackOnly ? "#f5f5f4" : isWhiteOnly ? "#1a1a1a" : undefined;
-  if (active.length === 1) return { background: active[0], color: textColor };
-  return { background: `linear-gradient(135deg, ${active.join(", ")})`, color: textColor };
+  const textColor = isBlackOnly ? palette.B.text : isWhiteOnly ? palette.W.text : undefined;
+  if (active.length === 1) return { background: active[0].hex, color: textColor };
+  return {
+    background: `linear-gradient(135deg, ${active.map((s) => s.hex).join(", ")})`,
+    color: textColor,
+  };
 }
 
 export default function DecksPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const userId = (session?.user as { id?: string })?.id;
+  const palette = useThemePalette();
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<SortOption>("date");
@@ -235,7 +241,7 @@ export default function DecksPage() {
               key={deck.id}
               onClick={() => userId && router.push(`/players/${userId}/decks/${deck.id}`)}
               className="flex items-center justify-between p-4 rounded-lg border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
-              style={deckGradient(deck)}
+              style={deckGradient(deck, palette)}
             >
               <div className="space-y-1 min-w-0 flex-1">
                 <div className="text-xl font-bold" style={{ color: titleColor, textShadow: titleShadow }}>{deck.name}</div>

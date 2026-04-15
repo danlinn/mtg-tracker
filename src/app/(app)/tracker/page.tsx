@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-
-type ColorKey = "W" | "U" | "B" | "R" | "G" | "C";
+import { useThemePalette } from "@/lib/theme";
+import type { Palette, ColorKey } from "@/lib/themePalettes";
 
 interface Player {
   life: number;
@@ -19,40 +19,24 @@ interface UserWithDecks {
   decks: { id: string; name: string; commander: string }[];
 }
 
-// MTG color palette. `hex` is used for backgrounds and gradients.
-const MANA_META: Record<ColorKey, { label: string; hex: string; text: string }> = {
-  W: { label: "W", hex: "#f5f5f4", text: "#1a1a1a" },
-  U: { label: "U", hex: "#60a5fa", text: "#ffffff" },
-  B: { label: "B", hex: "#404040", text: "#f5f5f4" },
-  R: { label: "R", hex: "#f87171", text: "#ffffff" },
-  G: { label: "G", hex: "#4ade80", text: "#ffffff" },
-  C: { label: "C", hex: "#9ca3af", text: "#ffffff" },
-};
-
-// Defaults for seats 1-4 — each seat gets a distinct background color
-const DEFAULT_SEAT_COLORS: string[] = [
-  MANA_META.R.hex,
-  MANA_META.U.hex,
-  MANA_META.G.hex,
-  MANA_META.B.hex,
-];
 // Gradient order: Black, Blue, Red, Green, White — matches the deck cards
 const GRADIENT_ORDER: ColorKey[] = ["B", "U", "R", "G", "W"];
 const COMBO_KEYS: ColorKey[] = ["W", "U", "B", "R", "G"]; // WUBRG only (no C in combos)
 
 // Generate a CSS background for a given combo of colors.
 // Single color = solid; multi-color = linear gradient in BURGW order.
-function bgForCombo(combo: ColorKey[]): string {
-  if (combo.length === 0) return MANA_META.C.hex;
+function bgForCombo(combo: ColorKey[], palette: Palette): string {
+  if (combo.length === 0) return palette.C.hex;
   const ordered = GRADIENT_ORDER.filter((c) => combo.includes(c));
-  if (ordered.length === 1) return MANA_META[ordered[0]].hex;
-  return `linear-gradient(135deg, ${ordered.map((c) => MANA_META[c].hex).join(", ")})`;
+  if (ordered.length === 1) return palette[ordered[0]].hex;
+  return `linear-gradient(135deg, ${ordered.map((c) => palette[c].hex).join(", ")})`;
 }
 
-// All 31 non-empty subsets of WUBRG + colorless = 32 presets
-function allCombos(): { key: string; combo: ColorKey[]; bg: string }[] {
+// All 31 non-empty subsets of WUBRG + colorless = 32 presets, computed
+// from the active palette so preset swatches match the theme.
+function allCombos(palette: Palette): { key: string; combo: ColorKey[]; bg: string }[] {
   const out: { key: string; combo: ColorKey[]; bg: string }[] = [
-    { key: "C", combo: [], bg: MANA_META.C.hex },
+    { key: "C", combo: [], bg: palette.C.hex },
   ];
   for (let mask = 1; mask < 1 << 5; mask++) {
     const combo: ColorKey[] = [];
@@ -60,7 +44,7 @@ function allCombos(): { key: string; combo: ColorKey[]; bg: string }[] {
       if (mask & (1 << i)) combo.push(c);
     });
     const ordered = GRADIENT_ORDER.filter((c) => combo.includes(c));
-    out.push({ key: ordered.join(""), combo: ordered, bg: bgForCombo(combo) });
+    out.push({ key: ordered.join(""), combo: ordered, bg: bgForCombo(combo, palette) });
   }
   // Sort by: color count ascending, then by GRADIENT_ORDER index of first color
   return out.sort((a, b) => {
@@ -69,7 +53,10 @@ function allCombos(): { key: string; combo: ColorKey[]; bg: string }[] {
   });
 }
 
-const BG_PRESETS = allCombos();
+// Seats 1-4 each get a distinct default color, per-palette.
+function defaultSeatColors(palette: Palette): string[] {
+  return [palette.R.hex, palette.U.hex, palette.G.hex, palette.B.hex];
+}
 
 // Matches the /games/new page's localStorage draft shape
 const FORM_DRAFT_KEY = "mtg-log-game-draft";
@@ -111,10 +98,11 @@ function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
 }
 
-function makePlayers(count: number, startLife: number): Player[] {
+function makePlayers(count: number, startLife: number, palette: Palette): Player[] {
+  const seatColors = defaultSeatColors(palette);
   return Array.from({ length: count }, (_, i) => ({
     life: startLife,
-    bgColor: DEFAULT_SEAT_COLORS[i % DEFAULT_SEAT_COLORS.length],
+    bgColor: seatColors[i % seatColors.length],
     damage: {},
     userId: "",
     deckId: "",
@@ -266,6 +254,9 @@ function PlayerBox({
 
 export default function TrackerPage() {
   const router = useRouter();
+  const palette = useThemePalette();
+  const BG_PRESETS = useMemo(() => allCombos(palette), [palette]);
+  const DEFAULT_SEAT_COLORS = useMemo(() => defaultSeatColors(palette), [palette]);
   // Hydrate from sessionStorage if we have a game in progress this tab
   const saved = typeof window !== "undefined" ? loadSession() : null;
   const [setupDone, setSetupDone] = useState(saved?.setupDone ?? false);
@@ -351,7 +342,7 @@ export default function TrackerPage() {
   }, [setupDone, players, router]);
 
   function handleStart() {
-    const ps = makePlayers(playerCount, startLife).map((p, i) => ({
+    const ps = makePlayers(playerCount, startLife, palette).map((p, i) => ({
       ...p,
       userId: seatsForCount[i]?.userId ?? "",
       deckId: seatsForCount[i]?.deckId ?? "",

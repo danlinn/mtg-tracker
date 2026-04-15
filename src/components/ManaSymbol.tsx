@@ -3,17 +3,14 @@
 // Reusable "MTG mana symbol" pill — used wherever we need to show a
 // single color identifier (e.g. WUBRG color filter buttons). Solid
 // rounded circle with the color letter on the MTG palette background.
+//
+// Colors are sourced from the active theme's palette so they look
+// native in every theme.
 
-export type ManaColor = "W" | "U" | "B" | "R" | "G" | "C";
+import { useThemePalette } from "@/lib/theme";
+import type { ColorKey } from "@/lib/themePalettes";
 
-const MANA_META: Record<ManaColor, { label: string; bg: string; text: string }> = {
-  W: { label: "W", bg: "#f5f5f4", text: "#1a1a1a" },
-  U: { label: "U", bg: "#60a5fa", text: "#ffffff" },
-  B: { label: "B", bg: "#404040", text: "#f5f5f4" },
-  R: { label: "R", bg: "#f87171", text: "#ffffff" },
-  G: { label: "G", bg: "#4ade80", text: "#ffffff" },
-  C: { label: "C", bg: "#9ca3af", text: "#ffffff" },
-};
+export type ManaColor = ColorKey;
 
 type Size = "sm" | "md" | "lg";
 
@@ -38,18 +35,17 @@ export default function ManaSymbol({
   className = "",
   title,
 }: ManaSymbolProps) {
-  const meta = MANA_META[color];
+  const palette = useThemePalette();
+  const swatch = palette[color];
   return (
     <span
-      title={title ?? meta.label}
+      title={title ?? color}
       className={`inline-flex items-center justify-center rounded-full font-bold transition-all ${SIZE_CLASSES[size]} ${
         active ? "" : "opacity-40"
       } ${className}`}
-      style={{ backgroundColor: meta.bg, color: meta.text }}
+      style={{ backgroundColor: swatch.hex, color: swatch.text }}
     >
-      {meta.label}
+      {color}
     </span>
   );
 }
-
-export { MANA_META };

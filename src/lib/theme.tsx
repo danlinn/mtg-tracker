@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useCallback, useEffect, useSyncExternalStore, ReactNode } from "react";
+import { getPalette } from "@/lib/themePalettes";
 
 export type ThemeName = "default" | "synth" | "cyber" | "flame" | "chris" | "phyrexia" | "stained-glass" | "dungeon" | "neon-dynasty" | "grixis";
 
@@ -83,4 +84,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
 export function useTheme() {
   return useContext(ThemeContext);
+}
+
+// Hook: returns the MTG color palette reinterpreted for the active theme.
+// Kept here so it lives next to `useTheme` rather than requiring callers
+// to compose two hooks.
+export function useThemePalette() {
+  const { theme } = useTheme();
+  return getPalette(theme);
 }
