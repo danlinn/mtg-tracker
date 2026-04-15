@@ -9,6 +9,7 @@ import PlaygroupSwitcher from "@/components/PlaygroupSwitcher";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/tracker", label: "Tracker" },
   { href: "/decks", label: "Decks" },
   { href: "/games", label: "Games" },
   { href: "/players", label: "Players" },
