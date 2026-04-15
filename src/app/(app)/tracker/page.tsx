@@ -199,7 +199,7 @@ function PlayerBox({
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onOpenColor(); }}
-        className="absolute top-2 right-2 w-10 h-10 rounded-full shadow-md z-10 border-2"
+        className="absolute top-2 right-2 w-5 h-5 rounded-full shadow-md z-10 border"
         style={{
           background: "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
           borderColor: textColor,
