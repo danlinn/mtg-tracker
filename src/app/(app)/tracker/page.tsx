@@ -143,30 +143,44 @@ function PlayerBox({
       {/* Commander damage row (bottom) */}
       {opponents.length > 0 && (
         <div
-          className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-2 py-2 z-10"
-          style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
+          className="absolute bottom-0 left-0 right-0 flex items-stretch justify-center gap-2 px-2 pb-2 pt-1 z-10"
+          style={{ backgroundColor: "rgba(0,0,0,0.25)" }}
         >
           {opponents.map((opp) => {
             const dmg = player.damage[opp.index] ?? 0;
             const oppMeta = MANA_META[opp.player.icon];
             const isLethal = dmg >= 21;
             return (
-              <div key={opp.index} className="flex flex-col items-center">
+              <div
+                key={opp.index}
+                className={`relative flex-1 max-w-[120px] h-20 rounded-lg overflow-hidden border-2 select-none ${
+                  isLethal ? "border-red-500" : "border-white/30"
+                }`}
+                style={{ backgroundColor: oppMeta.bg, color: oppMeta.text }}
+              >
+                {/* Top half: +1 damage */}
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onCommanderDamage(opp.index, 1); }}
-                  onContextMenu={(e) => { e.preventDefault(); onCommanderDamage(opp.index, -1); }}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow ${
-                    isLethal ? "ring-2 ring-red-500" : ""
-                  }`}
-                  style={{ backgroundColor: oppMeta.bg, color: oppMeta.text }}
-                  aria-label={`Commander damage from player ${opp.index + 1}`}
+                  className="absolute top-0 left-0 right-0 h-1/2 flex items-start justify-center pt-1 active:bg-white/10"
+                  aria-label={`+1 commander damage from player ${opp.index + 1}`}
                 >
-                  {oppMeta.label}
+                  <span className="text-[10px] font-bold opacity-70">▲</span>
                 </button>
-                <span className="text-xs font-bold tabular-nums" style={{ color: textColor }}>
-                  {dmg}
-                </span>
+                {/* Bottom half: -1 damage */}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onCommanderDamage(opp.index, -1); }}
+                  className="absolute bottom-0 left-0 right-0 h-1/2 flex items-end justify-center pb-1 active:bg-black/10"
+                  aria-label={`-1 commander damage from player ${opp.index + 1}`}
+                >
+                  <span className="text-[10px] font-bold opacity-70">▼</span>
+                </button>
+                {/* Center: icon + damage count */}
+                <div className="absolute inset-0 flex items-center justify-center gap-1.5 pointer-events-none">
+                  <span className="text-lg font-bold">{oppMeta.label}</span>
+                  <span className="text-2xl font-bold tabular-nums">{dmg}</span>
+                </div>
               </div>
             );
           })}
@@ -280,9 +294,8 @@ export default function TrackerPage() {
         </button>
 
         <p className="text-xs text-gray-500 text-center">
-          Tap top of a life total to add, bottom to subtract. Tap a commander
-          damage icon to add damage (auto-deducts life). Right-click / long-press
-          the icon to remove.
+          Tap the top of any counter to increase, bottom to decrease.
+          Commander damage automatically adjusts life.
         </p>
       </div>
     );
