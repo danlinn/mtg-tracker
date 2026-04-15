@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useThemePalette } from "@/lib/theme";
 import type { Palette, ColorKey } from "@/lib/themePalettes";
 
@@ -57,9 +56,6 @@ function allCombos(palette: Palette): { key: string; combo: ColorKey[]; bg: stri
 function defaultSeatColors(palette: Palette): string[] {
   return [palette.R.hex, palette.U.hex, palette.G.hex, palette.B.hex];
 }
-
-// Matches the /games/new page's localStorage draft shape
-const FORM_DRAFT_KEY = "mtg-log-game-draft";
 
 // Per-tab session persistence so navigating to other pages doesn't
 // wipe the in-flight game. Cleared only on "New Game" or when the
@@ -136,6 +132,7 @@ interface PlayerBoxProps {
   onOpenColor: () => void;
   rotate?: boolean;
   dead?: boolean;
+  deckLabel?: string;
 }
 
 function PlayerBox({
@@ -147,6 +144,7 @@ function PlayerBox({
   onOpenColor,
   rotate,
   dead,
+  deckLabel,
 }: PlayerBoxProps) {
   const textColor = textOn(player.bgColor);
   const lethal = Object.values(player.damage).some((d) => d >= 21);
@@ -176,6 +174,15 @@ function PlayerBox({
         className="absolute bottom-0 left-0 right-0 h-1/2 active:bg-black/10"
         aria-label={`Player ${index + 1} -1 life`}
       />
+
+      {deckLabel && (
+        <div
+          className="absolute top-2 left-2 right-12 text-xs font-semibold pointer-events-none truncate z-10"
+          style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
+        >
+          {deckLabel}
+        </div>
+      )}
 
       <div
         className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
@@ -256,7 +263,6 @@ function PlayerBox({
 }
 
 export default function TrackerPage() {
-  const router = useRouter();
   const palette = useThemePalette();
   const BG_PRESETS = useMemo(() => allCombos(palette), [palette]);
   const DEFAULT_SEAT_COLORS = useMemo(() => defaultSeatColors(palette), [palette]);
@@ -272,7 +278,20 @@ export default function TrackerPage() {
   const [seatAssignments, setSeatAssignments] = useState<
     { userId: string; deckId: string }[]
   >(saved?.seatAssignments ?? []);
-  const autoLogTriggeredRef = useRef(false);
+
+  // Log-game overlay state. Opens automatically when exactly one
+  // player is still alive; can be dismissed via the close button so
+  // the user can revive someone instead of logging.
+  const [logOverlayOpen, setLogOverlayOpen] = useState(false);
+  const [logOverlayDismissed, setLogOverlayDismissed] = useState(false);
+  const [logPlayedAt, setLogPlayedAt] = useState(() =>
+    new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" })
+  );
+  const [logNotes, setLogNotes] = useState("");
+  const [logAsterisk, setLogAsterisk] = useState(false);
+  const [logSaving, setLogSaving] = useState(false);
+  const [logError, setLogError] = useState("");
+  const [logSavedId, setLogSavedId] = useState<string | null>(null);
 
   // Persist to sessionStorage on every relevant change
   useEffect(() => {
@@ -300,50 +319,31 @@ export default function TrackerPage() {
     return () => { document.body.style.overflow = prev; };
   }, [setupDone]);
 
-  // Win detection: when exactly one player is alive, auto-log the game
+  // Winner detection: when exactly one player is alive, pop the log
+  // overlay. Keeping it as an overlay (instead of navigating away)
+  // means the user can close it and revive someone by tapping +1 life.
+  const aliveIndices = players
+    .map((p, i) => ({ p, i }))
+    .filter(({ p }) => p.life > 0)
+    .map(({ i }) => i);
+  const winnerIdx = aliveIndices.length === 1 ? aliveIndices[0] : null;
+
+  // Auto-reset the dismiss flag whenever the "one alive" condition
+  // becomes false (e.g. a revive or a new game). This way if the game
+  // returns to one-alive again later, the overlay pops back up.
   useEffect(() => {
-    if (!setupDone || autoLogTriggeredRef.current || players.length === 0) return;
-    const alive = players
-      .map((p, i) => ({ p, i }))
-      .filter(({ p }) => p.life > 0);
-    if (alive.length !== 1) return;
+    if (winnerIdx === null) setLogOverlayDismissed(false);
+  }, [winnerIdx]);
 
-    // Only auto-log if every seat has both user and deck assigned
-    const allAssigned = players.every((p) => p.userId && p.deckId);
-    if (!allAssigned) return;
-
-    const winnerIdx = alive[0].i;
-    autoLogTriggeredRef.current = true;
-
-    (async () => {
-      // Get active playgroup id to match the log-game page's draft check
-      let activePlaygroupId = "all";
-      try {
-        const res = await fetch("/api/playgroups/active");
-        const data = await res.json();
-        activePlaygroupId = data.playgroupId ?? "all";
-      } catch {
-        // non-fatal
-      }
-
-      const draft = {
-        playerCount: players.length,
-        players: players.map((p, i) => ({
-          userId: p.userId,
-          deckId: p.deckId,
-          isWinner: i === winnerIdx,
-        })),
-        playedAt: new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" }),
-        notes: "",
-        asterisk: false,
-        activePlaygroupId,
-      };
-      localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(draft));
-      // Clear the tracker session so returning to /tracker starts fresh
-      clearSession();
-      router.push("/games/new");
-    })();
-  }, [setupDone, players, router]);
+  // Auto-open the overlay the first time we reach one-alive (until
+  // the user dismisses it for this window).
+  useEffect(() => {
+    if (setupDone && winnerIdx !== null && !logOverlayDismissed) {
+      setLogOverlayOpen(true);
+    } else {
+      setLogOverlayOpen(false);
+    }
+  }, [setupDone, winnerIdx, logOverlayDismissed]);
 
   function handleStart() {
     const ps = makePlayers(playerCount, startLife, palette).map((p, i) => ({
@@ -353,20 +353,29 @@ export default function TrackerPage() {
     }));
     setPlayers(ps);
     setSetupDone(true);
-    autoLogTriggeredRef.current = false;
+    setLogOverlayDismissed(false);
+    setLogSavedId(null);
+    setLogNotes("");
+    setLogAsterisk(false);
   }
 
   function handleReset() {
     setPlayers((prev) =>
       prev.map((p) => ({ ...p, life: startLife, damage: {} }))
     );
-    autoLogTriggeredRef.current = false;
+    setLogOverlayDismissed(false);
+    setLogSavedId(null);
+    setLogNotes("");
+    setLogAsterisk(false);
   }
 
   function handleNewGame() {
     setSetupDone(false);
     setPlayers([]);
-    autoLogTriggeredRef.current = false;
+    setLogOverlayDismissed(false);
+    setLogSavedId(null);
+    setLogNotes("");
+    setLogAsterisk(false);
     clearSession();
   }
 
@@ -415,6 +424,45 @@ export default function TrackerPage() {
 
   function getDecksFor(userId: string) {
     return users.find((u) => u.id === userId)?.decks ?? [];
+  }
+
+  async function handleSaveGame() {
+    if (winnerIdx === null) return;
+    const missing = players.some((p) => !p.userId || !p.deckId);
+    if (missing) {
+      setLogError("Every seat needs a player and a deck.");
+      return;
+    }
+    setLogSaving(true);
+    setLogError("");
+    try {
+      const res = await fetch("/api/games", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          playedAt: logPlayedAt,
+          notes: logNotes,
+          asterisk: logAsterisk,
+          players: players.map((p, i) => ({
+            userId: p.userId,
+            deckId: p.deckId,
+            isWinner: i === winnerIdx,
+          })),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setLogError(data.error ?? "Failed to save game.");
+        setLogSaving(false);
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      setLogSavedId(data?.id ?? "saved");
+    } catch {
+      setLogError("Network error. Please try again.");
+    } finally {
+      setLogSaving(false);
+    }
   }
 
   // Setup screen
@@ -525,6 +573,14 @@ export default function TrackerPage() {
     players.map((p, i) => ({ index: i, player: p })).filter((p) => p.index !== idx);
   const isDead = (p: Player) => p.life <= 0;
 
+  const deckLabelFor = (p: Player) => {
+    if (!p.userId || !p.deckId) return "";
+    const user = users.find((u) => u.id === p.userId);
+    const deck = user?.decks.find((d) => d.id === p.deckId);
+    if (!deck) return "";
+    return `${user?.name ?? ""} — ${deck.commander}`;
+  };
+
   const renderBox = (idx: number, rotate?: boolean) => (
     <PlayerBox
       player={players[idx]}
@@ -535,6 +591,7 @@ export default function TrackerPage() {
       onOpenColor={() => setColorPickerFor(idx)}
       rotate={rotate}
       dead={isDead(players[idx])}
+      deckLabel={deckLabelFor(players[idx])}
     />
   );
 
@@ -659,6 +716,199 @@ export default function TrackerPage() {
               >
                 {confirmAction === "reset" ? "Reset" : "New Game"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {logOverlayOpen && winnerIdx !== null && (
+        <div className="fixed inset-0 bg-black/70 z-40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white">
+              <h3 className="font-semibold text-gray-900 text-lg">Log game</h3>
+              <button
+                type="button"
+                onClick={() => setLogOverlayDismissed(true)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100"
+                aria-label="Close"
+              >
+                <svg
+                  className="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {logSavedId ? (
+                <div className="space-y-3">
+                  <div className="bg-green-50 text-green-700 px-3 py-2 rounded text-sm font-medium">
+                    Game logged.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleNewGame();
+                    }}
+                    className="w-full py-2 rounded-lg bg-blue-600 text-white font-medium"
+                  >
+                    Start new game
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLogOverlayDismissed(true)}
+                    className="w-full py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
+                  >
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {logError && (
+                    <div className="bg-red-50 text-red-700 px-3 py-2 rounded text-sm">
+                      {logError}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">
+                      Date played
+                    </label>
+                    <input
+                      type="date"
+                      value={logPlayedAt}
+                      onChange={(e) => setLogPlayedAt(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Seats
+                    </label>
+                    {players.map((p, i) => {
+                      const user = users.find((u) => u.id === p.userId);
+                      const deck = user?.decks.find((d) => d.id === p.deckId);
+                      const isWinner = i === winnerIdx;
+                      return (
+                        <div
+                          key={i}
+                          className={`border rounded-lg p-2 text-sm ${
+                            isWinner
+                              ? "border-green-500 bg-green-50"
+                              : "border-gray-200"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-semibold text-gray-600">
+                              Seat {i + 1}
+                            </span>
+                            {isWinner && (
+                              <span className="text-xs font-bold text-green-700 uppercase">
+                                Winner
+                              </span>
+                            )}
+                          </div>
+                          <select
+                            value={p.userId}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              setPlayers((prev) =>
+                                prev.map((pp, ii) =>
+                                  ii === i ? { ...pp, userId: v, deckId: "" } : pp
+                                )
+                              );
+                            }}
+                            className="w-full px-2 py-1 border border-gray-300 rounded bg-white text-gray-900 text-sm mb-1"
+                          >
+                            <option value="">Select player...</option>
+                            {users.map((u) => (
+                              <option key={u.id} value={u.id}>
+                                {u.name}
+                              </option>
+                            ))}
+                          </select>
+                          {p.userId && (
+                            <select
+                              value={p.deckId}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                setPlayers((prev) =>
+                                  prev.map((pp, ii) =>
+                                    ii === i ? { ...pp, deckId: v } : pp
+                                  )
+                                );
+                              }}
+                              className="w-full px-2 py-1 border border-gray-300 rounded bg-white text-gray-900 text-sm"
+                            >
+                              <option value="">Select deck...</option>
+                              {getDecksFor(p.userId).map((d) => (
+                                <option key={d.id} value={d.id}>
+                                  {d.name} ({d.commander})
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                          {deck && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              {deck.name} — {deck.commander}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">
+                      Notes
+                    </label>
+                    <textarea
+                      value={logNotes}
+                      onChange={(e) => setLogNotes(e.target.value)}
+                      placeholder="Optional..."
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+                    />
+                  </div>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={logAsterisk}
+                      onChange={(e) => setLogAsterisk(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Asterisk *</span>
+                  </label>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setLogOverlayDismissed(true)}
+                      className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
+                    >
+                      Not yet
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveGame}
+                      disabled={logSaving}
+                      className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-medium disabled:opacity-50"
+                    >
+                      {logSaving ? "Saving..." : "Log game"}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
