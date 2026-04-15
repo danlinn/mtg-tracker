@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ColorPips from "@/components/ColorPips";
+import ManaSymbol, { type ManaColor } from "@/components/ManaSymbol";
 
 interface Deck {
   id: string;
@@ -27,12 +28,12 @@ type SortOption = "date" | "name" | "bracket" | "edhp";
 
 const COLOR_KEYS = ["colorW", "colorU", "colorB", "colorR", "colorG"] as const;
 
-const FILTER_COLORS: { key: (typeof COLOR_KEYS)[number]; letter: string; label: string; bg: string; active: string; textColor: string }[] = [
-  { key: "colorW", letter: "W", label: "White", bg: "bg-yellow-100", active: "ring-yellow-400", textColor: "#111" },
-  { key: "colorU", letter: "U", label: "Blue", bg: "bg-blue-500", active: "ring-blue-400", textColor: "#fff" },
-  { key: "colorB", letter: "B", label: "Black", bg: "bg-gray-800", active: "ring-gray-500", textColor: "#eee" },
-  { key: "colorR", letter: "R", label: "Red", bg: "bg-red-500", active: "ring-red-400", textColor: "#fff" },
-  { key: "colorG", letter: "G", label: "Green", bg: "bg-green-600", active: "ring-green-400", textColor: "#fff" },
+const FILTER_COLORS: { key: (typeof COLOR_KEYS)[number]; color: ManaColor; label: string }[] = [
+  { key: "colorW", color: "W", label: "White" },
+  { key: "colorU", color: "U", label: "Blue" },
+  { key: "colorB", color: "B", label: "Black" },
+  { key: "colorR", color: "R", label: "Red" },
+  { key: "colorG", color: "G", label: "Green" },
 ];
 
 // Gradient order: Black, Blue, Red, Green, White
@@ -148,15 +149,12 @@ export default function DecksPage() {
                 key={c.key}
                 type="button"
                 onClick={() => toggleColorFilter(c.key)}
-                className={`w-8 h-8 rounded-full ${c.bg} flex items-center justify-center text-xs font-bold transition-all ${
-                  colorFilter[c.key]
-                    ? `ring-2 ${c.active} ring-offset-2 scale-110`
-                    : "opacity-40"
+                className={`rounded-full transition-all ${
+                  colorFilter[c.key] ? "ring-2 ring-offset-2 ring-gray-400 scale-110" : ""
                 }`}
-                style={{ color: c.textColor }}
                 title={c.label}
               >
-                {c.letter}
+                <ManaSymbol color={c.color} active={colorFilter[c.key]} title={c.label} />
               </button>
             ))}
             {(activeFilters.length > 0 || bracketFilter) && (

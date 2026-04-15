@@ -7,7 +7,6 @@ type ColorKey = "W" | "U" | "B" | "R" | "G" | "C";
 
 interface Player {
   life: number;
-  icon: ColorKey;
   bgColor: string;
   damage: Record<number, number>;
   userId: string; // playgroup user assigned to this seat (optional, empty = unassigned)
@@ -20,23 +19,23 @@ interface UserWithDecks {
   decks: { id: string; name: string; commander: string }[];
 }
 
-// Gem-toned MTG palette. Each color's `hex` is used for backgrounds
-// and gradients; Scryfall's official mana SVG is used for the icon.
-const MANA_META: Record<
-  ColorKey,
-  { label: string; hex: string; text: string; svg: string }
-> = {
-  W: { label: "W", hex: "#e8dfb8", text: "#2d261a", svg: "https://svgs.scryfall.io/card-symbols/W.svg" }, // pearl
-  U: { label: "U", hex: "#0e6bb0", text: "#ffffff", svg: "https://svgs.scryfall.io/card-symbols/U.svg" }, // sapphire
-  B: { label: "B", hex: "#1c1a1a", text: "#e8dfb8", svg: "https://svgs.scryfall.io/card-symbols/B.svg" }, // onyx
-  R: { label: "R", hex: "#b21e35", text: "#ffffff", svg: "https://svgs.scryfall.io/card-symbols/R.svg" }, // ruby
-  G: { label: "G", hex: "#1d6b3a", text: "#ffffff", svg: "https://svgs.scryfall.io/card-symbols/G.svg" }, // emerald
-  C: { label: "C", hex: "#8a8a8a", text: "#ffffff", svg: "https://svgs.scryfall.io/card-symbols/C.svg" }, // colorless
+// MTG color palette. `hex` is used for backgrounds and gradients.
+const MANA_META: Record<ColorKey, { label: string; hex: string; text: string }> = {
+  W: { label: "W", hex: "#f5f5f4", text: "#1a1a1a" },
+  U: { label: "U", hex: "#60a5fa", text: "#ffffff" },
+  B: { label: "B", hex: "#404040", text: "#f5f5f4" },
+  R: { label: "R", hex: "#f87171", text: "#ffffff" },
+  G: { label: "G", hex: "#4ade80", text: "#ffffff" },
+  C: { label: "C", hex: "#9ca3af", text: "#ffffff" },
 };
 
-// Defaults for seats 1-4 (gem order)
-const DEFAULT_ICONS: ColorKey[] = ["R", "U", "G", "B"];
-const COLOR_KEYS: ColorKey[] = ["W", "U", "B", "R", "G", "C"];
+// Defaults for seats 1-4 — each seat gets a distinct background color
+const DEFAULT_SEAT_COLORS: string[] = [
+  MANA_META.R.hex,
+  MANA_META.U.hex,
+  MANA_META.G.hex,
+  MANA_META.B.hex,
+];
 // Gradient order: Black, Blue, Red, Green, White — matches the deck cards
 const GRADIENT_ORDER: ColorKey[] = ["B", "U", "R", "G", "W"];
 const COMBO_KEYS: ColorKey[] = ["W", "U", "B", "R", "G"]; // WUBRG only (no C in combos)
@@ -113,17 +112,13 @@ function clearSession() {
 }
 
 function makePlayers(count: number, startLife: number): Player[] {
-  return Array.from({ length: count }, (_, i) => {
-    const icon = DEFAULT_ICONS[i % DEFAULT_ICONS.length];
-    return {
-      life: startLife,
-      icon,
-      bgColor: MANA_META[icon].hex,
-      damage: {},
-      userId: "",
-      deckId: "",
-    };
-  });
+  return Array.from({ length: count }, (_, i) => ({
+    life: startLife,
+    bgColor: DEFAULT_SEAT_COLORS[i % DEFAULT_SEAT_COLORS.length],
+    damage: {},
+    userId: "",
+    deckId: "",
+  }));
 }
 
 function textOn(bg: string): string {
@@ -151,7 +146,6 @@ interface PlayerBoxProps {
   onLifeChange: (delta: number) => void;
   onCommanderDamage: (fromIdx: number, delta: number) => void;
   onOpenColor: () => void;
-  onPickIcon: () => void;
   rotate?: boolean;
   dead?: boolean;
 }
@@ -163,12 +157,10 @@ function PlayerBox({
   onLifeChange,
   onCommanderDamage,
   onOpenColor,
-  onPickIcon,
   rotate,
   dead,
 }: PlayerBoxProps) {
   const textColor = textOn(player.bgColor);
-  const iconMeta = MANA_META[player.icon];
   const lethal = Object.values(player.damage).some((d) => d >= 21);
 
   return (
@@ -215,16 +207,6 @@ function PlayerBox({
 
       <button
         type="button"
-        onClick={(e) => { e.stopPropagation(); onPickIcon(); }}
-        className="absolute top-2 left-2 w-10 h-10 rounded-full bg-white shadow-md z-10 p-1 flex items-center justify-center"
-        aria-label="Change player icon"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={iconMeta.svg} alt={iconMeta.label} className="w-full h-full" />
-      </button>
-
-      <button
-        type="button"
         onClick={(e) => { e.stopPropagation(); onOpenColor(); }}
         className="absolute top-2 right-2 w-10 h-10 rounded-full shadow-md z-10 border-2"
         style={{
@@ -241,7 +223,8 @@ function PlayerBox({
         >
           {opponents.map((opp) => {
             const dmg = player.damage[opp.index] ?? 0;
-            const oppMeta = MANA_META[opp.player.icon];
+            const oppBg = opp.player.bgColor;
+            const oppText = textOn(oppBg);
             const isLethal = dmg >= 21;
             return (
               <div
@@ -249,7 +232,7 @@ function PlayerBox({
                 className={`relative flex-1 max-w-[120px] h-20 rounded-lg overflow-hidden border-2 select-none ${
                   isLethal ? "border-red-500" : "border-white/30"
                 }`}
-                style={{ backgroundColor: oppMeta.hex, color: oppMeta.text }}
+                style={{ background: oppBg, color: oppText }}
               >
                 <button
                   type="button"
@@ -267,12 +250,10 @@ function PlayerBox({
                 >
                   <span className="text-[10px] font-bold opacity-70">▼</span>
                 </button>
-                <div className="absolute inset-0 flex items-center justify-center gap-1.5 pointer-events-none">
-                  <span className="w-6 h-6 rounded-full bg-white p-0.5 flex items-center justify-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={oppMeta.svg} alt={oppMeta.label} className="w-full h-full" />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="text-2xl font-bold tabular-nums" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}>
+                    {dmg}
                   </span>
-                  <span className="text-2xl font-bold tabular-nums">{dmg}</span>
                 </div>
               </div>
             );
@@ -293,7 +274,6 @@ export default function TrackerPage() {
   const [players, setPlayers] = useState<Player[]>(saved?.players ?? []);
   const [users, setUsers] = useState<UserWithDecks[]>([]);
   const [colorPickerFor, setColorPickerFor] = useState<number | null>(null);
-  const [iconPickerFor, setIconPickerFor] = useState<number | null>(null);
   const [seatAssignments, setSeatAssignments] = useState<
     { userId: string; deckId: string }[]
   >(saved?.seatAssignments ?? []);
@@ -559,7 +539,6 @@ export default function TrackerPage() {
       onLifeChange={(d) => handleLife(idx, d)}
       onCommanderDamage={(from, d) => handleCommanderDamage(idx, from, d)}
       onOpenColor={() => setColorPickerFor(idx)}
-      onPickIcon={() => setIconPickerFor(idx)}
       rotate={rotate}
       dead={isDead(players[idx])}
     />
@@ -663,54 +642,30 @@ export default function TrackerPage() {
                 className="w-full h-10 rounded cursor-pointer"
               />
             </div>
-            <button
-              onClick={() => setColorPickerFor(null)}
-              className="w-full py-2 rounded-lg bg-blue-600 text-white font-medium"
-            >
-              Done
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (colorPickerFor !== null) {
+                    const defaultBg = DEFAULT_SEAT_COLORS[colorPickerFor % DEFAULT_SEAT_COLORS.length];
+                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: defaultBg }));
+                  }
+                  setColorPickerFor(null);
+                }}
+                className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
+              >
+                Default color
+              </button>
+              <button
+                onClick={() => setColorPickerFor(null)}
+                className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-medium"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {iconPickerFor !== null && (
-        <div
-          className="fixed inset-0 bg-black/60 z-30 flex items-center justify-center p-4"
-          onClick={() => setIconPickerFor(null)}
-        >
-          <div
-            className="bg-white rounded-lg p-4 max-w-sm w-full space-y-3"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="font-semibold text-gray-900">Pick an icon</h3>
-            <div className="flex gap-3 justify-center">
-              {COLOR_KEYS.map((c) => {
-                const meta = MANA_META[c];
-                return (
-                  <button
-                    key={c}
-                    onClick={() => {
-                      updatePlayer(iconPickerFor, (p) => ({ ...p, icon: c }));
-                      setIconPickerFor(null);
-                    }}
-                    className="w-14 h-14 rounded-full bg-white shadow-md p-1.5 flex items-center justify-center"
-                    aria-label={meta.label}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={meta.svg} alt={meta.label} className="w-full h-full" />
-                  </button>
-                );
-              })}
-            </div>
-            <button
-              onClick={() => setIconPickerFor(null)}
-              className="w-full py-2 rounded-lg bg-blue-600 text-white font-medium"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 }

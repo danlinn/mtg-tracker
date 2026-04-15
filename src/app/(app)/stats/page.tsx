@@ -17,6 +17,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import ManaSymbol from "@/components/ManaSymbol";
 
 type ColorKey = "W" | "U" | "B" | "R" | "G";
 
@@ -326,12 +327,12 @@ export default function StatsPage() {
             <button
               key={c}
               onClick={() => toggleColor(c)}
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                colorFilter[c] ? "ring-2 ring-blue-500 ring-offset-2 scale-110" : "opacity-50"
+              className={`rounded-full transition-all ${
+                colorFilter[c] ? "ring-2 ring-blue-500 ring-offset-2 scale-110" : ""
               }`}
-              style={{ backgroundColor: COLOR_META[c].hex, color: COLOR_META[c].textColor }}
+              title={COLOR_META[c].label}
             >
-              {c}
+              <ManaSymbol color={c} size="sm" active={colorFilter[c]} title={COLOR_META[c].label} />
             </button>
           ))}
         </div>
