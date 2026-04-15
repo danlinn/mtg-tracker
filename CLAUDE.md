@@ -14,6 +14,12 @@
 2. `npx next build` — build must succeed
 3. After `git push`, check `vercel ls` to confirm deployment is "Ready"
 
+## Git Workflow
+- The default branch is `main`. Work directly on `main` unless the task
+  explicitly calls for a feature branch (or the session harness provides one).
+- `prisma db push` is a **local** operation run before pushing schema
+  changes. It is intentionally not part of the Vercel build command.
+
 ## API Response Patterns
 - Paginated list endpoints return `{ items, total, page, perPage, totalPages }` (where `items` is named contextually: `games`, `decks`, `entries`)
 - All mutation endpoints have try-catch with proper error responses
