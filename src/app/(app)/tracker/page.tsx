@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 type ColorKey = "W" | "U" | "B" | "R" | "G" | "C";
 
@@ -8,10 +9,18 @@ interface Player {
   life: number;
   icon: ColorKey;
   bgColor: string;
-  damage: Record<number, number>; // damage[opponentIndex] = commander dmg from that opponent
+  damage: Record<number, number>;
+  userId: string; // playgroup user assigned to this seat (optional, empty = unassigned)
+  deckId: string; // deck assigned to this seat (optional)
 }
 
-// MTG mana-symbol palette — background color + text color for each
+interface UserWithDecks {
+  id: string;
+  name: string;
+  decks: { id: string; name: string; commander: string }[];
+}
+
+// MTG mana-symbol palette
 const MANA_META: Record<ColorKey, { label: string; bg: string; text: string }> = {
   W: { label: "W", bg: "#f5f5f4", text: "#1a1a1a" },
   U: { label: "U", bg: "#60a5fa", text: "#ffffff" },
@@ -21,17 +30,18 @@ const MANA_META: Record<ColorKey, { label: string; bg: string; text: string }> =
   C: { label: "C", bg: "#9ca3af", text: "#ffffff" },
 };
 
-// Defaults assigned to each seat at start
 const DEFAULT_ICONS: ColorKey[] = ["R", "U", "G", "B"];
 const COLOR_KEYS: ColorKey[] = ["W", "U", "B", "R", "G", "C"];
 
-// Preset background colors for the color picker
 const BG_PRESETS = [
   "#7f1d1d", "#9a3412", "#854d0e", "#166534", "#0c4a6e",
   "#1e3a8a", "#4c1d95", "#831843", "#450a0a", "#111827",
   "#0f172a", "#1f2937", "#f87171", "#fbbf24", "#4ade80",
   "#60a5fa", "#a78bfa", "#f472b6",
 ];
+
+// Matches the /games/new page's localStorage draft shape
+const FORM_DRAFT_KEY = "mtg-log-game-draft";
 
 function makePlayers(count: number, startLife: number): Player[] {
   return Array.from({ length: count }, (_, i) => {
@@ -41,11 +51,12 @@ function makePlayers(count: number, startLife: number): Player[] {
       icon,
       bgColor: MANA_META[icon].bg,
       damage: {},
+      userId: "",
+      deckId: "",
     };
   });
 }
 
-// Pick readable text color for any given bg
 function textOn(bg: string): string {
   const hex = bg.replace("#", "");
   if (hex.length < 6) return "#ffffff";
@@ -65,6 +76,7 @@ interface PlayerBoxProps {
   onOpenColor: () => void;
   onPickIcon: () => void;
   rotate?: boolean;
+  dead?: boolean;
 }
 
 function PlayerBox({
@@ -76,6 +88,7 @@ function PlayerBox({
   onOpenColor,
   onPickIcon,
   rotate,
+  dead,
 }: PlayerBoxProps) {
   const textColor = textOn(player.bgColor);
   const iconMeta = MANA_META[player.icon];
@@ -88,16 +101,18 @@ function PlayerBox({
         backgroundColor: player.bgColor,
         color: textColor,
         transform: rotate ? "rotate(180deg)" : undefined,
+        filter: dead ? "grayscale(1)" : undefined,
+        opacity: dead ? 0.45 : 1,
+        transition: "filter 300ms, opacity 300ms",
       }}
     >
-      {/* Top half: +1 life */}
+      {/* Tap zones — still active when dead, so you can revive */}
       <button
         type="button"
         onClick={() => onLifeChange(1)}
         className="absolute top-0 left-0 right-0 h-1/2 active:bg-white/10"
         aria-label={`Player ${index + 1} +1 life`}
       />
-      {/* Bottom half: -1 life */}
       <button
         type="button"
         onClick={() => onLifeChange(-1)}
@@ -105,19 +120,22 @@ function PlayerBox({
         aria-label={`Player ${index + 1} -1 life`}
       />
 
-      {/* Center: life total */}
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <div className="text-7xl sm:text-8xl font-bold tabular-nums" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>
           {player.life}
         </div>
-        {lethal && (
+        {dead && (
+          <div className="text-xs font-bold uppercase mt-1 px-2 py-0.5 rounded bg-gray-900 text-white">
+            Eliminated
+          </div>
+        )}
+        {!dead && lethal && (
           <div className="text-xs font-bold uppercase mt-1 px-2 py-0.5 rounded bg-red-600 text-white">
             Lethal!
           </div>
         )}
       </div>
 
-      {/* Player icon (top-left) */}
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onPickIcon(); }}
@@ -128,7 +146,6 @@ function PlayerBox({
         {iconMeta.label}
       </button>
 
-      {/* Color picker wheel (top-right) */}
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onOpenColor(); }}
@@ -140,7 +157,6 @@ function PlayerBox({
         aria-label="Change background color"
       />
 
-      {/* Commander damage row (bottom) */}
       {opponents.length > 0 && (
         <div
           className="absolute bottom-0 left-0 right-0 flex items-stretch justify-center gap-2 px-2 pb-2 pt-1 z-10"
@@ -158,7 +174,6 @@ function PlayerBox({
                 }`}
                 style={{ backgroundColor: oppMeta.bg, color: oppMeta.text }}
               >
-                {/* Top half: +1 damage */}
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onCommanderDamage(opp.index, 1); }}
@@ -167,7 +182,6 @@ function PlayerBox({
                 >
                   <span className="text-[10px] font-bold opacity-70">▲</span>
                 </button>
-                {/* Bottom half: -1 damage */}
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onCommanderDamage(opp.index, -1); }}
@@ -176,7 +190,6 @@ function PlayerBox({
                 >
                   <span className="text-[10px] font-bold opacity-70">▼</span>
                 </button>
-                {/* Center: icon + damage count */}
                 <div className="absolute inset-0 flex items-center justify-center gap-1.5 pointer-events-none">
                   <span className="text-lg font-bold">{oppMeta.label}</span>
                   <span className="text-2xl font-bold tabular-nums">{dmg}</span>
@@ -191,14 +204,33 @@ function PlayerBox({
 }
 
 export default function TrackerPage() {
+  const router = useRouter();
   const [setupDone, setSetupDone] = useState(false);
   const [playerCount, setPlayerCount] = useState(4);
   const [startLife, setStartLife] = useState(40);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [users, setUsers] = useState<UserWithDecks[]>([]);
   const [colorPickerFor, setColorPickerFor] = useState<number | null>(null);
   const [iconPickerFor, setIconPickerFor] = useState<number | null>(null);
+  const [seatAssignments, setSeatAssignments] = useState<
+    { userId: string; deckId: string }[]
+  >([]);
+  const autoLogTriggeredRef = useRef(false);
 
-  // Prevent screen from scrolling / zooming during play
+  // Load users (scoped to active playgroup via helper)
+  useEffect(() => {
+    fetch("/api/users")
+      .then((r) => r.json())
+      .then((data) => setUsers(Array.isArray(data) ? data : []));
+  }, []);
+
+  // Derive seats sized to the current playerCount without writing state
+  // in an effect (pads with empty entries or truncates).
+  const seatsForCount = Array.from({ length: playerCount }, (_, i) =>
+    seatAssignments[i] ?? { userId: "", deckId: "" }
+  );
+
+  // Prevent screen from scrolling during play
   useEffect(() => {
     if (!setupDone) return;
     const prev = document.body.style.overflow;
@@ -206,46 +238,124 @@ export default function TrackerPage() {
     return () => { document.body.style.overflow = prev; };
   }, [setupDone]);
 
+  // Win detection: when exactly one player is alive, auto-log the game
+  useEffect(() => {
+    if (!setupDone || autoLogTriggeredRef.current || players.length === 0) return;
+    const alive = players
+      .map((p, i) => ({ p, i }))
+      .filter(({ p }) => p.life > 0);
+    if (alive.length !== 1) return;
+
+    // Only auto-log if every seat has both user and deck assigned
+    const allAssigned = players.every((p) => p.userId && p.deckId);
+    if (!allAssigned) return;
+
+    const winnerIdx = alive[0].i;
+    autoLogTriggeredRef.current = true;
+
+    (async () => {
+      // Get active playgroup id to match the log-game page's draft check
+      let activePlaygroupId = "all";
+      try {
+        const res = await fetch("/api/playgroups/active");
+        const data = await res.json();
+        activePlaygroupId = data.playgroupId ?? "all";
+      } catch {
+        // non-fatal
+      }
+
+      const draft = {
+        playerCount: players.length,
+        players: players.map((p, i) => ({
+          userId: p.userId,
+          deckId: p.deckId,
+          isWinner: i === winnerIdx,
+        })),
+        playedAt: new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" }),
+        notes: "",
+        asterisk: false,
+        activePlaygroupId,
+      };
+      localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(draft));
+      router.push("/games/new");
+    })();
+  }, [setupDone, players, router]);
+
   function handleStart() {
-    setPlayers(makePlayers(playerCount, startLife));
+    const ps = makePlayers(playerCount, startLife).map((p, i) => ({
+      ...p,
+      userId: seatsForCount[i]?.userId ?? "",
+      deckId: seatsForCount[i]?.deckId ?? "",
+    }));
+    setPlayers(ps);
     setSetupDone(true);
+    autoLogTriggeredRef.current = false;
   }
 
   function handleReset() {
     if (!confirm("Reset the game?")) return;
-    setPlayers(makePlayers(playerCount, startLife));
+    setPlayers((prev) =>
+      prev.map((p) => ({ ...p, life: startLife, damage: {} }))
+    );
+    autoLogTriggeredRef.current = false;
   }
 
   function handleNewGame() {
     setSetupDone(false);
+    autoLogTriggeredRef.current = false;
   }
 
-  const updatePlayer = useCallback((idx: number, updater: (p: Player) => Player) => {
-    setPlayers((prev) => prev.map((p, i) => (i === idx ? updater(p) : p)));
-  }, []);
+  const updatePlayer = useCallback(
+    (idx: number, updater: (p: Player) => Player) => {
+      setPlayers((prev) => prev.map((p, i) => (i === idx ? updater(p) : p)));
+    },
+    []
+  );
 
-  const handleLife = useCallback((idx: number, delta: number) => {
-    updatePlayer(idx, (p) => ({ ...p, life: p.life + delta }));
-  }, [updatePlayer]);
+  const handleLife = useCallback(
+    (idx: number, delta: number) => {
+      updatePlayer(idx, (p) => ({ ...p, life: p.life + delta }));
+    },
+    [updatePlayer]
+  );
 
-  const handleCommanderDamage = useCallback((toIdx: number, fromIdx: number, delta: number) => {
-    setPlayers((prev) => prev.map((p, i) => {
-      if (i !== toIdx) return p;
-      const current = p.damage[fromIdx] ?? 0;
-      const nextDmg = Math.max(0, current + delta);
-      const actualDelta = nextDmg - current;
-      return {
-        ...p,
-        life: p.life - actualDelta,
-        damage: { ...p.damage, [fromIdx]: nextDmg },
-      };
-    }));
-  }, []);
+  const handleCommanderDamage = useCallback(
+    (toIdx: number, fromIdx: number, delta: number) => {
+      setPlayers((prev) =>
+        prev.map((p, i) => {
+          if (i !== toIdx) return p;
+          const current = p.damage[fromIdx] ?? 0;
+          const nextDmg = Math.max(0, current + delta);
+          const actualDelta = nextDmg - current;
+          return {
+            ...p,
+            life: p.life - actualDelta,
+            damage: { ...p.damage, [fromIdx]: nextDmg },
+          };
+        })
+      );
+    },
+    []
+  );
+
+  function updateSeat(idx: number, field: "userId" | "deckId", value: string) {
+    setSeatAssignments((prev) =>
+      prev.map((s, i) => {
+        if (i !== idx) return s;
+        if (field === "userId") return { userId: value, deckId: "" };
+        return { ...s, [field]: value };
+      })
+    );
+  }
+
+  function getDecksFor(userId: string) {
+    return users.find((u) => u.id === userId)?.decks ?? [];
+  }
 
   // Setup screen
   if (!setupDone) {
     return (
-      <div className="max-w-sm mx-auto space-y-6 py-8">
+      <div className="max-w-md mx-auto space-y-5 py-6">
         <h1 className="text-2xl font-bold text-center">Life Tracker</h1>
 
         <div>
@@ -286,6 +396,49 @@ export default function TrackerPage() {
           </div>
         </div>
 
+        {/* Per-seat player/deck assignment (optional) */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">
+            Assign Players (optional)
+          </label>
+          <p className="text-xs text-gray-500">
+            Fill these in to auto-log the game when a winner is decided.
+          </p>
+          {seatsForCount.map((seat, i) => {
+            return (
+              <div key={i} className="border border-gray-200 rounded-lg p-2 space-y-2">
+                <div className="text-xs font-semibold text-gray-600">Seat {i + 1}</div>
+                <select
+                  value={seat.userId}
+                  onChange={(e) => updateSeat(i, "userId", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+                >
+                  <option value="">Select player...</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name}
+                    </option>
+                  ))}
+                </select>
+                {seat.userId && (
+                  <select
+                    value={seat.deckId}
+                    onChange={(e) => updateSeat(i, "deckId", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+                  >
+                    <option value="">Select deck...</option>
+                    {getDecksFor(seat.userId).map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} ({d.commander})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
         <button
           onClick={handleStart}
           className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
@@ -294,8 +447,9 @@ export default function TrackerPage() {
         </button>
 
         <p className="text-xs text-gray-500 text-center">
-          Tap the top of any counter to increase, bottom to decrease.
-          Commander damage automatically adjusts life.
+          Tap the top of any counter to increase, bottom to decrease. Commander
+          damage auto-adjusts life. When only one player remains alive, you&apos;ll
+          jump to the log game screen (if seats are assigned).
         </p>
       </div>
     );
@@ -304,131 +458,50 @@ export default function TrackerPage() {
   // Game layout
   const opponents = (idx: number) =>
     players.map((p, i) => ({ index: i, player: p })).filter((p) => p.index !== idx);
+  const isDead = (p: Player) => p.life <= 0;
 
-  // Layout by player count
+  const renderBox = (idx: number, rotate?: boolean) => (
+    <PlayerBox
+      player={players[idx]}
+      index={idx}
+      opponents={opponents(idx)}
+      onLifeChange={(d) => handleLife(idx, d)}
+      onCommanderDamage={(from, d) => handleCommanderDamage(idx, from, d)}
+      onOpenColor={() => setColorPickerFor(idx)}
+      onPickIcon={() => setIconPickerFor(idx)}
+      rotate={rotate}
+      dead={isDead(players[idx])}
+    />
+  );
+
   let layout: React.ReactNode;
   if (playerCount === 2) {
     layout = (
       <div className="fixed inset-0 flex flex-col" style={{ top: "56px" }}>
-        <div className="flex-1 min-h-0">
-          <PlayerBox
-            player={players[0]}
-            index={0}
-            opponents={opponents(0)}
-            onLifeChange={(d) => handleLife(0, d)}
-            onCommanderDamage={(from, d) => handleCommanderDamage(0, from, d)}
-            onOpenColor={() => setColorPickerFor(0)}
-            onPickIcon={() => setIconPickerFor(0)}
-            rotate
-          />
-        </div>
-        <div className="flex-1 min-h-0 border-t border-white/20">
-          <PlayerBox
-            player={players[1]}
-            index={1}
-            opponents={opponents(1)}
-            onLifeChange={(d) => handleLife(1, d)}
-            onCommanderDamage={(from, d) => handleCommanderDamage(1, from, d)}
-            onOpenColor={() => setColorPickerFor(1)}
-            onPickIcon={() => setIconPickerFor(1)}
-          />
-        </div>
+        <div className="flex-1 min-h-0">{renderBox(0, true)}</div>
+        <div className="flex-1 min-h-0 border-t border-white/20">{renderBox(1)}</div>
       </div>
     );
   } else if (playerCount === 3) {
     layout = (
       <div className="fixed inset-0 flex flex-col" style={{ top: "56px" }}>
-        <div className="flex-1 min-h-0">
-          <PlayerBox
-            player={players[0]}
-            index={0}
-            opponents={opponents(0)}
-            onLifeChange={(d) => handleLife(0, d)}
-            onCommanderDamage={(from, d) => handleCommanderDamage(0, from, d)}
-            onOpenColor={() => setColorPickerFor(0)}
-            onPickIcon={() => setIconPickerFor(0)}
-            rotate
-          />
-        </div>
+        <div className="flex-1 min-h-0">{renderBox(0, true)}</div>
         <div className="flex-1 min-h-0 border-t border-white/20 flex">
-          <div className="flex-1 min-w-0">
-            <PlayerBox
-              player={players[1]}
-              index={1}
-              opponents={opponents(1)}
-              onLifeChange={(d) => handleLife(1, d)}
-              onCommanderDamage={(from, d) => handleCommanderDamage(1, from, d)}
-              onOpenColor={() => setColorPickerFor(1)}
-              onPickIcon={() => setIconPickerFor(1)}
-            />
-          </div>
-          <div className="flex-1 min-w-0 border-l border-white/20">
-            <PlayerBox
-              player={players[2]}
-              index={2}
-              opponents={opponents(2)}
-              onLifeChange={(d) => handleLife(2, d)}
-              onCommanderDamage={(from, d) => handleCommanderDamage(2, from, d)}
-              onOpenColor={() => setColorPickerFor(2)}
-              onPickIcon={() => setIconPickerFor(2)}
-            />
-          </div>
+          <div className="flex-1 min-w-0">{renderBox(1)}</div>
+          <div className="flex-1 min-w-0 border-l border-white/20">{renderBox(2)}</div>
         </div>
       </div>
     );
   } else {
-    // 4 players
     layout = (
       <div className="fixed inset-0 flex flex-col" style={{ top: "56px" }}>
         <div className="flex-1 min-h-0 flex">
-          <div className="flex-1 min-w-0">
-            <PlayerBox
-              player={players[0]}
-              index={0}
-              opponents={opponents(0)}
-              onLifeChange={(d) => handleLife(0, d)}
-              onCommanderDamage={(from, d) => handleCommanderDamage(0, from, d)}
-              onOpenColor={() => setColorPickerFor(0)}
-              onPickIcon={() => setIconPickerFor(0)}
-              rotate
-            />
-          </div>
-          <div className="flex-1 min-w-0 border-l border-white/20">
-            <PlayerBox
-              player={players[1]}
-              index={1}
-              opponents={opponents(1)}
-              onLifeChange={(d) => handleLife(1, d)}
-              onCommanderDamage={(from, d) => handleCommanderDamage(1, from, d)}
-              onOpenColor={() => setColorPickerFor(1)}
-              onPickIcon={() => setIconPickerFor(1)}
-              rotate
-            />
-          </div>
+          <div className="flex-1 min-w-0">{renderBox(0, true)}</div>
+          <div className="flex-1 min-w-0 border-l border-white/20">{renderBox(1, true)}</div>
         </div>
         <div className="flex-1 min-h-0 border-t border-white/20 flex">
-          <div className="flex-1 min-w-0">
-            <PlayerBox
-              player={players[2]}
-              index={2}
-              opponents={opponents(2)}
-              onLifeChange={(d) => handleLife(2, d)}
-              onCommanderDamage={(from, d) => handleCommanderDamage(2, from, d)}
-              onOpenColor={() => setColorPickerFor(2)}
-              onPickIcon={() => setIconPickerFor(2)}
-            />
-          </div>
-          <div className="flex-1 min-w-0 border-l border-white/20">
-            <PlayerBox
-              player={players[3]}
-              index={3}
-              opponents={opponents(3)}
-              onLifeChange={(d) => handleLife(3, d)}
-              onCommanderDamage={(from, d) => handleCommanderDamage(3, from, d)}
-              onOpenColor={() => setColorPickerFor(3)}
-              onPickIcon={() => setIconPickerFor(3)}
-            />
-          </div>
+          <div className="flex-1 min-w-0">{renderBox(2)}</div>
+          <div className="flex-1 min-w-0 border-l border-white/20">{renderBox(3)}</div>
         </div>
       </div>
     );
@@ -438,7 +511,6 @@ export default function TrackerPage() {
     <>
       {layout}
 
-      {/* Floating control: reset / new game */}
       <div className="fixed top-16 left-1/2 -translate-x-1/2 z-20 flex gap-2">
         <button
           onClick={handleReset}
@@ -454,7 +526,6 @@ export default function TrackerPage() {
         </button>
       </div>
 
-      {/* Color picker modal */}
       {colorPickerFor !== null && (
         <div
           className="fixed inset-0 bg-black/60 z-30 flex items-center justify-center p-4"
@@ -501,7 +572,6 @@ export default function TrackerPage() {
         </div>
       )}
 
-      {/* Icon picker modal */}
       {iconPickerFor !== null && (
         <div
           className="fixed inset-0 bg-black/60 z-30 flex items-center justify-center p-4"
