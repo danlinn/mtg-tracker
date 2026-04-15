@@ -39,100 +39,65 @@ export default function NavBar() {
   const { data: session } = useSession();
   const userRole = (session?.user as { role?: string })?.role;
 
-  const barRef = useRef<HTMLDivElement>(null);
-  const brandRef = useRef<HTMLAnchorElement>(null);
-  const desktopRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const desktopMenuRef = useRef<HTMLDivElement>(null);
 
   const allNavItems = userRole === "admin"
     ? [...navItems, { href: "/admin", label: "Admin" }]
     : navItems;
 
-  // Detect if the desktop nav would overflow the available bar width.
-  // When it does, collapse to the hamburger even above the md breakpoint.
+  // Detect if the desktop menu row would overflow its container and
+  // collapse to the hamburger if so.
   useEffect(() => {
-    const bar = barRef.current;
-    const brand = brandRef.current;
-    const desktop = desktopRef.current;
-    if (!bar || !brand || !desktop) return;
+    const container = containerRef.current;
+    const menu = desktopMenuRef.current;
+    if (!container || !menu) return;
 
     function check() {
-      if (!bar || !brand || !desktop) return;
-      // Temporarily let the desktop nav render so we can measure
-      const barWidth = bar.clientWidth;
-      const brandWidth = brand.clientWidth;
-      const gapAndPadding = 64; // breathing room
-      const available = barWidth - brandWidth - gapAndPadding;
-      // scrollWidth of the desktop container = its actual content width
-      // regardless of whether it's currently `hidden`
-      const contentWidth = desktop.scrollWidth;
-      setOverflows(contentWidth > available);
+      if (!container || !menu) return;
+      setOverflows(menu.scrollWidth > container.clientWidth);
     }
 
     const ro = new ResizeObserver(check);
-    ro.observe(bar);
+    ro.observe(container);
     check();
     return () => ro.disconnect();
   }, [allNavItems.length]);
 
-  // Show desktop bar when there's enough room; hamburger otherwise
   const showDesktop = !overflows;
 
   return (
     <nav className="bg-gray-900 text-white sticky top-0 z-50">
-      <div className="w-full px-4">
-        <div ref={barRef} className="flex items-center justify-between h-14">
-          <Link ref={brandRef} href="/dashboard" className="font-bold text-lg whitespace-nowrap">
+      <div ref={containerRef} className="w-full px-4">
+        {/* Top row: brand + group switcher + theme + sign out (desktop)
+            OR brand + hamburger (mobile / collapsed) */}
+        <div className="flex items-center justify-between h-14 gap-4">
+          <Link href="/dashboard" className="font-bold text-lg whitespace-nowrap">
             MTG Tracker
           </Link>
 
-          {/* Desktop nav — measured even when hidden so we can detect overflow */}
-          <div
-            ref={desktopRef}
-            className={`items-center gap-4 whitespace-nowrap ${
-              showDesktop ? "flex" : "hidden"
-            }`}
-            style={
-              !showDesktop
-                ? { position: "absolute", visibility: "hidden", pointerEvents: "none" }
-                : undefined
-            }
-            aria-hidden={!showDesktop}
-          >
-            {allNavItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
-                  pathname === item.href
-                    ? "bg-gray-700 text-white"
-                    : "text-gray-300 hover:text-white hover:bg-gray-800"
-                }`}
+          {showDesktop ? (
+            <div className="flex items-center gap-4 whitespace-nowrap">
+              <PlaygroupSwitcher />
+              <select
+                value={theme}
+                onChange={(e) => setTheme(e.target.value as ThemeName)}
+                className="bg-gray-800 text-gray-300 text-sm rounded px-2 py-1 border border-gray-700"
               >
-                {item.label}
-              </Link>
-            ))}
-            <PlaygroupSwitcher />
-            <select
-              value={theme}
-              onChange={(e) => setTheme(e.target.value as ThemeName)}
-              className="bg-gray-800 text-gray-300 text-sm rounded px-2 py-1 border border-gray-700"
-            >
-              {Object.entries(themeLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="text-gray-400 hover:text-white text-sm"
-            >
-              Sign out
-            </button>
-          </div>
-
-          {/* Hamburger — shown whenever desktop nav doesn't fit */}
-          {!showDesktop && (
+                {Object.entries(themeLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="text-gray-400 hover:text-white text-sm"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
             <button
               className="p-2"
               onClick={() => setMenuOpen(!menuOpen)}
@@ -164,7 +129,35 @@ export default function NavBar() {
           )}
         </div>
 
-        {/* Collapsed menu panel */}
+        {/* Desktop menu row — menu items span the full width below the top row */}
+        <div
+          ref={desktopMenuRef}
+          className={`items-center gap-1 whitespace-nowrap border-t border-gray-800 h-12 ${
+            showDesktop ? "flex" : "hidden"
+          }`}
+          style={
+            !showDesktop
+              ? { position: "absolute", visibility: "hidden", pointerEvents: "none" }
+              : undefined
+          }
+          aria-hidden={!showDesktop}
+        >
+          {allNavItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
+                pathname === item.href
+                  ? "bg-gray-700 text-white"
+                  : "text-gray-300 hover:text-white hover:bg-gray-800"
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Mobile / collapsed menu panel */}
         {!showDesktop && menuOpen && (
           <div className="pb-3 space-y-1">
             {allNavItems.map((item) => (
