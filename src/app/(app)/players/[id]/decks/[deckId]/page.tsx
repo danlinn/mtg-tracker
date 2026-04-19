@@ -216,7 +216,13 @@ export default function PlayerDeckPage() {
           Get Recommendations
         </button>
         <a
-          href={`https://edhrec.com/commanders/${deck.commander.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "")}`}
+          href={(() => {
+            const slug = (name: string) =>
+              name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
+            const parts = [slug(deck.commander)];
+            if (deck.commander2) parts.push(slug(deck.commander2));
+            return `https://edhrec.com/commanders/${parts.join("-")}`;
+          })()}
           target="_blank"
           rel="noopener noreferrer"
           className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"

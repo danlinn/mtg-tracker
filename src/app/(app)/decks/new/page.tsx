@@ -45,12 +45,12 @@ function NewDeckForm() {
 
   function buildEdhpUrl() {
     if (!decklist.trim()) return null;
-    const encoded = decklist
+    const lines = decklist
       .split("\n")
       .map((line) => line.trim())
       .filter(Boolean)
       .join("~") + "~Z~";
-    return `https://edhpowerlevel.com/?d=${encoded.replace(/ /g, "+")}`;
+    return `https://edhpowerlevel.com/?d=${encodeURIComponent(lines)}`;
   }
 
   function toggleColor(key: string) {
