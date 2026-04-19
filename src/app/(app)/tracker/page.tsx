@@ -291,7 +291,6 @@ export default function TrackerPage() {
   const router = useRouter();
   const palette = useThemePalette();
   const BG_PRESETS = useMemo(() => allCombos(palette), [palette]);
-  const DEFAULT_SEAT_COLORS = useMemo(() => defaultSeatColors(palette), [palette]);
   // Hydrate from sessionStorage if we have a game in progress this tab
   const saved = typeof window !== "undefined" ? loadSession() : null;
   const [setupDone, setSetupDone] = useState(saved?.setupDone ?? false);

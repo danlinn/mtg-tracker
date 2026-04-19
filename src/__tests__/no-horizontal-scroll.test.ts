@@ -1,6 +1,6 @@
 import { describe, it, expect } from "@jest/globals";
-import { readFileSync } from "fs";
-import { join } from "path";
+import fs, { readFileSync, readdirSync } from "fs";
+import path, { join } from "path";
 
 /**
  * Regression guard: the app-wide CSS must prevent horizontal scrolling
@@ -43,9 +43,6 @@ describe("no horizontal scroll safety net", () => {
    * the pages, but it flags suspicious patterns early.
    */
   it("no page uses whitespace-nowrap on a container without overflow handling", () => {
-    const fs = require("fs") as typeof import("fs");
-    const path = require("path") as typeof import("path");
-
     function walk(dir: string): string[] {
       const out: string[] = [];
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
