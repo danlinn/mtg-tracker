@@ -8,9 +8,10 @@ import type { Palette, ColorKey } from "@/lib/themePalettes";
 interface Player {
   life: number;
   bgColor: string;
+  bgKey: string | null; // palette combo key (e.g. "R", "BU"), null = custom color
   damage: Record<number, number>;
-  userId: string; // playgroup user assigned to this seat (optional, empty = unassigned)
-  deckId: string; // deck assigned to this seat (optional)
+  userId: string;
+  deckId: string;
 }
 
 interface UserWithDecks {
@@ -53,9 +54,26 @@ function allCombos(palette: Palette): { key: string; combo: ColorKey[]; bg: stri
   });
 }
 
-// Seats 1-4 each get a distinct default color, per-palette.
-function defaultSeatColors(palette: Palette): string[] {
-  return [palette.R.hex, palette.U.hex, palette.G.hex, palette.B.hex];
+// Seats 1-4 each get a distinct default color key + resolved hex.
+const DEFAULT_SEAT_KEYS: string[] = ["R", "U", "G", "B"];
+
+function defaultSeatColors(palette: Palette): { hex: string; key: string }[] {
+  return DEFAULT_SEAT_KEYS.map((k) => ({
+    hex: palette[k as ColorKey].hex,
+    key: k,
+  }));
+}
+
+// Resolve a bgKey to a CSS background from the current palette.
+function resolveBg(bgKey: string | null, bgColor: string, palette: Palette): string {
+  if (!bgKey) return bgColor;
+  // Single color key (e.g. "R", "C")
+  if (bgKey.length === 1) {
+    return bgKey === "C" ? palette.C.hex : palette[bgKey as ColorKey]?.hex ?? bgColor;
+  }
+  // Combo key (e.g. "BU", "BURG")
+  const combo = bgKey.split("") as ColorKey[];
+  return bgForCombo(combo, palette);
 }
 
 // Matches the /games/new page's localStorage draft shape
@@ -99,14 +117,18 @@ function clearSession() {
 }
 
 function makePlayers(count: number, startLife: number, palette: Palette): Player[] {
-  const seatColors = defaultSeatColors(palette);
-  return Array.from({ length: count }, (_, i) => ({
-    life: startLife,
-    bgColor: seatColors[i % seatColors.length],
-    damage: {},
-    userId: "",
-    deckId: "",
-  }));
+  const seats = defaultSeatColors(palette);
+  return Array.from({ length: count }, (_, i) => {
+    const seat = seats[i % seats.length];
+    return {
+      life: startLife,
+      bgColor: seat.hex,
+      bgKey: seat.key,
+      damage: {},
+      userId: "",
+      deckId: "",
+    };
+  });
 }
 
 function textOn(bg: string): string {
@@ -134,6 +156,7 @@ interface PlayerBoxProps {
   onLifeChange: (delta: number) => void;
   onCommanderDamage: (fromIdx: number, delta: number) => void;
   onOpenColor: () => void;
+  palette: Palette;
   rotate?: boolean;
   dead?: boolean;
   playerName?: string;
@@ -147,19 +170,21 @@ function PlayerBox({
   onLifeChange,
   onCommanderDamage,
   onOpenColor,
+  palette,
   rotate,
   dead,
   playerName,
   deckName,
 }: PlayerBoxProps) {
-  const textColor = textOn(player.bgColor);
+  const resolvedBg = resolveBg(player.bgKey, player.bgColor, palette);
+  const textColor = textOn(resolvedBg);
   const lethal = Object.values(player.damage).some((d) => d >= 21);
 
   return (
     <div
       className="relative w-full h-full overflow-hidden select-none"
       style={{
-        background: player.bgColor,
+        background: resolvedBg,
         color: textColor,
         transform: rotate ? "rotate(180deg)" : undefined,
         filter: dead ? "grayscale(1)" : undefined,
@@ -220,7 +245,7 @@ function PlayerBox({
         >
           {opponents.map((opp) => {
             const dmg = player.damage[opp.index] ?? 0;
-            const oppBg = opp.player.bgColor;
+            const oppBg = resolveBg(opp.player.bgKey, opp.player.bgColor, palette);
             const oppText = textOn(oppBg);
             const isLethal = dmg >= 21;
             return (
@@ -411,13 +436,17 @@ export default function TrackerPage() {
   );
 
   function updateSeat(idx: number, field: "userId" | "deckId", value: string) {
-    setSeatAssignments((prev) =>
-      prev.map((s, i) => {
+    setSeatAssignments((prev) => {
+      // Ensure the array is large enough for the index
+      const padded = Array.from({ length: Math.max(prev.length, idx + 1) }, (_, i) =>
+        prev[i] ?? { userId: "", deckId: "" }
+      );
+      return padded.map((s, i) => {
         if (i !== idx) return s;
         if (field === "userId") return { userId: value, deckId: "" };
         return { ...s, [field]: value };
-      })
-    );
+      });
+    });
   }
 
   function getDecksFor(userId: string) {
@@ -553,6 +582,7 @@ export default function TrackerPage() {
         onLifeChange={(d) => handleLife(idx, d)}
         onCommanderDamage={(from, d) => handleCommanderDamage(idx, from, d)}
         onOpenColor={() => setColorPickerFor(idx)}
+        palette={palette}
         rotate={rotate}
         dead={isDead(players[idx])}
         playerName={playerName}
@@ -643,7 +673,7 @@ export default function TrackerPage() {
                 <button
                   key={preset.key}
                   onClick={() => {
-                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: preset.bg }));
+                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: preset.bg, bgKey: preset.key }));
                     setColorPickerFor(null);
                   }}
                   className="w-full aspect-square rounded-lg border border-gray-300 flex items-end justify-center text-[10px] font-bold p-0.5"
@@ -665,7 +695,7 @@ export default function TrackerPage() {
                 }
                 onChange={(e) => {
                   const v = e.target.value;
-                  updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: v }));
+                  updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: v, bgKey: null }));
                 }}
                 className="w-full h-10 rounded cursor-pointer"
               />
@@ -674,8 +704,8 @@ export default function TrackerPage() {
               <button
                 onClick={() => {
                   if (colorPickerFor !== null) {
-                    const defaultBg = DEFAULT_SEAT_COLORS[colorPickerFor % DEFAULT_SEAT_COLORS.length];
-                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: defaultBg }));
+                    const seat = DEFAULT_SEAT_COLORS[colorPickerFor % DEFAULT_SEAT_COLORS.length];
+                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: seat.hex, bgKey: seat.key }));
                   }
                   setColorPickerFor(null);
                 }}
