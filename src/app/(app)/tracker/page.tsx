@@ -136,6 +136,8 @@ interface PlayerBoxProps {
   onOpenColor: () => void;
   rotate?: boolean;
   dead?: boolean;
+  playerName?: string;
+  deckName?: string;
 }
 
 function PlayerBox({
@@ -147,6 +149,8 @@ function PlayerBox({
   onOpenColor,
   rotate,
   dead,
+  playerName,
+  deckName,
 }: PlayerBoxProps) {
   const textColor = textOn(player.bgColor);
   const lethal = Object.values(player.damage).some((d) => d >= 21);
@@ -177,10 +181,15 @@ function PlayerBox({
         aria-label={`Player ${index + 1} -1 life`}
       />
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+      <div className="absolute inset-0 flex flex-col items-center pointer-events-none" style={{ justifyContent: "center", paddingBottom: opponents.length > 0 ? "5rem" : "0" }}>
         <div className="text-7xl sm:text-8xl font-bold tabular-nums" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>
           {player.life}
         </div>
+        {(playerName || deckName) && !dead && (
+          <div className="text-[11px] font-medium mt-1 px-2 py-0.5 rounded bg-black/30 text-white max-w-[80%] truncate text-center">
+            {playerName}{deckName ? ` — ${deckName}` : ""}
+          </div>
+        )}
         {dead && (
           <div className="text-xs font-bold uppercase mt-1 px-2 py-0.5 rounded bg-gray-900 text-white">
             Eliminated
@@ -206,7 +215,7 @@ function PlayerBox({
 
       {opponents.length > 0 && (
         <div
-          className="absolute bottom-0 left-0 right-0 flex items-stretch justify-center gap-2 px-2 pb-2 pt-1 z-10"
+          className="absolute bottom-0 left-0 right-0 flex items-stretch justify-start gap-2 px-2 pb-2 pt-1 z-10"
           style={{ backgroundColor: "rgba(0,0,0,0.25)" }}
         >
           {opponents.map((opp) => {
@@ -361,6 +370,7 @@ export default function TrackerPage() {
   }
 
   function handleNewGame() {
+    if (!confirm("Start a new game? Current game will be lost.")) return;
     setSetupDone(false);
     setPlayers([]);
     autoLogTriggeredRef.current = false;
@@ -522,18 +532,34 @@ export default function TrackerPage() {
     players.map((p, i) => ({ index: i, player: p })).filter((p) => p.index !== idx);
   const isDead = (p: Player) => p.life <= 0;
 
-  const renderBox = (idx: number, rotate?: boolean) => (
-    <PlayerBox
-      player={players[idx]}
-      index={idx}
-      opponents={opponents(idx)}
-      onLifeChange={(d) => handleLife(idx, d)}
-      onCommanderDamage={(from, d) => handleCommanderDamage(idx, from, d)}
-      onOpenColor={() => setColorPickerFor(idx)}
-      rotate={rotate}
-      dead={isDead(players[idx])}
-    />
-  );
+  function seatLabel(idx: number): { playerName?: string; deckName?: string } {
+    const p = players[idx];
+    if (!p) return {};
+    const user = users.find((u) => u.id === p.userId);
+    const deck = user?.decks.find((d) => d.id === p.deckId);
+    return {
+      playerName: user?.name,
+      deckName: deck?.name,
+    };
+  }
+
+  const renderBox = (idx: number, rotate?: boolean) => {
+    const { playerName, deckName } = seatLabel(idx);
+    return (
+      <PlayerBox
+        player={players[idx]}
+        index={idx}
+        opponents={opponents(idx)}
+        onLifeChange={(d) => handleLife(idx, d)}
+        onCommanderDamage={(from, d) => handleCommanderDamage(idx, from, d)}
+        onOpenColor={() => setColorPickerFor(idx)}
+        rotate={rotate}
+        dead={isDead(players[idx])}
+        playerName={playerName}
+        deckName={deckName}
+      />
+    );
+  };
 
   // Layout fills the viewport on mobile (sticky 56px nav) and fills the
   // remaining space on desktop (where the nav is in flow and takes ~104px).
@@ -576,18 +602,29 @@ export default function TrackerPage() {
     <>
       {layout}
 
-      <div className="fixed top-16 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex gap-3">
         <button
           onClick={handleReset}
-          className="px-3 py-1.5 rounded-full bg-gray-900/80 text-white text-xs font-medium backdrop-blur"
+          className="w-10 h-10 rounded-full bg-gray-900/80 text-white backdrop-blur flex items-center justify-center"
+          aria-label="Reset game"
+          title="Reset"
         >
-          Reset
+          {/* Circle arrow (reset) */}
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20.49 9A9 9 0 005.64 5.64L4 4m16 16l-1.64-1.64A9 9 0 013.51 15" />
+          </svg>
         </button>
         <button
           onClick={handleNewGame}
-          className="px-3 py-1.5 rounded-full bg-gray-900/80 text-white text-xs font-medium backdrop-blur"
+          className="w-10 h-10 rounded-full bg-gray-900/80 text-white backdrop-blur flex items-center justify-center"
+          aria-label="New game"
+          title="New Game"
         >
-          New Game
+          {/* Plus sign */}
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
         </button>
       </div>
 
