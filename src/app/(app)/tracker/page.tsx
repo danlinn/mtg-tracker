@@ -562,7 +562,8 @@ export default function TrackerPage() {
   // Game layout
   const opponents = (idx: number) =>
     players.map((p, i) => ({ index: i, player: p })).filter((p) => p.index !== idx);
-  const isDead = (p: Player) => p.life <= 0;
+  const isDead = (p: Player) =>
+    p.life <= 0 || Object.values(p.damage).some((d) => d >= 21);
 
   function seatLabel(idx: number): { playerName?: string; deckName?: string } {
     const p = players[idx];
