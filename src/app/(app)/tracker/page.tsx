@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useThemePalette } from "@/lib/theme";
+import { DEFAULT_PALETTE } from "@/lib/themePalettes";
 import type { Palette, ColorKey } from "@/lib/themePalettes";
 
 interface Player {
@@ -299,6 +300,8 @@ export default function TrackerPage() {
   const [players, setPlayers] = useState<Player[]>(saved?.players ?? []);
   const [users, setUsers] = useState<UserWithDecks[]>([]);
   const [colorPickerFor, setColorPickerFor] = useState<number | null>(null);
+  const [pickerShowDefaults, setPickerShowDefaults] = useState(false);
+  const DEFAULT_BG_PRESETS = useMemo(() => allCombos(DEFAULT_PALETTE), []);
   const [seatAssignments, setSeatAssignments] = useState<
     { userId: string; deckId: string }[]
   >(saved?.seatAssignments ?? []);
@@ -661,20 +664,33 @@ export default function TrackerPage() {
       {colorPickerFor !== null && (
         <div
           className="fixed inset-0 bg-black/60 z-30 flex items-center justify-center p-4"
-          onClick={() => setColorPickerFor(null)}
+          onClick={() => { setColorPickerFor(null); setPickerShowDefaults(false); }}
         >
           <div
             className="bg-white rounded-lg p-4 max-w-sm w-full space-y-3"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="font-semibold text-gray-900">Pick a color</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900">Pick a color</h3>
+              <button
+                onClick={() => setPickerShowDefaults(!pickerShowDefaults)}
+                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+              >
+                {pickerShowDefaults ? "Themed colors" : "Default colors"}
+              </button>
+            </div>
             <div className="grid grid-cols-6 gap-2 max-h-80 overflow-y-auto">
-              {BG_PRESETS.map((preset) => (
+              {(pickerShowDefaults ? DEFAULT_BG_PRESETS : BG_PRESETS).map((preset) => (
                 <button
                   key={preset.key}
                   onClick={() => {
-                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: preset.bg, bgKey: preset.key }));
+                    updatePlayer(colorPickerFor, (p) => ({
+                      ...p,
+                      bgColor: preset.bg,
+                      bgKey: pickerShowDefaults ? null : preset.key,
+                    }));
                     setColorPickerFor(null);
+                    setPickerShowDefaults(false);
                   }}
                   className="w-full aspect-square rounded-lg border border-gray-300 flex items-end justify-center text-[10px] font-bold p-0.5"
                   style={backgroundStyle(preset.bg)}
@@ -700,26 +716,12 @@ export default function TrackerPage() {
                 className="w-full h-10 rounded cursor-pointer"
               />
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  if (colorPickerFor !== null) {
-                    const seat = DEFAULT_SEAT_COLORS[colorPickerFor % DEFAULT_SEAT_COLORS.length];
-                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: seat.hex, bgKey: seat.key }));
-                  }
-                  setColorPickerFor(null);
-                }}
-                className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
-              >
-                Default color
-              </button>
-              <button
-                onClick={() => setColorPickerFor(null)}
-                className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-medium"
-              >
-                Done
-              </button>
-            </div>
+            <button
+              onClick={() => { setColorPickerFor(null); setPickerShowDefaults(false); }}
+              className="w-full py-2 rounded-lg bg-blue-600 text-white font-medium"
+            >
+              Done
+            </button>
           </div>
         </div>
       )}

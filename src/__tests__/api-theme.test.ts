@@ -104,7 +104,7 @@ describe("PUT /api/theme", () => {
     mockGetCurrentUserId.mockResolvedValue("user-1");
     mockUserUpdate.mockResolvedValue({});
 
-    for (const theme of ["default", "old-school", "synth", "cyber", "flame", "chris"]) {
+    for (const theme of ["default", "synth", "cyber", "flame", "chris", "phyrexia", "stained-glass", "dungeon", "neon-dynasty", "grixis"]) {
       const res = await PUT(makeRequest({ theme }));
       expect(res.status).toBe(200);
     }

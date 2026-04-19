@@ -2,7 +2,18 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
 
-const VALID_THEMES = ["default", "old-school", "synth", "cyber", "flame", "chris"];
+const VALID_THEMES = [
+  "default",
+  "synth",
+  "cyber",
+  "flame",
+  "chris",
+  "phyrexia",
+  "stained-glass",
+  "dungeon",
+  "neon-dynasty",
+  "grixis",
+];
 
 export async function GET() {
   const userId = await getCurrentUserId();
