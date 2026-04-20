@@ -45,3 +45,23 @@ context flows automatically — never pass playgroup IDs around manually.
 
 ## Timezone
 - All date displays use `America/Los_Angeles` (Pacific time)
+
+## Database Backups
+Automated via `.github/workflows/db-backup.yml`:
+- Runs **daily at 11:00 UTC** (4am Pacific)
+- Runs **on every push to `main` that changes `prisma/schema.prisma`**
+- Can be triggered **manually** via GitHub Actions → "DB Backup" → "Run workflow"
+
+Requires a GitHub repo secret named `DATABASE_URL` pointing at the production
+Neon DB (use `NEON_DATABASE_URL_UNPOOLED` from the Vercel env — schema dumps
+should go through the unpooled connection).
+
+Backups are stored as GitHub Actions artifacts with **90-day retention**.
+Download with `gh run download <run-id>`.
+
+Restore: `DATABASE_URL=... ./scripts/restore-db.sh path/to/backup.sql.gz`
+(prompts for confirmation — uses `pg_dump --clean --if-exists`, so it drops
+and reloads every table).
+
+Before any risky schema change, manually trigger the workflow to grab a
+fresh snapshot.
