@@ -606,8 +606,6 @@ export default function TrackerPage() {
   }
 
   // Determine which visual slot a touch point falls in by coordinates.
-  // More reliable than elementFromPoint, which can miss due to
-  // overlapping children, z-index, or pointer-events.
   function slotFromPoint(x: number, y: number): number | null {
     const navH = window.innerWidth >= 1024 ? 104 : 56;
     const areaTop = navH;

@@ -240,4 +240,46 @@ describe("Tracker gameplay", () => {
       expect(label.textContent).toContain("Urza");
     });
   });
+
+  it("each player box has a color wheel button", async () => {
+    await startGame();
+    const colorButtons = screen.getAllByLabelText("Change background color");
+    expect(colorButtons.length).toBe(4);
+  });
+
+  it("color wheels are positioned at screen edges (never shared borders)", async () => {
+    await startGame();
+    const colorButtons = screen.getAllByLabelText("Change background color");
+    // 4-player layout: corners should be br, bl, bl, br (screen edges)
+    // In code, rotated top boxes use bottom-* which renders at top after rotation
+    for (const btn of colorButtons) {
+      const cls = btn.className;
+      // Each button should have a bottom-24 class (near screen edge, above commander damage)
+      // not top-2 right-2 (which would put it at shared borders)
+      expect(cls).toMatch(/bottom-24/);
+    }
+  });
+
+  it("seat order slots have data-seat attributes for drag targeting", async () => {
+    await startGame();
+    const { container } = render(<div />); // just to get document
+    const seats = document.querySelectorAll("[data-seat]");
+    expect(seats.length).toBe(4);
+    const seatValues = Array.from(seats).map((s) => s.getAttribute("data-seat"));
+    expect(seatValues).toEqual(["0", "1", "2", "3"]);
+  });
+
+  it("source code has coordinate-based drag detection (no elementFromPoint)", async () => {
+    // Regression: elementFromPoint was unreliable for drag targets due to
+    // z-index layers. The coordinate-based slotFromPoint approach should
+    // be used instead.
+    const fs = await import("fs");
+    const path = await import("path");
+    const src = fs.readFileSync(
+      path.join(process.cwd(), "src/app/(app)/tracker/page.tsx"),
+      "utf8"
+    );
+    expect(src).toMatch(/slotFromPoint/);
+    expect(src).not.toMatch(/elementFromPoint/);
+  });
 });
