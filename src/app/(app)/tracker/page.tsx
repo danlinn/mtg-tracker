@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useThemePalette } from "@/lib/theme";
 import { DEFAULT_PALETTE } from "@/lib/themePalettes";
@@ -91,6 +91,7 @@ interface TrackerSession {
   startLife: number;
   players: Player[];
   seatAssignments: { userId: string; deckId: string }[];
+  seatOrder?: number[];
 }
 
 function loadSession(): TrackerSession | null {
@@ -306,10 +307,20 @@ export default function TrackerPage() {
   >(saved?.seatAssignments ?? []);
   const autoLogTriggeredRef = useRef(false);
 
+  // Seat order: maps visual position → player index. Swapping two
+  // entries rearranges which player appears in which quadrant.
+  const [seatOrder, setSeatOrder] = useState<number[]>(
+    saved?.seatOrder ?? Array.from({ length: saved?.playerCount ?? 4 }, (_, i) => i)
+  );
+  const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+
   // Persist to sessionStorage on every relevant change
   useEffect(() => {
-    saveSession({ setupDone, playerCount, startLife, players, seatAssignments });
-  }, [setupDone, playerCount, startLife, players, seatAssignments]);
+    saveSession({ setupDone, playerCount, startLife, players, seatAssignments, seatOrder });
+  }, [setupDone, playerCount, startLife, players, seatAssignments, seatOrder]);
 
   // Load users (scoped to active playgroup via helper)
   useEffect(() => {
@@ -384,6 +395,7 @@ export default function TrackerPage() {
       deckId: seatsForCount[i]?.deckId ?? "",
     }));
     setPlayers(ps);
+    setSeatOrder(Array.from({ length: playerCount }, (_, i) => i));
     setSetupDone(true);
     autoLogTriggeredRef.current = false;
   }
@@ -404,38 +416,29 @@ export default function TrackerPage() {
     clearSession();
   }
 
-  const updatePlayer = useCallback(
-    (idx: number, updater: (p: Player) => Player) => {
-      setPlayers((prev) => prev.map((p, i) => (i === idx ? updater(p) : p)));
-    },
-    []
-  );
+  function updatePlayer(idx: number, updater: (p: Player) => Player) {
+    setPlayers((prev) => prev.map((p, i) => (i === idx ? updater(p) : p)));
+  }
 
-  const handleLife = useCallback(
-    (idx: number, delta: number) => {
-      updatePlayer(idx, (p) => ({ ...p, life: p.life + delta }));
-    },
-    [updatePlayer]
-  );
+  function handleLife(idx: number, delta: number) {
+    updatePlayer(idx, (p) => ({ ...p, life: p.life + delta }));
+  }
 
-  const handleCommanderDamage = useCallback(
-    (toIdx: number, fromIdx: number, delta: number) => {
-      setPlayers((prev) =>
-        prev.map((p, i) => {
-          if (i !== toIdx) return p;
-          const current = p.damage[fromIdx] ?? 0;
-          const nextDmg = Math.max(0, current + delta);
-          const actualDelta = nextDmg - current;
-          return {
-            ...p,
-            life: p.life - actualDelta,
-            damage: { ...p.damage, [fromIdx]: nextDmg },
-          };
-        })
-      );
-    },
-    []
-  );
+  function handleCommanderDamage(toIdx: number, fromIdx: number, delta: number) {
+    setPlayers((prev) =>
+      prev.map((p, i) => {
+        if (i !== toIdx) return p;
+        const current = p.damage[fromIdx] ?? 0;
+        const nextDmg = Math.max(0, current + delta);
+        const actualDelta = nextDmg - current;
+        return {
+          ...p,
+          life: p.life - actualDelta,
+          damage: { ...p.damage, [fromIdx]: nextDmg },
+        };
+      })
+    );
+  }
 
   function updateSeat(idx: number, field: "userId" | "deckId", value: string) {
     setSeatAssignments((prev) => {
@@ -575,6 +578,53 @@ export default function TrackerPage() {
     };
   }
 
+  function swapSeats(a: number, b: number) {
+    setSeatOrder((prev) => {
+      const next = [...prev];
+      [next[a], next[b]] = [next[b], next[a]];
+      return next;
+    });
+  }
+
+  function handleBoxTouchStart(visualPos: number, e: React.TouchEvent) {
+    const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+    longPressTimer.current = setTimeout(() => {
+      setDragFrom(visualPos);
+    }, 500);
+  }
+
+  function handleBoxTouchMove(e: React.TouchEvent) {
+    const touch = e.touches[0];
+    if (longPressTimer.current && touchStartPos.current) {
+      const dx = touch.clientX - touchStartPos.current.x;
+      const dy = touch.clientY - touchStartPos.current.y;
+      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    }
+    if (dragFrom === null) return;
+    e.preventDefault();
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const slot = el?.closest("[data-seat]");
+    const pos = slot ? Number(slot.getAttribute("data-seat")) : null;
+    setDragOver(pos !== null && pos !== dragFrom ? pos : null);
+  }
+
+  function handleBoxTouchEnd() {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    if (dragFrom !== null && dragOver !== null) {
+      swapSeats(dragFrom, dragOver);
+    }
+    setDragFrom(null);
+    setDragOver(null);
+    touchStartPos.current = null;
+  }
+
   const renderBox = (idx: number, rotate?: boolean) => {
     const { playerName, deckName } = seatLabel(idx);
     return (
@@ -598,21 +648,46 @@ export default function TrackerPage() {
   // remaining space on desktop (where the nav is in flow and takes ~104px).
   // Using `fixed inset-0 top-*` is viewport-relative so it works the same
   // regardless of page scroll.
+  // Wrap each player slot with touch handlers + visual drag feedback.
+  // `visualPos` = which quadrant on screen, `seatOrder[visualPos]` = player index.
+  const slot = (visualPos: number, rotate?: boolean) => {
+    const playerIdx = seatOrder[visualPos];
+    const isDragSource = dragFrom === visualPos;
+    const isDragTarget = dragOver === visualPos;
+    return (
+      <div
+        data-seat={visualPos}
+        className="flex-1 min-h-0 min-w-0 relative"
+        style={{
+          opacity: isDragSource ? 0.5 : 1,
+          outline: isDragTarget ? "3px solid #facc15" : "none",
+          outlineOffset: "-3px",
+          transition: "opacity 150ms, outline 150ms",
+        }}
+        onTouchStart={(e) => handleBoxTouchStart(visualPos, e)}
+        onTouchMove={(e) => handleBoxTouchMove(e)}
+        onTouchEnd={handleBoxTouchEnd}
+      >
+        {renderBox(playerIdx, rotate)}
+      </div>
+    );
+  };
+
   let layout: React.ReactNode;
   if (playerCount === 2) {
     layout = (
       <div className="fixed inset-0 top-14 lg:top-[104px] flex flex-col">
-        <div className="flex-1 min-h-0">{renderBox(0, true)}</div>
-        <div className="flex-1 min-h-0 border-t border-white/20">{renderBox(1)}</div>
+        {slot(0, true)}
+        {slot(1)}
       </div>
     );
   } else if (playerCount === 3) {
     layout = (
       <div className="fixed inset-0 top-14 lg:top-[104px] flex flex-col">
-        <div className="flex-1 min-h-0">{renderBox(0, true)}</div>
+        {slot(0, true)}
         <div className="flex-1 min-h-0 border-t border-white/20 flex">
-          <div className="flex-1 min-w-0">{renderBox(1)}</div>
-          <div className="flex-1 min-w-0 border-l border-white/20">{renderBox(2)}</div>
+          {slot(1)}
+          {slot(2)}
         </div>
       </div>
     );
@@ -620,12 +695,12 @@ export default function TrackerPage() {
     layout = (
       <div className="fixed inset-0 top-14 lg:top-[104px] flex flex-col">
         <div className="flex-1 min-h-0 flex">
-          <div className="flex-1 min-w-0">{renderBox(0, true)}</div>
-          <div className="flex-1 min-w-0 border-l border-white/20">{renderBox(1, true)}</div>
+          {slot(0, true)}
+          {slot(1, true)}
         </div>
         <div className="flex-1 min-h-0 border-t border-white/20 flex">
-          <div className="flex-1 min-w-0">{renderBox(2)}</div>
-          <div className="flex-1 min-w-0 border-l border-white/20">{renderBox(3)}</div>
+          {slot(2)}
+          {slot(3)}
         </div>
       </div>
     );
