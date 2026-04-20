@@ -151,6 +151,15 @@ function backgroundStyle(bg: string): React.CSSProperties {
   return { background: bg };
 }
 
+type Corner = "tl" | "tr" | "bl" | "br";
+
+const CORNER_CLASSES: Record<Corner, string> = {
+  tl: "top-2 left-2",
+  tr: "top-2 right-2",
+  bl: "bottom-24 left-2",
+  br: "bottom-24 right-2",
+};
+
 interface PlayerBoxProps {
   player: Player;
   index: number;
@@ -163,6 +172,7 @@ interface PlayerBoxProps {
   dead?: boolean;
   playerName?: string;
   deckName?: string;
+  colorCorner?: Corner;
 }
 
 function PlayerBox({
@@ -177,6 +187,7 @@ function PlayerBox({
   dead,
   playerName,
   deckName,
+  colorCorner = "tr",
 }: PlayerBoxProps) {
   const resolvedBg = resolveBg(player.bgKey, player.bgColor, palette);
   const textColor = textOn(resolvedBg);
@@ -232,7 +243,7 @@ function PlayerBox({
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onOpenColor(); }}
-        className="absolute top-2 right-2 w-10 h-10 rounded-full shadow-md z-10 border-2"
+        className={`absolute ${CORNER_CLASSES[colorCorner]} w-10 h-10 rounded-full shadow-md z-10 border-2`}
         style={{
           background: "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
           borderColor: textColor,
@@ -594,6 +605,30 @@ export default function TrackerPage() {
     }, 500);
   }
 
+  // Determine which visual slot a touch point falls in by coordinates.
+  // More reliable than elementFromPoint, which can miss due to
+  // overlapping children, z-index, or pointer-events.
+  function slotFromPoint(x: number, y: number): number | null {
+    const navH = window.innerWidth >= 1024 ? 104 : 56;
+    const areaTop = navH;
+    const areaH = window.innerHeight - areaTop;
+    const relY = y - areaTop;
+    if (relY < 0 || relY > areaH) return null;
+    const midY = areaH / 2;
+    const midX = window.innerWidth / 2;
+
+    if (playerCount === 2) {
+      return relY < midY ? 0 : 1;
+    } else if (playerCount === 3) {
+      if (relY < midY) return 0;
+      return x < midX ? 1 : 2;
+    } else {
+      const row = relY < midY ? 0 : 1;
+      const col = x < midX ? 0 : 1;
+      return row * 2 + col;
+    }
+  }
+
   function handleBoxTouchMove(e: React.TouchEvent) {
     const touch = e.touches[0];
     if (longPressTimer.current && touchStartPos.current) {
@@ -606,9 +641,7 @@ export default function TrackerPage() {
     }
     if (dragFrom === null) return;
     e.preventDefault();
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    const slot = el?.closest("[data-seat]");
-    const pos = slot ? Number(slot.getAttribute("data-seat")) : null;
+    const pos = slotFromPoint(touch.clientX, touch.clientY);
     setDragOver(pos !== null && pos !== dragFrom ? pos : null);
   }
 
@@ -625,7 +658,7 @@ export default function TrackerPage() {
     touchStartPos.current = null;
   }
 
-  const renderBox = (idx: number, rotate?: boolean) => {
+  const renderBox = (idx: number, rotate?: boolean, colorCorner?: Corner) => {
     const { playerName, deckName } = seatLabel(idx);
     return (
       <PlayerBox
@@ -640,6 +673,7 @@ export default function TrackerPage() {
         dead={isDead(players[idx])}
         playerName={playerName}
         deckName={deckName}
+        colorCorner={colorCorner}
       />
     );
   };
@@ -648,8 +682,32 @@ export default function TrackerPage() {
   // remaining space on desktop (where the nav is in flow and takes ~104px).
   // Using `fixed inset-0 top-*` is viewport-relative so it works the same
   // regardless of page scroll.
-  // Wrap each player slot with touch handlers + visual drag feedback.
-  // `visualPos` = which quadrant on screen, `seatOrder[visualPos]` = player index.
+  // Map visual positions to the corner where the color wheel should sit
+  // so it's always at a screen edge, never at a shared border.
+  // For rotated boxes: CSS coords flip, so we specify the code-side position
+  // that renders at the desired visual corner.
+  function cornerForSlot(visualPos: number): Corner {
+    if (playerCount === 2) {
+      // Pos 0 = top (rotated): visual top-right → code bottom-left
+      // Pos 1 = bottom: visual bottom-right
+      return visualPos === 0 ? "bl" : "br";
+    }
+    if (playerCount === 3) {
+      // Pos 0 = top full (rotated): visual top-right → code bottom-left
+      // Pos 1 = bottom-left: visual bottom-left
+      // Pos 2 = bottom-right: visual bottom-right
+      if (visualPos === 0) return "bl";
+      return visualPos === 1 ? "bl" : "br";
+    }
+    // 4 players (2×2):
+    // Pos 0 = top-left (rotated): visual top-left → code bottom-right
+    // Pos 1 = top-right (rotated): visual top-right → code bottom-left
+    // Pos 2 = bottom-left: visual bottom-left
+    // Pos 3 = bottom-right: visual bottom-right
+    const corners: Corner[] = ["br", "bl", "bl", "br"];
+    return corners[visualPos];
+  }
+
   const slot = (visualPos: number, rotate?: boolean) => {
     const playerIdx = seatOrder[visualPos];
     const isDragSource = dragFrom === visualPos;
@@ -660,15 +718,14 @@ export default function TrackerPage() {
         className="flex-1 min-h-0 min-w-0 relative"
         style={{
           opacity: isDragSource ? 0.5 : 1,
-          outline: isDragTarget ? "3px solid #facc15" : "none",
-          outlineOffset: "-3px",
-          transition: "opacity 150ms, outline 150ms",
+          boxShadow: isDragTarget ? "inset 0 0 0 4px #facc15" : "none",
+          transition: "opacity 150ms, box-shadow 150ms",
         }}
         onTouchStart={(e) => handleBoxTouchStart(visualPos, e)}
         onTouchMove={(e) => handleBoxTouchMove(e)}
         onTouchEnd={handleBoxTouchEnd}
       >
-        {renderBox(playerIdx, rotate)}
+        {renderBox(playerIdx, rotate, cornerForSlot(visualPos))}
       </div>
     );
   };
