@@ -173,6 +173,7 @@ interface PlayerBoxProps {
   playerName?: string;
   deckName?: string;
   colorCorner?: Corner;
+  dragTarget?: boolean;
 }
 
 function PlayerBox({
@@ -188,6 +189,7 @@ function PlayerBox({
   playerName,
   deckName,
   colorCorner = "tr",
+  dragTarget,
 }: PlayerBoxProps) {
   const resolvedBg = resolveBg(player.bgKey, player.bgColor, palette);
   const textColor = textOn(resolvedBg);
@@ -294,6 +296,13 @@ function PlayerBox({
             );
           })}
         </div>
+      )}
+
+      {dragTarget && (
+        <div
+          className="absolute inset-0 z-30 pointer-events-none border-4 border-yellow-400"
+          style={{ boxShadow: "inset 0 0 20px rgba(250, 204, 21, 0.4)" }}
+        />
       )}
     </div>
   );
@@ -656,7 +665,7 @@ export default function TrackerPage() {
     touchStartPos.current = null;
   }
 
-  const renderBox = (idx: number, rotate?: boolean, colorCorner?: Corner) => {
+  const renderBox = (idx: number, rotate?: boolean, colorCorner?: Corner, isDragTarget?: boolean) => {
     const { playerName, deckName } = seatLabel(idx);
     return (
       <PlayerBox
@@ -672,6 +681,7 @@ export default function TrackerPage() {
         playerName={playerName}
         deckName={deckName}
         colorCorner={colorCorner}
+        dragTarget={isDragTarget}
       />
     );
   };
@@ -716,14 +726,13 @@ export default function TrackerPage() {
         className="flex-1 min-h-0 min-w-0 relative"
         style={{
           opacity: isDragSource ? 0.5 : 1,
-          boxShadow: isDragTarget ? "inset 0 0 0 4px #facc15" : "none",
-          transition: "opacity 150ms, box-shadow 150ms",
+          transition: "opacity 150ms",
         }}
         onTouchStart={(e) => handleBoxTouchStart(visualPos, e)}
         onTouchMove={(e) => handleBoxTouchMove(e)}
         onTouchEnd={handleBoxTouchEnd}
       >
-        {renderBox(playerIdx, rotate, cornerForSlot(visualPos))}
+        {renderBox(playerIdx, rotate, cornerForSlot(visualPos), isDragTarget)}
       </div>
     );
   };

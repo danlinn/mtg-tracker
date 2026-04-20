@@ -270,9 +270,6 @@ describe("Tracker gameplay", () => {
   });
 
   it("source code has coordinate-based drag detection (no elementFromPoint)", async () => {
-    // Regression: elementFromPoint was unreliable for drag targets due to
-    // z-index layers. The coordinate-based slotFromPoint approach should
-    // be used instead.
     const fs = await import("fs");
     const path = await import("path");
     const src = fs.readFileSync(
@@ -281,5 +278,17 @@ describe("Tracker gameplay", () => {
     );
     expect(src).toMatch(/slotFromPoint/);
     expect(src).not.toMatch(/elementFromPoint/);
+  });
+
+  it("drag highlight renders inside PlayerBox (not clipped by parent)", async () => {
+    const fs = await import("fs");
+    const path = await import("path");
+    const src = fs.readFileSync(
+      path.join(process.cwd(), "src/app/(app)/tracker/page.tsx"),
+      "utf8"
+    );
+    // The dragTarget prop should render a border overlay INSIDE PlayerBox
+    // so it's visible above overflow:hidden content
+    expect(src).toMatch(/dragTarget.*border-4.*border-yellow-400/s);
   });
 });
