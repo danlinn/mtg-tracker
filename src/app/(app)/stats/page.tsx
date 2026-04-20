@@ -88,7 +88,7 @@ function comboStops(
   const ordered = GRADIENT_ORDER.filter((c) => chars.includes(c));
   if (ordered.length === 1) return [{ offset: "0%", color: paletteHex[ordered[0]] }];
   return ordered.map((c, i) => ({
-    offset: `${(i / (ordered.length - 1)) * 100}%`,
+    offset: `${10 + (i / (ordered.length - 1)) * 80}%`,
     color: paletteHex[c],
   }));
 }
