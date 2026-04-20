@@ -16,6 +16,13 @@ export async function GET() {
       status: true,
       createdAt: true,
       _count: { select: { decks: true, gameEntries: true } },
+      playgroupMembers: {
+        select: {
+          playgroupId: true,
+          role: true,
+          playgroup: { select: { name: true } },
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
   });

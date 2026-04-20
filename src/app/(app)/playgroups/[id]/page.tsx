@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 interface Member {
   id: string;
@@ -30,6 +31,8 @@ export default function PlaygroupDetailPage() {
   const [sending, setSending] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const { data: session } = useSession();
+  const isAdminUser = (session?.user as { role?: string })?.role === "admin";
 
   useEffect(() => {
     Promise.all([
@@ -89,6 +92,30 @@ export default function PlaygroupDetailPage() {
   function copyLink() {
     if (inviteLink) {
       navigator.clipboard.writeText(inviteLink);
+    }
+  }
+
+  async function handleAdminAccept(inviteId: string) {
+    const res = await fetch(`/api/playgroups/${playgroupId}/invites`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inviteId }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setInvites((prev) =>
+        prev.map((inv) =>
+          inv.id === inviteId ? { ...inv, usedAt: new Date().toISOString() } : inv
+        )
+      );
+      // Refresh members
+      fetch(`/api/playgroups/${playgroupId}/members`)
+        .then((r) => r.json())
+        .then((m) => setMembers(Array.isArray(m) ? m : []));
+      alert(`${data.userName} has been added to the group.`);
+    } else {
+      const data = await res.json();
+      alert(data.error || "Failed to accept invite");
     }
   }
 
@@ -208,21 +235,31 @@ export default function PlaygroupDetailPage() {
                     by {inv.invitedBy.name}
                   </span>
                 </div>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full ${
-                    inv.usedAt
-                      ? "bg-green-100 text-green-700"
+                <div className="flex items-center gap-2">
+                  {isAdminUser && !inv.usedAt && inv.email && (
+                    <button
+                      onClick={() => handleAdminAccept(inv.id)}
+                      className="text-xs bg-green-600 text-white px-2 py-0.5 rounded hover:bg-green-700"
+                    >
+                      Accept
+                    </button>
+                  )}
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full ${
+                      inv.usedAt
+                        ? "bg-green-100 text-green-700"
+                        : inv.expiresAt && new Date(inv.expiresAt) < new Date()
+                        ? "bg-gray-100 text-gray-500"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {inv.usedAt
+                      ? "Accepted"
                       : inv.expiresAt && new Date(inv.expiresAt) < new Date()
-                      ? "bg-gray-100 text-gray-500"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
-                >
-                  {inv.usedAt
-                    ? "Accepted"
-                    : inv.expiresAt && new Date(inv.expiresAt) < new Date()
-                    ? "Expired"
-                    : "Pending"}
-                </span>
+                      ? "Expired"
+                      : "Pending"}
+                  </span>
+                </div>
               </div>
             ))}
           </div>

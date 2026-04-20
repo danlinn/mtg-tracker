@@ -41,7 +41,8 @@ export default function EditDeckPage() {
     const lines = decklist
       .split("\n")
       .map((line) => line.trim())
-      .filter(Boolean)
+      .filter((line) => line && !line.startsWith("//") && !line.startsWith("#"))
+      .map((line) => (/^\d+\s/.test(line) ? line : `1 ${line}`))
       .join("~") + "~Z~";
     return `https://edhpowerlevel.com/?d=${encodeURIComponent(lines)}`;
   }

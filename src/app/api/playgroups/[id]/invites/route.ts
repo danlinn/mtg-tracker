@@ -6,6 +6,78 @@ import { sendEmail } from "@/lib/email";
 
 const INVITE_TTL_DAYS = 7;
 
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { id } = await params;
+
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const { inviteId } = body;
+  if (!inviteId) {
+    return NextResponse.json({ error: "Missing inviteId" }, { status: 400 });
+  }
+
+  const invite = await prisma.playgroupInvite.findUnique({
+    where: { id: inviteId },
+  });
+
+  if (!invite || invite.playgroupId !== id) {
+    return NextResponse.json({ error: "Invite not found" }, { status: 404 });
+  }
+
+  if (!invite.email) {
+    return NextResponse.json(
+      { error: "Cannot accept a link invite — no email to match" },
+      { status: 400 }
+    );
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: invite.email },
+    select: { id: true, name: true },
+  });
+
+  if (!user) {
+    return NextResponse.json(
+      { error: "No registered user with that email" },
+      { status: 404 }
+    );
+  }
+
+  const existing = await prisma.playgroupMember.findUnique({
+    where: { userId_playgroupId: { userId: user.id, playgroupId: id } },
+  });
+
+  if (!existing) {
+    await prisma.playgroupMember.create({
+      data: { userId: user.id, playgroupId: id, role: "member" },
+    });
+  }
+
+  await prisma.playgroupInvite.update({
+    where: { id: inviteId },
+    data: { usedAt: new Date() },
+  });
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { status: "approved" },
+  });
+
+  return NextResponse.json({ accepted: true, userName: user.name });
+}
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
