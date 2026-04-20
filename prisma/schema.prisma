@@ -17,6 +17,8 @@ model User {
   theme          String   @default("default")
   emailVerified  Boolean  @default(false)
   verifyToken    String?  @unique
+  resetToken     String?  @unique
+  resetTokenExp  DateTime?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
