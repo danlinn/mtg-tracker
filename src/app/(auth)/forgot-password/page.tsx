@@ -14,31 +14,19 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError("");
 
-    try {
-      const res = await fetch("/api/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+    const res = await fetch("/api/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
 
-      if (res.ok) {
-        setSent(true);
-      } else {
-        // Response may not be JSON (e.g. edge 503 HTML/plain)
-        let message = `Something went wrong (${res.status})`;
-        try {
-          const data = await res.json();
-          if (data?.error) message = data.error;
-        } catch {
-          // fall through with default message
-        }
-        setError(message);
-      }
-    } catch {
-      setError("Network error — please try again.");
-    } finally {
-      setLoading(false);
+    if (res.ok) {
+      setSent(true);
+    } else {
+      const data = await res.json();
+      setError(data.error || "Something went wrong");
     }
+    setLoading(false);
   }
 
   if (sent) {

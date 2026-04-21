@@ -67,30 +67,19 @@ function ResetPasswordForm() {
     }
 
     setLoading(true);
-    try {
-      const res = await fetch("/api/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
-      });
+    const res = await fetch("/api/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, password }),
+    });
 
-      if (res.ok) {
-        setDone(true);
-      } else {
-        let message = `Something went wrong (${res.status})`;
-        try {
-          const data = await res.json();
-          if (data?.error) message = data.error;
-        } catch {
-          // fall through with default message
-        }
-        setError(message);
-      }
-    } catch {
-      setError("Network error — please try again.");
-    } finally {
-      setLoading(false);
+    if (res.ok) {
+      setDone(true);
+    } else {
+      const data = await res.json();
+      setError(data.error || "Something went wrong");
     }
+    setLoading(false);
   }
 
   return (
