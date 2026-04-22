@@ -24,17 +24,20 @@ export async function GET(req: Request) {
 
   try {
     const columns = await prisma.$queryRaw<Array<{ column_name: string }>>`
-      SELECT column_name FROM information_schema.columns
+      SELECT column_name::text AS column_name
+      FROM information_schema.columns
       WHERE table_schema = 'public' AND table_name = 'User'
       ORDER BY ordinal_position
     `;
 
     const hasResetToken = columns.some((c) => c.column_name === "resetToken");
+    const hasResetTokenExp = columns.some((c) => c.column_name === "resetTokenExp");
 
     return NextResponse.json({
       envUrls,
       userColumns: columns.map((c) => c.column_name),
       hasResetToken,
+      hasResetTokenExp,
     });
   } catch (error) {
     return NextResponse.json({
