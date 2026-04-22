@@ -13,14 +13,45 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const envUrls: Record<string, string | null> = {
-    POSTGRES_PRISMA_URL: mask(process.env.POSTGRES_PRISMA_URL),
-    POSTGRES_URL: mask(process.env.POSTGRES_URL),
-    DATABASE_URL: mask(process.env.DATABASE_URL),
-    POSTGRES_URL_NON_POOLING: mask(process.env.POSTGRES_URL_NON_POOLING),
-    NEON_DATABASE_URL: mask(process.env.NEON_DATABASE_URL),
-    NEON_DATABASE_URL_UNPOOLED: mask(process.env.NEON_DATABASE_URL_UNPOOLED),
-  };
+  function clean(url: string | undefined): string {
+    if (!url) return "";
+    return url.replace(/\\n/g, "").replace(/\n/g, "").trim();
+  }
+
+  const varNames = [
+    "POSTGRES_PRISMA_URL",
+    "NEON_DATABASE_URL",
+    "POSTGRES_URL",
+    "DATABASE_URL",
+    "POSTGRES_URL_NON_POOLING",
+    "NEON_DATABASE_URL_UNPOOLED",
+    "NEXTAUTH_SECRET",
+    "NEXTAUTH_URL",
+  ] as const;
+
+  const envUrls: Record<string, { masked: string | null; rawLen: number; cleanLen: number }> = {};
+  for (const name of varNames) {
+    const raw = process.env[name];
+    envUrls[name] = {
+      masked: mask(raw),
+      rawLen: raw?.length ?? 0,
+      cleanLen: clean(raw).length,
+    };
+  }
+
+  const resolvedUrl =
+    clean(process.env.POSTGRES_PRISMA_URL) ||
+    clean(process.env.NEON_DATABASE_URL) ||
+    clean(process.env.POSTGRES_URL) ||
+    clean(process.env.DATABASE_URL) ||
+    "(none)";
+
+  const resolvedFrom = [
+    ["POSTGRES_PRISMA_URL", clean(process.env.POSTGRES_PRISMA_URL)],
+    ["NEON_DATABASE_URL", clean(process.env.NEON_DATABASE_URL)],
+    ["POSTGRES_URL", clean(process.env.POSTGRES_URL)],
+    ["DATABASE_URL", clean(process.env.DATABASE_URL)],
+  ].find(([, v]) => !!v)?.[0] ?? "none";
 
   try {
     const columns = await prisma.$queryRaw<Array<{ column_name: string }>>`
@@ -34,6 +65,8 @@ export async function GET(req: Request) {
     const hasResetTokenExp = columns.some((c) => c.column_name === "resetTokenExp");
 
     return NextResponse.json({
+      resolvedFrom,
+      resolvedUrl: mask(resolvedUrl),
       envUrls,
       userColumns: columns.map((c) => c.column_name),
       hasResetToken,
@@ -41,6 +74,8 @@ export async function GET(req: Request) {
     });
   } catch (error) {
     return NextResponse.json({
+      resolvedFrom,
+      resolvedUrl: mask(resolvedUrl),
       envUrls,
       error: error instanceof Error ? error.message : String(error),
     });

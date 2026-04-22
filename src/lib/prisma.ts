@@ -5,23 +5,39 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 function cleanUrl(url: string | undefined): string {
   if (!url) return "";
-  return url.replace(/\\n/g, "").trim();
+  return url.replace(/\\n/g, "").replace(/\n/g, "").trim();
+}
+
+function maskUrl(url: string): string {
+  return url.replace(/:[^:@]+@/, ":***@");
 }
 
 function createPrismaClient() {
-  const connectionString =
-    cleanUrl(process.env.POSTGRES_PRISMA_URL) ||
-    cleanUrl(process.env.NEON_DATABASE_URL) ||
-    cleanUrl(process.env.POSTGRES_URL) ||
-    cleanUrl(process.env.DATABASE_URL);
+  const candidates = [
+    { name: "POSTGRES_PRISMA_URL", val: cleanUrl(process.env.POSTGRES_PRISMA_URL) },
+    { name: "NEON_DATABASE_URL", val: cleanUrl(process.env.NEON_DATABASE_URL) },
+    { name: "POSTGRES_URL", val: cleanUrl(process.env.POSTGRES_URL) },
+    { name: "DATABASE_URL", val: cleanUrl(process.env.DATABASE_URL) },
+  ];
 
-  if (!connectionString) {
+  const winner = candidates.find((c) => !!c.val);
+
+  console.log(
+    "[prisma] url resolution:",
+    candidates.map((c) => `${c.name}=${c.val ? maskUrl(c.val) : "(empty)"}`).join(" | ")
+  );
+  console.log(
+    "[prisma] using:",
+    winner ? `${winner.name} → ${maskUrl(winner.val)}` : "NONE"
+  );
+
+  if (!winner?.val) {
     throw new Error(
       "No database connection string found. Set POSTGRES_PRISMA_URL, NEON_DATABASE_URL, POSTGRES_URL, or DATABASE_URL."
     );
   }
 
-  const adapter = new PrismaNeon({ connectionString });
+  const adapter = new PrismaNeon({ connectionString: winner.val });
   return new PrismaClient({ adapter });
 }
 
