@@ -4,14 +4,17 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 function createPrismaClient() {
-  const connectionString =
+  const connectionString = (
     process.env.POSTGRES_PRISMA_URL ||
+    process.env.NEON_DATABASE_URL ||
     process.env.POSTGRES_URL ||
-    process.env.DATABASE_URL;
+    process.env.DATABASE_URL ||
+    ""
+  ).trim();
 
   if (!connectionString) {
     throw new Error(
-      "No database connection string found. Set POSTGRES_PRISMA_URL, POSTGRES_URL, or DATABASE_URL."
+      "No database connection string found. Set POSTGRES_PRISMA_URL, NEON_DATABASE_URL, POSTGRES_URL, or DATABASE_URL."
     );
   }
 
