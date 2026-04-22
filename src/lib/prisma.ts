@@ -5,13 +5,15 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 function cleanUrl(url: string | undefined): string {
   if (!url) return "";
-  let cleaned = url.replace(/\\n/g, "").replace(/\n/g, "").trim();
-  // Neon's WebSocket proxy doesn't support channel binding — strip it
-  // so the serverless driver doesn't fail with a misleading auth error.
-  cleaned = cleaned.replace(/[?&]channel_binding=[^&]*/g, "");
-  // Fix dangling ? if channel_binding was the only param
-  cleaned = cleaned.replace(/\?&/, "?").replace(/\?$/, "");
-  return cleaned;
+  const stripped = url.replace(/\\n/g, "").replace(/\n/g, "").trim();
+  if (!stripped) return "";
+  try {
+    const u = new URL(stripped);
+    u.searchParams.delete("channel_binding");
+    return u.toString();
+  } catch {
+    return stripped;
+  }
 }
 
 function maskUrl(url: string): string {
