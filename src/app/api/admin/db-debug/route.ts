@@ -61,6 +61,13 @@ export async function GET(req: Request) {
       ORDER BY ordinal_position
     `;
 
+    const counts = await prisma.$queryRaw<Array<{ table_name: string; row_count: bigint }>>`
+      SELECT relname::text AS table_name, n_live_tup AS row_count
+      FROM pg_stat_user_tables
+      WHERE schemaname = 'public'
+      ORDER BY relname
+    `;
+
     const hasResetToken = columns.some((c) => c.column_name === "resetToken");
     const hasResetTokenExp = columns.some((c) => c.column_name === "resetTokenExp");
 
@@ -71,6 +78,9 @@ export async function GET(req: Request) {
       userColumns: columns.map((c) => c.column_name),
       hasResetToken,
       hasResetTokenExp,
+      tableCounts: Object.fromEntries(
+        counts.map((r) => [r.table_name, Number(r.row_count)])
+      ),
     });
   } catch (error) {
     return NextResponse.json({
