@@ -4,7 +4,9 @@ on:
   # Daily at 11:00 UTC (4am Pacific)
   schedule:
     - cron: "0 11 * * *"
-  # Before any push that could change schema / data
+  # On schema changes — runs AFTER push, so this is a snapshot of the
+  # current state, not a pre-change safety net. For pre-change backups,
+  # trigger manually BEFORE running prisma db push.
   push:
     branches: [main]
     paths:
@@ -27,14 +29,27 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
+          set -eo pipefail
+
           if [ -z "$DATABASE_URL" ]; then
-            echo "DATABASE_URL secret is not set"
+            echo "::error::DATABASE_URL secret is not set"
             exit 1
           fi
+
           mkdir -p backups
           TIMESTAMP=$(date -u +%Y%m%d-%H%M%S)
           FILE="backups/mtg-tracker-${TIMESTAMP}.sql.gz"
+
           pg_dump --no-owner --no-acl --clean --if-exists "$DATABASE_URL" | gzip > "$FILE"
+
+          # Fail if the dump is suspiciously small (empty DB or pg_dump error)
+          SIZE=$(stat --format=%s "$FILE")
+          echo "Backup size: $SIZE bytes"
+          if [ "$SIZE" -lt 1024 ]; then
+            echo "::error::Backup file is only $SIZE bytes — likely empty or pg_dump failed"
+            exit 1
+          fi
+
           echo "FILE=$FILE" >> "$GITHUB_ENV"
           echo "TIMESTAMP=$TIMESTAMP" >> "$GITHUB_ENV"
           ls -lh backups/
