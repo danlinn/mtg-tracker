@@ -5,6 +5,7 @@
 ## Prisma 7 (NOT Prisma 5/6)
 - **No `url` in schema.prisma** — connection URL lives in `prisma.config.ts`, NOT in the schema's `datasource` block. Adding `url = env("DATABASE_URL")` to the schema will cause a build error.
 - **Migrations**: Use `npx prisma db push` for schema changes. `prisma migrate dev` requires the URL in `prisma.config.ts` and has drift issues with this project.
+- **NEVER use `--accept-data-loss`** with `prisma db push`. This flag silently drops columns and recreates tables. It previously wiped all game data in production. If `db push` warns about data loss, stop and fix the schema diff manually.
 - **Client instantiation**: Requires a Neon adapter. See `src/lib/prisma.ts` for the pattern. Never use `new PrismaClient()` without the adapter.
 - **Scripts**: Any standalone script that uses Prisma must load `.env.local` via dotenv AND use the `PrismaNeon` adapter. See `src/scripts/backfill-last-played.ts` for the pattern.
 - **Generate**: After schema changes, run `npx prisma generate` to update the client.

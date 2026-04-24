@@ -46,7 +46,7 @@ cp .env.local .env.local.bak 2>/dev/null || true
 
 echo
 echo "Running prisma db push..."
-npx prisma db push --accept-data-loss
+npx prisma db push
 
 # Restore original .env.local
 if [ -f .env.local.bak ]; then
