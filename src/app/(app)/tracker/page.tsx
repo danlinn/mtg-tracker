@@ -538,7 +538,8 @@ export default function TrackerPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setLogError(data.error ?? "Failed to save game.");
+        const detail = data.error ?? `Server returned ${res.status}`;
+        setLogError(`Failed to save: ${detail}`);
         setLogSaving(false);
         return;
       }
@@ -989,6 +990,13 @@ export default function TrackerPage() {
                       {logSaving ? "Saving..." : "Log game"}
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => handleNewGame()}
+                    className="w-full py-2 rounded-lg text-gray-500 text-sm hover:text-gray-700 hover:bg-gray-50"
+                  >
+                    Discard and start new game
+                  </button>
                 </>
               )}
             </div>
