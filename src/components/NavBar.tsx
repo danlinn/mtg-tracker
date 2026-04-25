@@ -167,6 +167,17 @@ export default function NavBar() {
               </select>
             </div>
             <button
+              onClick={() => {
+                if ("caches" in window) {
+                  caches.keys().then((names) => names.forEach((n) => caches.delete(n)));
+                }
+                window.location.reload();
+              }}
+              className="block w-full text-left px-3 py-2 text-sm text-gray-400 hover:text-white"
+            >
+              Reload App
+            </button>
+            <button
               onClick={() => signOut({ callbackUrl: "/login" })}
               className="block w-full text-left px-3 py-2 text-sm text-gray-400 hover:text-white"
             >
