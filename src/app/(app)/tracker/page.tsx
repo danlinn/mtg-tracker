@@ -214,8 +214,7 @@ function PlayerBox({
       <button
         type="button"
         onClick={() => handleTap(-1)}
-        className="absolute left-0 right-0 active:bg-black/10"
-        style={{ top: "50%", bottom: hasCommander ? "6rem" : 0 }}
+        className="absolute bottom-0 left-0 right-0 h-1/2 active:bg-black/10"
         aria-label={`Player ${index + 1} -1 life`}
         {...longPressHandlers}
       />
