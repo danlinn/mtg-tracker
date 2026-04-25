@@ -1014,7 +1014,8 @@ export default function TrackerPage() {
       {assignSeatFor !== null && (
         <div
           className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4"
-          onClick={() => setAssignSeatFor(null)}
+          onClick={(e) => { if (e.target === e.currentTarget) setAssignSeatFor(null); }}
+          onTouchEnd={(e) => e.stopPropagation()}
         >
           <div
             className="bg-white rounded-lg p-4 max-w-sm w-full space-y-3"
@@ -1071,7 +1072,7 @@ export default function TrackerPage() {
       {colorPickerFor !== null && (
         <div
           className="fixed inset-0 bg-black/60 z-30 flex items-center justify-center p-4"
-          onClick={() => setColorPickerFor(null)}
+          onClick={(e) => { if (e.target === e.currentTarget) setColorPickerFor(null); }}
         >
           <div
             className="bg-white rounded-lg p-4 max-w-sm w-full space-y-3"
