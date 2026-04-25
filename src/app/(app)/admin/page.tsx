@@ -52,6 +52,15 @@ export default function AdminPage() {
           </p>
         </Link>
         <Link
+          href="/admin/games"
+          className="block p-6 rounded-lg border border-gray-200 bg-white hover:border-blue-400 transition-colors"
+        >
+          <h2 className="text-lg font-semibold text-gray-900">Games</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Reassign games to playgroups, bulk fix unassigned games
+          </p>
+        </Link>
+        <Link
           href="/admin/decks"
           className="block p-6 rounded-lg border border-gray-200 bg-white hover:border-blue-400 transition-colors"
         >

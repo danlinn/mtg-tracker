@@ -15,6 +15,7 @@ jest.mock("@/lib/prisma", () => ({
   prisma: {
     game: {
       findUnique: (...args: unknown[]) => mockGameFindUnique(...args),
+      findMany: (...args: unknown[]) => mockGameFindMany(...args),
       update: (...args: unknown[]) => mockGameUpdate(...args),
       delete: (...args: unknown[]) => mockGameDelete(...args),
     },
@@ -26,9 +27,11 @@ jest.mock("@/lib/prisma", () => ({
 
 const paramsPromise = Promise.resolve({ id: "game-1" });
 
+const mockGameFindMany = jest.fn();
+
 async function getHandlers() {
   const mod = await import("@/app/api/admin/games/[id]/route");
-  return { GET: mod.GET, PUT: mod.PUT, DELETE: mod.DELETE };
+  return { GET: mod.GET, PUT: mod.PUT, DELETE: mod.DELETE, PATCH: mod.PATCH };
 }
 
 function makeRequest(method: string, body?: Record<string, unknown>) {
@@ -135,6 +138,90 @@ describe("PUT /api/admin/games/[id]", () => {
     );
     expect(res.status).toBe(200);
     expect(mockGameUpdate).toHaveBeenCalled();
+  });
+});
+
+describe("PATCH /api/admin/games/[id]", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it("returns 403 when not admin", async () => {
+    const { PATCH } = await getHandlers();
+    mockIsAdmin.mockResolvedValue(false);
+    const res = await PATCH(makeRequest("PATCH", { playgroupId: "pg1" }), {
+      params: paramsPromise,
+    });
+    expect(res.status).toBe(403);
+  });
+
+  it("returns 404 when game not found", async () => {
+    const { PATCH } = await getHandlers();
+    mockIsAdmin.mockResolvedValue(true);
+    mockGameFindUnique.mockResolvedValue(null);
+    const res = await PATCH(makeRequest("PATCH", { playgroupId: "pg1" }), {
+      params: paramsPromise,
+    });
+    expect(res.status).toBe(404);
+  });
+
+  it("assigns a playgroup to a game", async () => {
+    const { PATCH } = await getHandlers();
+    mockIsAdmin.mockResolvedValue(true);
+    mockGameFindUnique.mockResolvedValue({ id: "game-1" });
+    mockGameUpdate.mockResolvedValue({ id: "game-1", playgroupId: "pg1" });
+    const res = await PATCH(makeRequest("PATCH", { playgroupId: "pg1" }), {
+      params: paramsPromise,
+    });
+    expect(res.status).toBe(200);
+    expect(mockGameUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { playgroupId: "pg1" } })
+    );
+  });
+
+  it("unassigns a playgroup with null", async () => {
+    const { PATCH } = await getHandlers();
+    mockIsAdmin.mockResolvedValue(true);
+    mockGameFindUnique.mockResolvedValue({ id: "game-1" });
+    mockGameUpdate.mockResolvedValue({ id: "game-1", playgroupId: null });
+    const res = await PATCH(makeRequest("PATCH", { playgroupId: null }), {
+      params: paramsPromise,
+    });
+    expect(res.status).toBe(200);
+    expect(mockGameUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { playgroupId: null } })
+    );
+  });
+});
+
+describe("GET /api/admin/games (list)", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it("returns 403 when not admin", async () => {
+    mockIsAdmin.mockResolvedValue(false);
+    const { GET } = await import("@/app/api/admin/games/route");
+    const res = await GET(new Request("http://localhost/api/admin/games"));
+    expect(res.status).toBe(403);
+  });
+
+  it("returns formatted game list", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    mockGameFindMany.mockResolvedValue([
+      {
+        id: "g1",
+        playedAt: new Date("2026-04-25"),
+        playgroup: { id: "pg1", name: "MTG4" },
+        notes: null,
+        players: [
+          { user: { id: "u1", name: "Dan" }, deck: { id: "d1", name: "Deck1" }, isWinner: true },
+        ],
+      },
+    ]);
+    const { GET } = await import("@/app/api/admin/games/route");
+    const res = await GET(new Request("http://localhost/api/admin/games"));
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.games).toHaveLength(1);
+    expect(data.games[0].playgroupName).toBe("MTG4");
+    expect(data.games[0].players[0].userName).toBe("Dan");
   });
 });
 

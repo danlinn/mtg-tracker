@@ -122,6 +122,40 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  if (!(await isAdmin())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { id } = await params;
+  const existing = await prisma.game.findUnique({ where: { id } });
+  if (!existing) {
+    return NextResponse.json({ error: "Game not found" }, { status: 404 });
+  }
+
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  try {
+    const updated = await prisma.game.update({
+      where: { id },
+      data: { playgroupId: body.playgroupId ?? null },
+      include: gameInclude,
+    });
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("[PATCH /api/admin/games/[id]] Error:", error);
+    return NextResponse.json({ error: "Failed to update" }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }

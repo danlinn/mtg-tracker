@@ -499,6 +499,13 @@ export default function TrackerPage() {
     setLogSaving(true);
     setLogError("");
     try {
+      let activePlaygroupId: string | undefined;
+      try {
+        const pgRes = await fetch("/api/playgroups/active");
+        const pgData = await pgRes.json();
+        activePlaygroupId = pgData.playgroupId ?? undefined;
+      } catch { /* non-fatal */ }
+
       const res = await fetch("/api/games", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -506,6 +513,7 @@ export default function TrackerPage() {
           playedAt: logPlayedAt,
           notes: logNotes,
           asterisk: logAsterisk,
+          playgroupId: activePlaygroupId,
           players: players.map((p, i) => ({
             userId: p.userId,
             deckId: p.deckId,
