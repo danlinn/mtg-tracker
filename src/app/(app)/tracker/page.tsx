@@ -420,13 +420,16 @@ export default function TrackerPage() {
   );
 
   function updateSeat(idx: number, field: "userId" | "deckId", value: string) {
-    setSeatAssignments((prev) =>
-      prev.map((s, i) => {
+    setSeatAssignments((prev) => {
+      const padded = Array.from({ length: Math.max(prev.length, idx + 1) }, (_, i) =>
+        prev[i] ?? { userId: "", deckId: "" }
+      );
+      return padded.map((s, i) => {
         if (i !== idx) return s;
         if (field === "userId") return { userId: value, deckId: "" };
         return { ...s, [field]: value };
-      })
-    );
+      });
+    });
   }
 
   function getDecksFor(userId: string) {

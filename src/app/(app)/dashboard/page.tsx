@@ -59,8 +59,14 @@ export default function DashboardPage() {
       {/* Quick actions */}
       <div className="flex gap-3">
         <Link
-          href="/games/new"
+          href="/tracker"
           className="flex-1 bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+        >
+          Track Game
+        </Link>
+        <Link
+          href="/games/new"
+          className="flex-1 border border-gray-300 text-center py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
         >
           Log Game
         </Link>
