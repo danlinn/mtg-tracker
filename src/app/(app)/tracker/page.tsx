@@ -155,8 +155,9 @@ function PlayerBox({
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
 
-  function startLongPress() {
+  function startLongPress(e: React.TouchEvent | React.MouseEvent) {
     if (!needsAssignment) return;
+    e.preventDefault();
     longPressTriggered.current = false;
     longPressTimer.current = setTimeout(() => {
       longPressTriggered.current = true;
@@ -181,9 +182,12 @@ function PlayerBox({
 
   const longPressHandlers = needsAssignment
     ? {
-        onPointerDown: startLongPress,
-        onPointerUp: cancelLongPress,
-        onPointerCancel: cancelLongPress,
+        onTouchStart: startLongPress,
+        onTouchEnd: cancelLongPress,
+        onTouchCancel: cancelLongPress,
+        onMouseDown: startLongPress,
+        onMouseUp: cancelLongPress,
+        onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
       }
     : {};
 
