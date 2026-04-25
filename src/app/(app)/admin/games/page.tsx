@@ -77,6 +77,20 @@ export default function AdminGamesPage() {
     setSaving(null);
   }
 
+  async function deleteGame(gameId: string) {
+    if (!confirm("Delete this game? This cannot be undone.")) return;
+    setSaving(gameId);
+    setMessage("");
+    const res = await fetch(`/api/admin/games/${gameId}`, { method: "DELETE" });
+    if (res.ok) {
+      setGames((prev) => prev.filter((g) => g.id !== gameId));
+      setMessage("Game deleted.");
+    } else {
+      setMessage("Failed to delete game.");
+    }
+    setSaving(null);
+  }
+
   async function bulkAssign() {
     if (!bulkTarget) return;
     setBulkSaving(true);
@@ -222,6 +236,14 @@ export default function AdminGamesPage() {
                     </option>
                   ))}
                 </select>
+                <button
+                  type="button"
+                  onClick={() => deleteGame(game.id)}
+                  disabled={saving === game.id}
+                  className="px-2 py-1 text-xs text-red-600 hover:text-red-800 hover:bg-red-50 rounded disabled:opacity-50"
+                >
+                  Delete
+                </button>
                 {saving === game.id && (
                   <span className="text-xs text-gray-400">Saving...</span>
                 )}

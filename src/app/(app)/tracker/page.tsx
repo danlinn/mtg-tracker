@@ -489,6 +489,21 @@ export default function TrackerPage() {
     return users.find((u) => u.id === userId)?.decks ?? [];
   }
 
+  const ADD_DECK = "__add_deck__";
+  function handleDeckSelect(value: string, seatIdx: number, context: "setup" | "overlay") {
+    if (value === ADD_DECK) {
+      window.location.href = "/decks/new?returnTo=/tracker";
+      return;
+    }
+    if (context === "setup") {
+      updateSeat(seatIdx, "deckId", value);
+    } else {
+      setPlayers((prev) =>
+        prev.map((pp, ii) => (ii === seatIdx ? { ...pp, deckId: value } : pp))
+      );
+    }
+  }
+
   async function handleSaveGame() {
     if (winnerIdx === null) return;
     const missing = players.some((p) => !p.userId || !p.deckId);
@@ -607,7 +622,7 @@ export default function TrackerPage() {
                 {seat.userId && (
                   <select
                     value={seat.deckId}
-                    onChange={(e) => updateSeat(i, "deckId", e.target.value)}
+                    onChange={(e) => handleDeckSelect(e.target.value, i, "setup")}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
                   >
                     <option value="">Select deck...</option>
@@ -616,6 +631,7 @@ export default function TrackerPage() {
                         {d.name} ({d.commander})
                       </option>
                     ))}
+                    <option value={ADD_DECK}>+ Add Deck...</option>
                   </select>
                 )}
               </div>
@@ -911,14 +927,7 @@ export default function TrackerPage() {
                           {p.userId && (
                             <select
                               value={p.deckId}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                setPlayers((prev) =>
-                                  prev.map((pp, ii) =>
-                                    ii === i ? { ...pp, deckId: v } : pp
-                                  )
-                                );
-                              }}
+                              onChange={(e) => handleDeckSelect(e.target.value, i, "overlay")}
                               className="w-full px-2 py-1 border border-gray-300 rounded bg-white text-gray-900 text-sm"
                             >
                               <option value="">Select deck...</option>
@@ -927,6 +936,7 @@ export default function TrackerPage() {
                                   {d.name} ({d.commander})
                                 </option>
                               ))}
+                              <option value={ADD_DECK}>+ Add Deck...</option>
                             </select>
                           )}
                           {deck && (
@@ -1020,14 +1030,7 @@ export default function TrackerPage() {
             {players[assignSeatFor]?.userId && (
               <select
                 value={players[assignSeatFor]?.deckId ?? ""}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setPlayers((prev) =>
-                    prev.map((pp, ii) =>
-                      ii === assignSeatFor ? { ...pp, deckId: v } : pp
-                    )
-                  );
-                }}
+                onChange={(e) => handleDeckSelect(e.target.value, assignSeatFor!, "overlay")}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
               >
                 <option value="">Select deck...</option>
@@ -1036,6 +1039,7 @@ export default function TrackerPage() {
                     {d.name} ({d.commander})
                   </option>
                 ))}
+                <option value={ADD_DECK}>+ Add Deck...</option>
               </select>
             )}
             <button
