@@ -257,13 +257,17 @@ function PlayerBox({
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onOpenColor(); }}
-        className="absolute top-2 right-2 w-5 h-5 rounded-full shadow-md z-10 border"
-        style={{
-          background: "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
-          borderColor: textColor,
-        }}
+        className="absolute top-0 right-0 w-11 h-11 z-10 flex items-center justify-center"
         aria-label="Change background color"
-      />
+      >
+        <span
+          className="w-5 h-5 rounded-full shadow-md border block"
+          style={{
+            background: "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
+            borderColor: textColor,
+          }}
+        />
+      </button>
 
       {opponents.length > 0 && (
         <div
