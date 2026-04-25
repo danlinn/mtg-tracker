@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useThemePalette } from "@/lib/theme";
 import type { Palette, ColorKey } from "@/lib/themePalettes";
 
@@ -130,6 +130,7 @@ interface PlayerBoxProps {
   onLifeChange: (delta: number) => void;
   onCommanderDamage: (fromIdx: number, delta: number) => void;
   onOpenColor: () => void;
+  onAssign?: () => void;
   rotate?: boolean;
   dead?: boolean;
   deckLabel?: string;
@@ -142,12 +143,53 @@ function PlayerBox({
   onLifeChange,
   onCommanderDamage,
   onOpenColor,
+  onAssign,
   rotate,
   dead,
   deckLabel,
 }: PlayerBoxProps) {
   const textColor = textOn(player.bgColor);
   const lethal = Object.values(player.damage).some((d) => d >= 21);
+  const needsAssignment = !player.userId && !!onAssign;
+
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTriggered = useRef(false);
+
+  function startLongPress() {
+    if (!needsAssignment) return;
+    longPressTriggered.current = false;
+    longPressTimer.current = setTimeout(() => {
+      longPressTriggered.current = true;
+      onAssign!();
+    }, 500);
+  }
+
+  function cancelLongPress() {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }
+
+  function handleTap(delta: number) {
+    if (longPressTriggered.current) {
+      longPressTriggered.current = false;
+      return;
+    }
+    onLifeChange(delta);
+  }
+
+  const longPressHandlers = needsAssignment
+    ? {
+        onPointerDown: startLongPress,
+        onPointerUp: cancelLongPress,
+        onPointerCancel: cancelLongPress,
+      }
+    : {};
+
+  // Leave a dead zone above the commander damage bar so taps don't
+  // hit both the life-change button and a commander-damage button.
+  const hasCommander = opponents.length > 0;
 
   return (
     <div
@@ -164,25 +206,35 @@ function PlayerBox({
       {/* Tap zones — still active when dead, so you can revive */}
       <button
         type="button"
-        onClick={() => onLifeChange(1)}
+        onClick={() => handleTap(1)}
         className="absolute top-0 left-0 right-0 h-1/2 active:bg-white/10"
         aria-label={`Player ${index + 1} +1 life`}
+        {...longPressHandlers}
       />
       <button
         type="button"
-        onClick={() => onLifeChange(-1)}
-        className="absolute bottom-0 left-0 right-0 h-1/2 active:bg-black/10"
+        onClick={() => handleTap(-1)}
+        className="absolute left-0 right-0 active:bg-black/10"
+        style={{ top: "50%", bottom: hasCommander ? "6rem" : 0 }}
         aria-label={`Player ${index + 1} -1 life`}
+        {...longPressHandlers}
       />
 
-      {deckLabel && (
+      {deckLabel ? (
         <div
           className="absolute top-2 left-2 right-12 text-xs font-semibold pointer-events-none truncate z-10"
           style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
         >
           {deckLabel}
         </div>
-      )}
+      ) : needsAssignment ? (
+        <div
+          className="absolute top-2 left-2 right-12 text-xs font-medium pointer-events-none truncate z-10 opacity-60"
+          style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
+        >
+          Hold to assign player
+        </div>
+      ) : null}
 
       <div
         className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
@@ -292,6 +344,7 @@ export default function TrackerPage() {
   const [logSaving, setLogSaving] = useState(false);
   const [logError, setLogError] = useState("");
   const [logSavedId, setLogSavedId] = useState<string | null>(null);
+  const [assignSeatFor, setAssignSeatFor] = useState<number | null>(null);
 
   // Persist to sessionStorage on every relevant change
   useEffect(() => {
@@ -599,6 +652,7 @@ export default function TrackerPage() {
       onLifeChange={(d) => handleLife(idx, d)}
       onCommanderDamage={(from, d) => handleCommanderDamage(idx, from, d)}
       onOpenColor={() => setColorPickerFor(idx)}
+      onAssign={() => setAssignSeatFor(idx)}
       rotate={rotate}
       dead={isDead(players[idx])}
       deckLabel={deckLabelFor(players[idx])}
@@ -920,6 +974,69 @@ export default function TrackerPage() {
                 </>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {assignSeatFor !== null && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4"
+          onClick={() => setAssignSeatFor(null)}
+        >
+          <div
+            className="bg-white rounded-lg p-4 max-w-sm w-full space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-semibold text-gray-900">
+              Assign Seat {assignSeatFor + 1}
+            </h3>
+            <select
+              value={players[assignSeatFor]?.userId ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                setPlayers((prev) =>
+                  prev.map((pp, ii) =>
+                    ii === assignSeatFor ? { ...pp, userId: v, deckId: "" } : pp
+                  )
+                );
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+            >
+              <option value="">Select player...</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name}
+                </option>
+              ))}
+            </select>
+            {players[assignSeatFor]?.userId && (
+              <select
+                value={players[assignSeatFor]?.deckId ?? ""}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setPlayers((prev) =>
+                    prev.map((pp, ii) =>
+                      ii === assignSeatFor ? { ...pp, deckId: v } : pp
+                    )
+                  );
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+              >
+                <option value="">Select deck...</option>
+                {getDecksFor(players[assignSeatFor].userId).map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name} ({d.commander})
+                  </option>
+                ))}
+              </select>
+            )}
+            <button
+              type="button"
+              onClick={() => setAssignSeatFor(null)}
+              className="w-full py-2 rounded-lg bg-blue-600 text-white font-medium"
+            >
+              Done
+            </button>
           </div>
         </div>
       )}
