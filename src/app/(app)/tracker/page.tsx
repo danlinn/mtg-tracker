@@ -131,9 +131,11 @@ interface PlayerBoxProps {
   onCommanderDamage: (fromIdx: number, delta: number) => void;
   onOpenColor: () => void;
   onAssign?: () => void;
+  onStartSwap?: () => void;
   rotate?: boolean;
   dead?: boolean;
   deckLabel?: string;
+  swapState?: "source" | "target" | null;
 }
 
 function PlayerBox({
@@ -144,25 +146,35 @@ function PlayerBox({
   onCommanderDamage,
   onOpenColor,
   onAssign,
+  onStartSwap,
   rotate,
   dead,
   deckLabel,
+  swapState,
 }: PlayerBoxProps) {
   const textColor = textOn(player.bgColor);
   const lethal = Object.values(player.damage).some((d) => d >= 21);
   const needsAssignment = !player.userId && !!onAssign;
+  const canSwap = !!onStartSwap && !needsAssignment;
 
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
 
   function startLongPress(e: React.TouchEvent | React.MouseEvent) {
-    if (!needsAssignment) return;
-    e.preventDefault();
     longPressTriggered.current = false;
-    longPressTimer.current = setTimeout(() => {
-      longPressTriggered.current = true;
-      onAssign!();
-    }, 500);
+    if (needsAssignment) {
+      e.preventDefault();
+      longPressTimer.current = setTimeout(() => {
+        longPressTriggered.current = true;
+        onAssign!();
+      }, 500);
+    } else if (canSwap) {
+      e.preventDefault();
+      longPressTimer.current = setTimeout(() => {
+        longPressTriggered.current = true;
+        onStartSwap!();
+      }, 500);
+    }
   }
 
   function cancelLongPress() {
@@ -180,7 +192,7 @@ function PlayerBox({
     onLifeChange(delta);
   }
 
-  const longPressHandlers = needsAssignment
+  const longPressHandlers = (needsAssignment || canSwap)
     ? {
         onTouchStart: startLongPress,
         onTouchEnd: cancelLongPress,
@@ -195,9 +207,16 @@ function PlayerBox({
   // hit both the life-change button and a commander-damage button.
   const hasCommander = opponents.length > 0;
 
+  const swapRing = swapState === "source"
+    ? "ring-4 ring-inset ring-yellow-400"
+    : swapState === "target"
+    ? "ring-4 ring-inset ring-green-400"
+    : "";
+
   return (
     <div
-      className="relative w-full h-full overflow-hidden select-none"
+      data-player-idx={index}
+      className={`relative w-full h-full overflow-hidden select-none ${swapRing}`}
       style={{
         background: player.bgColor,
         color: textColor,
@@ -352,6 +371,8 @@ export default function TrackerPage() {
   const [logError, setLogError] = useState("");
   const [logSavedId, setLogSavedId] = useState<string | null>(null);
   const [assignSeatFor, setAssignSeatFor] = useState<number | null>(null);
+  const [swapSource, setSwapSource] = useState<number | null>(null);
+  const [swapTarget, setSwapTarget] = useState<number | null>(null);
 
   // Persist to sessionStorage on every relevant change
   useEffect(() => {
@@ -490,6 +511,38 @@ export default function TrackerPage() {
         return { ...s, [field]: value };
       });
     });
+  }
+
+  function handleStartSwap(idx: number) {
+    setSwapSource(idx);
+    setSwapTarget(null);
+  }
+
+  function handleTouchMoveSwap(e: React.TouchEvent) {
+    if (swapSource === null) return;
+    const touch = e.touches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const pod = el?.closest("[data-player-idx]");
+    if (pod) {
+      const targetIdx = Number(pod.getAttribute("data-player-idx"));
+      setSwapTarget(targetIdx !== swapSource ? targetIdx : null);
+    } else {
+      setSwapTarget(null);
+    }
+  }
+
+  function handleEndSwap() {
+    if (swapSource !== null && swapTarget !== null && swapSource !== swapTarget) {
+      setPlayers((prev) => {
+        const next = [...prev];
+        const temp = next[swapSource];
+        next[swapSource] = next[swapTarget];
+        next[swapTarget] = temp;
+        return next;
+      });
+    }
+    setSwapSource(null);
+    setSwapTarget(null);
   }
 
   function getDecksFor(userId: string) {
@@ -676,6 +729,11 @@ export default function TrackerPage() {
     return `${user?.name ?? ""} — ${deck.commander}`;
   };
 
+  const swapStateFor = (idx: number) =>
+    swapSource === idx ? "source" as const
+    : swapTarget === idx ? "target" as const
+    : null;
+
   const renderBox = (idx: number, rotate?: boolean) => (
     <PlayerBox
       player={players[idx]}
@@ -685,9 +743,11 @@ export default function TrackerPage() {
       onCommanderDamage={(from, d) => handleCommanderDamage(idx, from, d)}
       onOpenColor={() => setColorPickerFor(idx)}
       onAssign={() => setAssignSeatFor(idx)}
+      onStartSwap={() => handleStartSwap(idx)}
       rotate={rotate}
       dead={isDead(players[idx])}
       deckLabel={deckLabelFor(players[idx])}
+      swapState={swapStateFor(idx)}
     />
   );
 
@@ -729,7 +789,23 @@ export default function TrackerPage() {
   }
 
   return (
-    <>
+    <div
+      onTouchMove={handleTouchMoveSwap}
+      onTouchEnd={handleEndSwap}
+      onTouchCancel={() => { setSwapSource(null); setSwapTarget(null); }}
+      onMouseMove={(e) => {
+        if (swapSource === null) return;
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        const pod = el?.closest("[data-player-idx]");
+        if (pod) {
+          const targetIdx = Number(pod.getAttribute("data-player-idx"));
+          setSwapTarget(targetIdx !== swapSource ? targetIdx : null);
+        } else {
+          setSwapTarget(null);
+        }
+      }}
+      onMouseUp={handleEndSwap}
+    >
       {layout}
 
       <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-3">
@@ -1135,6 +1211,6 @@ export default function TrackerPage() {
         </div>
       )}
 
-    </>
+    </div>
   );
 }
