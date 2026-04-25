@@ -16,8 +16,8 @@
 3. After `git push`, check `vercel ls` to confirm deployment is "Ready"
 
 ## Git Workflow
-- The default branch is `main`. Work directly on `main` unless the task
-  explicitly calls for a feature branch (or the session harness provides one).
+- The default branch is `main`. **Always develop on a feature branch** and
+  open a PR to merge into `main`. PRs auto-merge when CI passes.
 - `prisma db push` is a **local** operation run before pushing schema
   changes. It is intentionally not part of the Vercel build command.
 
