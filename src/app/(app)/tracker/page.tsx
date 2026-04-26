@@ -12,10 +12,31 @@ interface Player {
   deckId: string; // deck assigned to this seat (optional)
 }
 
+interface DeckInfo {
+  id: string;
+  name: string;
+  commander: string;
+  colorW: boolean;
+  colorU: boolean;
+  colorB: boolean;
+  colorR: boolean;
+  colorG: boolean;
+}
+
 interface UserWithDecks {
   id: string;
   name: string;
-  decks: { id: string; name: string; commander: string }[];
+  decks: DeckInfo[];
+}
+
+function bgForDeck(deck: DeckInfo, palette: Palette): string {
+  const combo: ColorKey[] = [];
+  if (deck.colorW) combo.push("W");
+  if (deck.colorU) combo.push("U");
+  if (deck.colorB) combo.push("B");
+  if (deck.colorR) combo.push("R");
+  if (deck.colorG) combo.push("G");
+  return bgForCombo(combo, palette);
 }
 
 // Gradient order: Black, Blue, Red, Green, White — matches the deck cards
@@ -498,12 +519,25 @@ export default function TrackerPage() {
     }
   }, [setupDone, winnerIdx, logOverlayDismissed]);
 
+  function deckBgForSeat(userId: string, deckId: string): string | null {
+    if (!userId || !deckId) return null;
+    const user = users.find((u) => u.id === userId);
+    const deck = user?.decks.find((d) => d.id === deckId);
+    if (!deck) return null;
+    return bgForDeck(deck, palette);
+  }
+
   function handleStart() {
-    const ps = makePlayers(playerCount, startLife, palette).map((p, i) => ({
-      ...p,
-      userId: seatsForCount[i]?.userId ?? "",
-      deckId: seatsForCount[i]?.deckId ?? "",
-    }));
+    const ps = makePlayers(playerCount, startLife, palette).map((p, i) => {
+      const seat = seatsForCount[i];
+      const deckBg = deckBgForSeat(seat?.userId ?? "", seat?.deckId ?? "");
+      return {
+        ...p,
+        userId: seat?.userId ?? "",
+        deckId: seat?.deckId ?? "",
+        bgColor: deckBg ?? p.bgColor,
+      };
+    });
     setPlayers(ps);
     setSetupDone(true);
     setLogOverlayDismissed(false);
@@ -624,7 +658,11 @@ export default function TrackerPage() {
       updateSeat(seatIdx, "deckId", value);
     } else {
       setPlayers((prev) =>
-        prev.map((pp, ii) => (ii === seatIdx ? { ...pp, deckId: value } : pp))
+        prev.map((pp, ii) => {
+          if (ii !== seatIdx) return pp;
+          const bg = deckBgForSeat(pp.userId, value);
+          return { ...pp, deckId: value, ...(bg ? { bgColor: bg } : {}) };
+        })
       );
     }
   }
