@@ -52,7 +52,7 @@ export default function NavBar() {
   const navPositionClass = isTracker ? "sticky top-0 lg:static" : "sticky top-0";
 
   return (
-    <nav className={`bg-gray-900 text-white z-50 ${navPositionClass}`}>
+    <nav className={`bg-gray-900 text-white z-50 relative ${navPositionClass}`}>
       <div className="w-full px-4">
         {/* Top row */}
         <div className="flex items-center justify-between h-14 gap-4">
@@ -133,7 +133,7 @@ export default function NavBar() {
 
         {/* Mobile menu (< lg) */}
         {menuOpen && (
-          <div data-testid="mobile-menu" className="lg:hidden pb-3 space-y-1">
+          <div data-testid="mobile-menu" className="lg:hidden pb-3 space-y-1 bg-gray-900 border-t border-gray-700 shadow-lg shadow-black/50">
             {allNavItems.map((item) => (
               <Link
                 key={item.href}
