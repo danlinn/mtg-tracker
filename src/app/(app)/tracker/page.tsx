@@ -350,7 +350,7 @@ function PlayerBox({
             return (
               <div
                 key={opp.index}
-                className={`relative flex-1 max-w-[120px] h-20 rounded-lg overflow-hidden border-2 select-none ${
+                className={`relative flex-1 h-20 rounded-lg overflow-hidden border-2 select-none ${
                   isLethal ? "border-red-500" : "border-white/30"
                 }`}
                 style={{ background: oppBg, color: oppText }}
