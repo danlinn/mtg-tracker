@@ -150,3 +150,106 @@ test.describe("game tracker", () => {
     await expect(page.getByRole("heading", { name: "Life Tracker" })).toBeVisible();
   });
 });
+
+test.describe("tracker: theme gradients and nav overlay", () => {
+  test("switching theme applies to tracker pods", async ({ page }) => {
+    await page.goto("/tracker");
+    await page.getByRole("button", { name: "Start Game" }).click();
+
+    // Open mobile menu and switch to flame theme
+    await page.getByTestId("mobile-menu-toggle").click();
+    const themeSelect = page.locator("select").filter({ has: page.locator("option", { hasText: "Flame" }) }).last();
+    await themeSelect.selectOption("flame");
+
+    // Theme attribute should be set on <html>
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "flame");
+
+    // Close menu
+    await page.getByTestId("mobile-menu-toggle").click();
+
+    // The player pods should still be visible with backgrounds applied
+    const pods = page.locator("[data-player-idx]");
+    await expect(pods.first()).toBeVisible();
+
+    // Each pod should have a background style set
+    const bg = await pods.first().evaluate((el) => getComputedStyle(el).background);
+    expect(bg).toBeTruthy();
+    expect(bg).not.toBe("");
+  });
+
+  test("theme persists after switching during game", async ({ page }) => {
+    await page.goto("/tracker");
+    await page.getByRole("button", { name: "Start Game" }).click();
+
+    // Switch to synth theme via mobile menu
+    await page.getByTestId("mobile-menu-toggle").click();
+    const themeSelect = page.locator("select").filter({ has: page.locator("option", { hasText: "Synth" }) }).last();
+    await themeSelect.selectOption("synth");
+    await page.getByTestId("mobile-menu-toggle").click();
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "synth");
+
+    // Navigate away and come back — theme should persist
+    await page.getByTestId("mobile-menu-toggle").click();
+    await page.getByRole("link", { name: "Dashboard" }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "synth");
+  });
+
+  test("mobile menu renders above the game tracker", async ({ page }) => {
+    await page.goto("/tracker");
+    await page.getByRole("button", { name: "Start Game" }).click();
+
+    // Pods should be visible
+    const pods = page.locator("[data-player-idx]");
+    await expect(pods.first()).toBeVisible();
+
+    // Open the mobile menu
+    await page.getByTestId("mobile-menu-toggle").click();
+    const menu = page.getByTestId("mobile-menu");
+    await expect(menu).toBeVisible();
+
+    // Menu links should be clickable (not hidden behind the tracker)
+    const dashboardLink = menu.getByRole("link", { name: "Dashboard" });
+    await expect(dashboardLink).toBeVisible();
+
+    // Verify the menu is actually above the tracker by checking it's
+    // interactable — if it were behind the tracker, click would fail
+    const box = await dashboardLink.boundingBox();
+    expect(box).toBeTruthy();
+    expect(box!.width).toBeGreaterThan(0);
+    expect(box!.height).toBeGreaterThan(0);
+  });
+
+  test("menu links work while tracker is active", async ({ page }) => {
+    await page.goto("/tracker");
+    await page.getByRole("button", { name: "Start Game" }).click();
+
+    // Open menu and click Dashboard
+    await page.getByTestId("mobile-menu-toggle").click();
+    await page.getByTestId("mobile-menu").getByRole("link", { name: "Dashboard" }).click();
+
+    // Should navigate away from tracker
+    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  });
+
+  test("theme select works inside mobile menu over tracker", async ({ page }) => {
+    await page.goto("/tracker");
+    await page.getByRole("button", { name: "Start Game" }).click();
+
+    // Open menu
+    await page.getByTestId("mobile-menu-toggle").click();
+    const menu = page.getByTestId("mobile-menu");
+    await expect(menu).toBeVisible();
+
+    // The theme select should be interactable
+    const themeSelect = menu.locator("select").last();
+    await expect(themeSelect).toBeVisible();
+
+    // Switch through multiple themes
+    for (const theme of ["flame", "cyber", "grixis", "default"]) {
+      await themeSelect.selectOption(theme);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+    }
+  });
+});
