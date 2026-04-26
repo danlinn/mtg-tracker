@@ -107,6 +107,12 @@ body {
   border-color: var(--card-border) !important;
 }
 
+/* Mobile menu dropdown must be visible on all themes */
+.mtg-mobile-menu {
+  background: var(--card-bg, #111827) !important;
+  border-color: var(--card-border, #374151) !important;
+}
+
 [data-theme="synth"] .text-gray-900,
 [data-theme="cyber"] .text-gray-900,
 [data-theme="flame"] .text-gray-900,

@@ -135,7 +135,7 @@ export default function NavBar() {
         {menuOpen && (
           <div
             data-testid="mobile-menu"
-            className="lg:hidden absolute left-0 right-0 top-full z-50 bg-gray-900 border-t border-gray-700 shadow-2xl shadow-black/80 pb-3 space-y-1"
+            className="mtg-mobile-menu lg:hidden absolute left-0 right-0 top-full z-50 bg-gray-900 border border-gray-600 rounded-b-lg shadow-2xl shadow-black/80 pb-3 pt-2 space-y-1"
           >
             {allNavItems.map((item) => (
               <Link
