@@ -135,9 +135,10 @@ export default function NavBar() {
         {menuOpen && (
           <div
             data-testid="mobile-menu"
-            className={`mtg-mobile-menu lg:hidden bg-gray-900 pb-3 pt-2 space-y-1 border-t-2 border-gray-500 ${
+            className={`mtg-mobile-menu lg:hidden pb-3 pt-2 space-y-1 border-t-2 border-gray-500 ${
               isTracker ? "absolute left-0 right-0 top-full z-50 rounded-b-lg shadow-2xl shadow-black/80" : ""
             }`}
+            style={{ backgroundColor: "#111827", color: "#ffffff" }}
           >
             {allNavItems.map((item) => (
               <Link
