@@ -7,9 +7,10 @@ import type { Palette, ColorKey } from "@/lib/themePalettes";
 interface Player {
   life: number;
   bgColor: string;
+  colorCombo: ColorKey[] | null; // null = custom color from picker
   damage: Record<number, number>;
-  userId: string; // playgroup user assigned to this seat (optional, empty = unassigned)
-  deckId: string; // deck assigned to this seat (optional)
+  userId: string;
+  deckId: string;
 }
 
 interface DeckInfo {
@@ -29,14 +30,14 @@ interface UserWithDecks {
   decks: DeckInfo[];
 }
 
-function bgForDeck(deck: DeckInfo, palette: Palette): string {
+function comboForDeck(deck: DeckInfo): ColorKey[] {
   const combo: ColorKey[] = [];
   if (deck.colorW) combo.push("W");
   if (deck.colorU) combo.push("U");
   if (deck.colorB) combo.push("B");
   if (deck.colorR) combo.push("R");
   if (deck.colorG) combo.push("G");
-  return bgForCombo(combo, palette);
+  return combo;
 }
 
 // Gradient order: Black, Blue, Red, Green, White — matches the deck cards
@@ -73,10 +74,8 @@ function allCombos(palette: Palette): { key: string; combo: ColorKey[]; bg: stri
   });
 }
 
-// Seats 1-4 each get a distinct default color, per-palette.
-function defaultSeatColors(palette: Palette): string[] {
-  return [palette.R.hex, palette.U.hex, palette.G.hex, palette.B.hex];
-}
+// Seats 1-4 each get a distinct default color combo.
+const DEFAULT_SEAT_COMBOS: ColorKey[][] = [["R"], ["U"], ["G"], ["B"]];
 
 // Per-tab session persistence so navigating to other pages doesn't
 // wipe the in-flight game. Cleared only on "New Game" or when the
@@ -116,14 +115,17 @@ function clearSession() {
 }
 
 function makePlayers(count: number, startLife: number, palette: Palette): Player[] {
-  const seatColors = defaultSeatColors(palette);
-  return Array.from({ length: count }, (_, i) => ({
-    life: startLife,
-    bgColor: seatColors[i % seatColors.length],
-    damage: {},
-    userId: "",
-    deckId: "",
-  }));
+  return Array.from({ length: count }, (_, i) => {
+    const combo = DEFAULT_SEAT_COMBOS[i % DEFAULT_SEAT_COMBOS.length];
+    return {
+      life: startLife,
+      bgColor: bgForCombo(combo, palette),
+      colorCombo: combo,
+      damage: {},
+      userId: "",
+      deckId: "",
+    };
+  });
 }
 
 function textOn(bg: string): string {
@@ -409,7 +411,6 @@ function PlayerBox({
 export default function TrackerPage() {
   const palette = useThemePalette();
   const BG_PRESETS = useMemo(() => allCombos(palette), [palette]);
-  const DEFAULT_SEAT_COLORS = useMemo(() => defaultSeatColors(palette), [palette]);
   // Hydrate from sessionStorage if we have a game in progress this tab
   const saved = typeof window !== "undefined" ? loadSession() : null;
   const [setupDone, setSetupDone] = useState(saved?.setupDone ?? false);
@@ -457,6 +458,19 @@ export default function TrackerPage() {
   const seatsForCount = Array.from({ length: playerCount }, (_, i) =>
     seatAssignments[i] ?? { userId: "", deckId: "" }
   );
+
+  // Re-derive bgColor from colorCombo when the palette changes (theme switch)
+  useEffect(() => {
+    if (players.length === 0) return;
+    setPlayers((prev) =>
+      prev.map((p) =>
+        p.colorCombo
+          ? { ...p, bgColor: bgForCombo(p.colorCombo, palette) }
+          : p
+      )
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [palette]);
 
   // Prevent screen from scrolling during play
   useEffect(() => {
@@ -519,23 +533,23 @@ export default function TrackerPage() {
     }
   }, [setupDone, winnerIdx, logOverlayDismissed]);
 
-  function deckBgForSeat(userId: string, deckId: string): string | null {
+  function deckComboForSeat(userId: string, deckId: string): ColorKey[] | null {
     if (!userId || !deckId) return null;
     const user = users.find((u) => u.id === userId);
     const deck = user?.decks.find((d) => d.id === deckId);
     if (!deck) return null;
-    return bgForDeck(deck, palette);
+    return comboForDeck(deck);
   }
 
   function handleStart() {
     const ps = makePlayers(playerCount, startLife, palette).map((p, i) => {
       const seat = seatsForCount[i];
-      const deckBg = deckBgForSeat(seat?.userId ?? "", seat?.deckId ?? "");
+      const combo = deckComboForSeat(seat?.userId ?? "", seat?.deckId ?? "");
       return {
         ...p,
         userId: seat?.userId ?? "",
         deckId: seat?.deckId ?? "",
-        bgColor: deckBg ?? p.bgColor,
+        ...(combo ? { colorCombo: combo, bgColor: bgForCombo(combo, palette) } : {}),
       };
     });
     setPlayers(ps);
@@ -660,8 +674,11 @@ export default function TrackerPage() {
       setPlayers((prev) =>
         prev.map((pp, ii) => {
           if (ii !== seatIdx) return pp;
-          const bg = deckBgForSeat(pp.userId, value);
-          return { ...pp, deckId: value, ...(bg ? { bgColor: bg } : {}) };
+          const combo = deckComboForSeat(pp.userId, value);
+          if (combo) {
+            return { ...pp, deckId: value, colorCombo: combo, bgColor: bgForCombo(combo, palette) };
+          }
+          return { ...pp, deckId: value };
         })
       );
     }
@@ -1303,7 +1320,7 @@ export default function TrackerPage() {
                 <button
                   key={preset.key}
                   onClick={() => {
-                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: preset.bg }));
+                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: preset.bg, colorCombo: preset.combo.length > 0 ? preset.combo : [] }));
                     setColorPickerFor(null);
                   }}
                   className="w-full aspect-square rounded-lg border border-gray-300 flex items-end justify-center text-[10px] font-bold p-0.5"
@@ -1325,7 +1342,7 @@ export default function TrackerPage() {
                 }
                 onChange={(e) => {
                   const v = e.target.value;
-                  updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: v }));
+                  updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: v, colorCombo: null }));
                 }}
                 className="w-full h-10 rounded cursor-pointer"
               />
@@ -1334,8 +1351,8 @@ export default function TrackerPage() {
               <button
                 onClick={() => {
                   if (colorPickerFor !== null) {
-                    const defaultBg = DEFAULT_SEAT_COLORS[colorPickerFor % DEFAULT_SEAT_COLORS.length];
-                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: defaultBg }));
+                    const combo = DEFAULT_SEAT_COMBOS[colorPickerFor % DEFAULT_SEAT_COMBOS.length];
+                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: bgForCombo(combo, palette), colorCombo: combo }));
                   }
                   setColorPickerFor(null);
                 }}

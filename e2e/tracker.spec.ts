@@ -252,4 +252,54 @@ test.describe("tracker: theme gradients and nav overlay", () => {
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
     }
   });
+
+  test("pod backgrounds update when switching themes mid-game", async ({ page }) => {
+    await page.goto("/tracker");
+    await page.getByRole("button", { name: "Start Game" }).click();
+
+    const pod = page.locator("[data-player-idx='0']");
+    await expect(pod).toBeVisible();
+
+    // Get the initial background
+    const initialBg = await pod.evaluate((el) => el.style.background);
+
+    // Switch to a different theme
+    await page.getByTestId("mobile-menu-toggle").click();
+    const themeSelect = page.locator("select").filter({ has: page.locator("option", { hasText: "Phyrexia" }) }).last();
+    await themeSelect.selectOption("phyrexia");
+    await page.getByTestId("mobile-menu-toggle").click();
+
+    // Background should change
+    const newBg = await pod.evaluate((el) => el.style.background);
+    expect(newBg).not.toBe(initialBg);
+  });
+
+  test("all pods update colors on every theme switch", async ({ page }) => {
+    await page.goto("/tracker");
+    await page.getByRole("button", { name: "4" }).click();
+    await page.getByRole("button", { name: "Start Game" }).click();
+
+    const themes = ["flame", "synth", "cyber", "phyrexia", "stained-glass", "dungeon", "neon-dynasty", "grixis", "default"];
+
+    for (const theme of themes) {
+      await page.getByTestId("mobile-menu-toggle").click();
+      const themeSelect = page.getByTestId("mobile-menu").locator("select").last();
+      await themeSelect.selectOption(theme);
+      await page.getByTestId("mobile-menu-toggle").click();
+
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+
+      // All 4 pods should have a background style
+      for (let i = 0; i < 4; i++) {
+        const pod = page.locator(`[data-player-idx='${i}']`);
+        const bg = await pod.evaluate((el) => el.style.background);
+        expect(bg).toBeTruthy();
+      }
+
+      // Menu should still be accessible after each switch
+      await page.getByTestId("mobile-menu-toggle").click();
+      await expect(page.getByTestId("mobile-menu")).toBeVisible();
+      await page.getByTestId("mobile-menu-toggle").click();
+    }
+  });
 });
