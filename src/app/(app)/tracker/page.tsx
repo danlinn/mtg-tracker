@@ -400,6 +400,26 @@ export default function TrackerPage() {
     return () => { document.body.style.overflow = prev; };
   }, [setupDone]);
 
+  // Keep the screen awake while the tracker is active
+  useEffect(() => {
+    if (!setupDone) return;
+    let wakeLock: WakeLockSentinel | null = null;
+    async function acquire() {
+      try {
+        if ("wakeLock" in navigator) {
+          wakeLock = await navigator.wakeLock.request("screen");
+        }
+      } catch { /* non-fatal — user denied or unsupported */ }
+    }
+    acquire();
+    const reacquire = () => { if (document.visibilityState === "visible") acquire(); };
+    document.addEventListener("visibilitychange", reacquire);
+    return () => {
+      document.removeEventListener("visibilitychange", reacquire);
+      wakeLock?.release();
+    };
+  }, [setupDone]);
+
   // A player is out of the game if they hit 0 life OR took 21+ from
   // a single commander. Tap zones still work while eliminated, so the
   // player can be revived (drop the offending commander damage below
