@@ -972,7 +972,7 @@ export default function TrackerPage() {
       {layout}
 
       <div
-        className="fixed left-1/2 -translate-x-1/2 z-20 flex items-center gap-3"
+        className="fixed left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-3"
         style={{ top: "calc(50% + 1.75rem)" }}
       >
         <button
