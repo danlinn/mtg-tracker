@@ -42,21 +42,15 @@ export default function NavBar() {
     ? [...navItems, { href: "/admin", label: "Admin" }]
     : navItems;
 
-  // Breakpoint: lg (1024px). Below that → hamburger. Pure CSS — no JS
-  // measurement — so the nav can never ping-pong between states.
-  //
-  // On /tracker, we drop the sticky behavior on desktop so the tracker
-  // can use the full viewport without the nav eating 104px of vertical
-  // space. Mobile stays sticky (nav is only 56px there).
   const isTracker = pathname === "/tracker";
   const navPositionClass = isTracker ? "sticky top-0 lg:static" : "sticky top-0";
 
   return (
-    <nav className={`bg-gray-900 text-white z-50 relative ${navPositionClass}`}>
+    <nav className={`bg-nav-bg text-nav-text-hover z-50 relative ${navPositionClass}`}>
       <div className="w-full px-4">
         {/* Top row */}
         <div className="flex items-center justify-between h-14 gap-4">
-          <Link href="/dashboard" className="font-bold text-lg whitespace-nowrap">
+          <Link href="/dashboard" className="nav-logo font-bold text-lg whitespace-nowrap">
             MTG Tracker
           </Link>
 
@@ -66,7 +60,7 @@ export default function NavBar() {
             <select
               value={theme}
               onChange={(e) => setTheme(e.target.value as ThemeName)}
-              className="bg-gray-800 text-gray-300 text-sm rounded px-2 py-1 border border-gray-700"
+              className="bg-nav-select-bg text-nav-text text-sm rounded px-2 py-1 border border-nav-select-border"
             >
               {Object.entries(themeLabels).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -76,7 +70,7 @@ export default function NavBar() {
             </select>
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="text-gray-400 hover:text-white text-sm"
+              className="text-nav-text-muted hover:text-nav-text-hover text-sm"
             >
               Sign out
             </button>
@@ -115,15 +109,15 @@ export default function NavBar() {
         </div>
 
         {/* Desktop menu row (≥ lg) */}
-        <div className="hidden lg:flex items-center gap-1 whitespace-nowrap border-t border-gray-800 h-12 overflow-x-auto">
+        <div className="hidden lg:flex items-center gap-1 whitespace-nowrap border-t border-nav-border h-12 overflow-x-auto">
           {allNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={`px-3 py-2 rounded text-sm font-medium transition-colors shrink-0 ${
                 pathname === item.href
-                  ? "bg-gray-700 text-white"
-                  : "text-gray-300 hover:text-white hover:bg-gray-800"
+                  ? "bg-nav-active-bg text-nav-text-hover"
+                  : "text-nav-text hover:text-nav-text-hover hover:bg-nav-hover-bg"
               }`}
             >
               {item.label}
@@ -131,11 +125,11 @@ export default function NavBar() {
           ))}
         </div>
 
-        {/* Mobile menu: absolute on tracker (overlays fixed content), in-flow elsewhere */}
+        {/* Mobile menu */}
         {menuOpen && (
           <div
             data-testid="mobile-menu"
-            className={`mtg-mobile-menu lg:hidden bg-gray-900 pb-3 pt-2 space-y-1 border-t-2 border-gray-500 ${
+            className={`lg:hidden bg-nav-bg pb-3 pt-2 space-y-1 border-t-2 border-nav-border ${
               isTracker ? "absolute left-0 right-0 top-full z-50 rounded-b-lg shadow-2xl shadow-black/80" : ""
             }`}
           >
@@ -146,23 +140,23 @@ export default function NavBar() {
                 onClick={() => setMenuOpen(false)}
                 className={`block px-3 py-2 rounded text-sm font-medium ${
                   pathname === item.href
-                    ? "bg-gray-700 text-white"
-                    : "text-gray-300 hover:text-white hover:bg-gray-800"
+                    ? "bg-nav-active-bg text-nav-text-hover"
+                    : "text-nav-text hover:text-nav-text-hover hover:bg-nav-hover-bg"
                 }`}
               >
                 {item.label}
               </Link>
             ))}
             <div className="px-3 py-2 flex items-center justify-between">
-              <span className="text-sm text-gray-400">Group</span>
+              <span className="text-sm text-nav-text-muted">Group</span>
               <PlaygroupSwitcher />
             </div>
             <div className="px-3 py-2 flex items-center justify-between">
-              <span className="text-sm text-gray-400">Theme</span>
+              <span className="text-sm text-nav-text-muted">Theme</span>
               <select
                 value={theme}
                 onChange={(e) => setTheme(e.target.value as ThemeName)}
-                className="bg-gray-800 text-gray-300 text-sm rounded px-2 py-1 border border-gray-700"
+                className="bg-nav-select-bg text-nav-text text-sm rounded px-2 py-1 border border-nav-select-border"
               >
                 {Object.entries(themeLabels).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -178,13 +172,13 @@ export default function NavBar() {
                 }
                 window.location.reload();
               }}
-              className="block w-full text-left px-3 py-2 text-sm text-gray-400 hover:text-white"
+              className="block w-full text-left px-3 py-2 text-sm text-nav-text-muted hover:text-nav-text-hover"
             >
               Reload App
             </button>
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="block w-full text-left px-3 py-2 text-sm text-gray-400 hover:text-white"
+              className="block w-full text-left px-3 py-2 text-sm text-nav-text-muted hover:text-nav-text-hover"
             >
               Sign out
             </button>
