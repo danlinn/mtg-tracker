@@ -825,8 +825,39 @@ export default function TrackerPage() {
   }
 
   // Game layout
-  const opponents = (idx: number) =>
-    players.map((p, i) => ({ index: i, player: p })).filter((p) => p.index !== idx);
+  // Sort opponents so their damage boxes align spatially with their
+  // position on the board. For rotated pods, reverse the order since
+  // 180° rotation mirrors the horizontal axis.
+  function spatialOpponents(idx: number, rotate: boolean) {
+    const opps = players
+      .map((p, i) => ({ index: i, player: p }))
+      .filter((p) => p.index !== idx);
+
+    if (playerCount <= 2) return opps;
+
+    if (playerCount === 3) {
+      // Layout: [0 full-width rotated] / [1] [2]
+      const order: Record<number, number[]> = {
+        0: [1, 2],   // screen L→R after rotation flip: [2,1] in code
+        1: [0, 2],   // above, then right
+        2: [1, 0],   // left, then above
+      };
+      const seq = rotate ? [...(order[idx] ?? [])].reverse() : (order[idx] ?? []);
+      return seq.map((i) => opps.find((o) => o.index === i)!).filter(Boolean);
+    }
+
+    // 4-player: [0][1] rotated / [2][3]
+    // Desired screen L→R for each player:
+    const order: Record<number, number[]> = {
+      0: [2, 3, 1],   // across-left, across-right, adjacent
+      1: [0, 2, 3],   // adjacent, across-left, across-right
+      2: [0, 1, 3],   // above-left, above-right, adjacent
+      3: [2, 0, 1],   // adjacent, above-left, above-right
+    };
+    const seq = rotate ? [...(order[idx] ?? [])].reverse() : (order[idx] ?? []);
+    return seq.map((i) => opps.find((o) => o.index === i)!).filter(Boolean);
+  }
+
   const isDead = (p: Player) => !isAlive(p);
 
   const deckLabelFor = (p: Player) => {
@@ -846,7 +877,7 @@ export default function TrackerPage() {
     <PlayerBox
       player={players[idx]}
       index={idx}
-      opponents={opponents(idx)}
+      opponents={spatialOpponents(idx, !!rotate)}
       onLifeChange={(d) => handleLife(idx, d)}
       onCommanderDamage={(from, d) => handleCommanderDamage(idx, from, d)}
       onOpenColor={() => setColorPickerFor(idx)}
