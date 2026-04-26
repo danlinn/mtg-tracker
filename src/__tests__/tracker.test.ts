@@ -196,3 +196,180 @@ describe("cleanUrl", () => {
     expect(cleanUrl("")).toBe("");
   });
 });
+
+// ---- Save game validation (mirrors handleSaveGame pre-checks) ----
+
+interface SavePlayer {
+  userId: string;
+  deckId: string;
+  life: number;
+  damage: Record<number, number>;
+}
+
+function validateSave(
+  players: SavePlayer[]
+): { ok: true; winnerIdx: number; payload: { userId: string; deckId: string; isWinner: boolean }[] }
+ | { ok: false; error: string } {
+  const aliveIndices = players
+    .map((p, i) => ({ p, i }))
+    .filter(({ p }) => isAlive(p))
+    .map(({ i }) => i);
+
+  if (aliveIndices.length !== 1) {
+    return { ok: false, error: "Exactly one player must be alive" };
+  }
+
+  const winnerIdx = aliveIndices[0];
+
+  if (players.some((p) => !p.userId || !p.deckId)) {
+    return { ok: false, error: "Every seat needs a player and a deck." };
+  }
+
+  const userIds = players.map((p) => p.userId);
+  if (new Set(userIds).size !== userIds.length) {
+    return { ok: false, error: "Each seat must be a different player." };
+  }
+
+  return {
+    ok: true,
+    winnerIdx,
+    payload: players.map((p, i) => ({
+      userId: p.userId,
+      deckId: p.deckId,
+      isWinner: i === winnerIdx,
+    })),
+  };
+}
+
+describe("save game after elimination", () => {
+  const player = (
+    userId: string,
+    deckId: string,
+    life: number,
+    damage: Record<number, number> = {}
+  ): SavePlayer => ({ userId, deckId, life, damage });
+
+  it("identifies the winner when all others are eliminated by life", () => {
+    const result = validateSave([
+      player("u1", "d1", 0),
+      player("u2", "d2", 25),
+      player("u3", "d3", 0),
+      player("u4", "d4", 0),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.winnerIdx).toBe(1);
+      expect(result.payload[1].isWinner).toBe(true);
+      expect(result.payload[0].isWinner).toBe(false);
+      expect(result.payload[2].isWinner).toBe(false);
+      expect(result.payload[3].isWinner).toBe(false);
+    }
+  });
+
+  it("identifies the winner when others eliminated by commander damage", () => {
+    const result = validateSave([
+      player("u1", "d1", 40, { 2: 21 }),
+      player("u2", "d2", 40, { 2: 21 }),
+      player("u3", "d3", 40),
+      player("u4", "d4", 0),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.winnerIdx).toBe(2);
+      expect(result.payload[2].isWinner).toBe(true);
+    }
+  });
+
+  it("identifies winner with mixed elimination (life + commander)", () => {
+    const result = validateSave([
+      player("u1", "d1", 0),
+      player("u2", "d2", 30),
+      player("u3", "d3", 15, { 1: 21 }),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.winnerIdx).toBe(1);
+    }
+  });
+
+  it("rejects when multiple players still alive", () => {
+    const result = validateSave([
+      player("u1", "d1", 20),
+      player("u2", "d2", 25),
+      player("u3", "d3", 0),
+    ]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatch(/one player/i);
+    }
+  });
+
+  it("rejects when all players are dead", () => {
+    const result = validateSave([
+      player("u1", "d1", 0),
+      player("u2", "d2", 0),
+    ]);
+    expect(result.ok).toBe(false);
+  });
+
+  it("rejects when a seat is missing a player", () => {
+    const result = validateSave([
+      player("", "d1", 0),
+      player("u2", "d2", 25),
+    ]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatch(/player and a deck/i);
+    }
+  });
+
+  it("rejects when a seat is missing a deck", () => {
+    const result = validateSave([
+      player("u1", "", 0),
+      player("u2", "d2", 25),
+    ]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatch(/player and a deck/i);
+    }
+  });
+
+  it("rejects duplicate players", () => {
+    const result = validateSave([
+      player("u1", "d1", 0),
+      player("u1", "d2", 25),
+    ]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatch(/different player/i);
+    }
+  });
+
+  it("builds correct payload with all fields", () => {
+    const result = validateSave([
+      player("u1", "d1", 0),
+      player("u2", "d2", 0),
+      player("u3", "d3", 12),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.payload).toEqual([
+        { userId: "u1", deckId: "d1", isWinner: false },
+        { userId: "u2", deckId: "d2", isWinner: false },
+        { userId: "u3", deckId: "d3", isWinner: true },
+      ]);
+    }
+  });
+
+  it("works with a 2-player game", () => {
+    const result = validateSave([
+      player("u1", "d1", 0),
+      player("u2", "d2", 5),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.winnerIdx).toBe(1);
+      expect(result.payload).toHaveLength(2);
+    }
+  });
+});
