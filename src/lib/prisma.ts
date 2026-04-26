@@ -20,6 +20,10 @@ function maskUrl(url: string): string {
   return url.replace(/:[^:@]+@/, ":***@");
 }
 
+function needsNeonAdapter(url: string): boolean {
+  return url.includes("neon.tech");
+}
+
 function createPrismaClient() {
   const candidates = [
     { name: "POSTGRES_PRISMA_URL", val: cleanUrl(process.env.POSTGRES_PRISMA_URL) },
@@ -45,8 +49,12 @@ function createPrismaClient() {
     );
   }
 
-  const adapter = new PrismaNeon({ connectionString: winner.val });
-  return new PrismaClient({ adapter });
+  if (needsNeonAdapter(winner.val)) {
+    const adapter = new PrismaNeon({ connectionString: winner.val });
+    return new PrismaClient({ adapter });
+  }
+
+  return new PrismaClient({ datasourceUrl: winner.val });
 }
 
 export const prisma = globalForPrisma.prisma || createPrismaClient();
