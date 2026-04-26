@@ -125,13 +125,11 @@ export default function NavBar() {
           ))}
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile menu — always in document flow, nav's z-50 ensures it's above tracker */}
         {menuOpen && (
           <div
             data-testid="mobile-menu"
-            className={`lg:hidden bg-nav-bg pb-3 pt-2 space-y-1 border-t-2 border-nav-border ${
-              isTracker ? "absolute left-0 right-0 top-full z-50 rounded-b-lg shadow-2xl shadow-black/80" : ""
-            }`}
+            className="lg:hidden pb-3 pt-2 space-y-1 border-t-2 border-nav-border"
           >
             {allNavItems.map((item) => (
               <Link
