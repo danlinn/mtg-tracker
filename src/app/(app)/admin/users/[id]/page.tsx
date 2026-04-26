@@ -89,7 +89,7 @@ export default function AdminUserDetailPage() {
         <h2 className="text-lg font-semibold">Decks ({user.decks.length})</h2>
         <Link
           href={`/admin/users/${userId}/decks/new`}
-          className="bg-accent text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+          className="btn-primary bg-accent text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
         >
           Add Deck
         </Link>
@@ -102,7 +102,7 @@ export default function AdminUserDetailPage() {
           {user.decks.map((deck) => (
             <div
               key={deck.id}
-              className="flex items-center justify-between p-3 rounded-lg border border-border bg-surface"
+              className="flex items-center justify-between p-3 card-themed rounded-lg border border-border bg-surface"
             >
               <div className="space-y-1">
                 <div className="font-medium text-text-primary">{deck.name}</div>

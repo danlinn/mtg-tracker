@@ -102,7 +102,7 @@ export default function AdminPendingPage() {
                           onClick={() => togglePg(user.id, pg.id)}
                           className={`text-xs px-3 py-1 rounded-full transition-colors ${
                             selected
-                              ? "bg-accent text-white"
+                              ? "btn-primary bg-accent text-white"
                               : "bg-surface-sunken text-text-secondary hover:bg-surface-hover"
                           }`}
                         >

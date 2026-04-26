@@ -44,7 +44,7 @@ function ResetPasswordForm() {
           <p className="text-text-secondary">Your password has been updated. You can now log in.</p>
           <Link
             href="/login"
-            className="inline-block bg-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-accent-hover transition-colors"
+            className="inline-block btn-primary bg-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-accent-hover transition-colors"
           >
             Go to Login
           </Link>
@@ -140,7 +140,7 @@ function ResetPasswordForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent-hover disabled:opacity-50 transition-colors"
+            className="w-full btn-primary bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent-hover disabled:opacity-50 transition-colors"
           >
             {loading ? "Resetting..." : "Reset Password"}
           </button>

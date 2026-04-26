@@ -144,7 +144,7 @@ export default function DecksPage() {
         <h1 className="text-2xl font-bold">My Decks</h1>
         <Link
           href="/decks/new"
-          className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+          className="btn-primary bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
         >
           Add Deck
         </Link>

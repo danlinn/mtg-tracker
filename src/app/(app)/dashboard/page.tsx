@@ -60,7 +60,7 @@ export default function DashboardPage() {
       <div className="flex gap-3">
         <Link
           href="/tracker"
-          className="flex-1 bg-accent text-accent-text text-center py-3 rounded-lg font-medium hover:bg-accent-hover transition-colors"
+          className="flex-1 btn-primary bg-accent text-accent-text text-center py-3 rounded-lg font-medium hover:bg-accent-hover transition-colors"
         >
           Track Game
         </Link>
@@ -81,13 +81,13 @@ export default function DashboardPage() {
       {/* Deck performance */}
       {stats.deckStats.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold mb-3">Deck Performance</h2>
+          <h2 className="section-heading text-lg font-semibold mb-3">Deck Performance</h2>
           <div className="space-y-2">
             {stats.deckStats.map((deck) => (
               <Link
                 key={deck.id}
                 href={userId ? `/players/${userId}/decks/${deck.id}` : `/decks/${deck.id}/edit`}
-                className="block p-3 rounded-lg border border-border bg-surface hover:border-accent hover:shadow-sm transition-all"
+                className="block p-3 card-themed rounded-lg border border-border bg-surface card-hover-glow hover:border-accent hover:shadow-sm transition-all"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -155,7 +155,7 @@ function StatCard({
 }) {
   return (
     <div className="bg-surface border border-border rounded-lg p-4 text-center">
-      <div className="text-2xl font-bold text-text-primary">{value}</div>
+      <div className="stat-value text-2xl font-bold text-text-primary">{value}</div>
       <div className="text-sm text-text-tertiary">{label}</div>
     </div>
   );

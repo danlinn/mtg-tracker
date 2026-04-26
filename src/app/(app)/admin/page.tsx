@@ -19,7 +19,7 @@ export default function AdminPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link
           href="/admin/pending"
-          className="block p-6 rounded-lg border border-border bg-surface hover:border-accent transition-colors"
+          className="block p-6 card-themed rounded-lg border border-border bg-surface hover:border-accent transition-colors"
         >
           <h2 className="text-lg font-semibold text-text-primary">
             Pending Approvals
@@ -35,7 +35,7 @@ export default function AdminPage() {
         </Link>
         <Link
           href="/admin/playgroups"
-          className="block p-6 rounded-lg border border-border bg-surface hover:border-accent transition-colors"
+          className="block p-6 card-themed rounded-lg border border-border bg-surface hover:border-accent transition-colors"
         >
           <h2 className="text-lg font-semibold text-text-primary">Playgroups</h2>
           <p className="text-sm text-text-tertiary mt-1">
@@ -44,7 +44,7 @@ export default function AdminPage() {
         </Link>
         <Link
           href="/admin/users"
-          className="block p-6 rounded-lg border border-border bg-surface hover:border-accent transition-colors"
+          className="block p-6 card-themed rounded-lg border border-border bg-surface hover:border-accent transition-colors"
         >
           <h2 className="text-lg font-semibold text-text-primary">Users</h2>
           <p className="text-sm text-text-tertiary mt-1">
@@ -53,7 +53,7 @@ export default function AdminPage() {
         </Link>
         <Link
           href="/admin/games"
-          className="block p-6 rounded-lg border border-border bg-surface hover:border-accent transition-colors"
+          className="block p-6 card-themed rounded-lg border border-border bg-surface hover:border-accent transition-colors"
         >
           <h2 className="text-lg font-semibold text-text-primary">Games</h2>
           <p className="text-sm text-text-tertiary mt-1">
@@ -62,7 +62,7 @@ export default function AdminPage() {
         </Link>
         <Link
           href="/admin/decks"
-          className="block p-6 rounded-lg border border-border bg-surface hover:border-accent transition-colors"
+          className="block p-6 card-themed rounded-lg border border-border bg-surface hover:border-accent transition-colors"
         >
           <h2 className="text-lg font-semibold text-text-primary">Decks</h2>
           <p className="text-sm text-text-tertiary mt-1">

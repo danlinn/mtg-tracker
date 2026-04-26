@@ -165,7 +165,7 @@ function NewDeckForm() {
             type="button"
             onClick={handleMoxfieldImport}
             disabled={importing || !moxfieldUrl.trim()}
-            className="px-4 py-2 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent-hover disabled:opacity-50 transition-colors"
+            className="px-4 py-2 text-sm font-medium btn-primary bg-accent text-white rounded-lg hover:bg-accent-hover disabled:opacity-50 transition-colors"
           >
             {importing ? "Importing..." : "Import"}
           </button>
@@ -335,7 +335,7 @@ function NewDeckForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-accent text-white py-2 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
+          className="w-full btn-primary bg-accent text-white py-2 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
         >
           {loading ? "Creating..." : "Create Deck"}
         </button>

@@ -305,7 +305,7 @@ export default function EditDeckPage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-accent text-white py-2 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
+            className="flex-1 btn-primary bg-accent text-white py-2 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
           >
             {loading ? "Saving..." : "Save Changes"}
           </button>

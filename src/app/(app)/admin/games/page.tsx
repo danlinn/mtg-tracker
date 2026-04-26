@@ -150,7 +150,7 @@ export default function AdminGamesPage() {
             <button
               onClick={bulkAssign}
               disabled={!bulkTarget || bulkSaving}
-              className="px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg disabled:opacity-50"
+              className="px-4 py-2 btn-primary bg-accent text-white text-sm font-medium rounded-lg disabled:opacity-50"
             >
               {bulkSaving ? "Assigning..." : "Assign all"}
             </button>

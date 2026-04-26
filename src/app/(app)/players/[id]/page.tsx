@@ -92,13 +92,13 @@ export default function PlayerProfilePage() {
       {/* Deck performance */}
       {profile.deckStats.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold mb-3">Decks</h2>
+          <h2 className="section-heading text-lg font-semibold mb-3">Decks</h2>
           <div className="space-y-2">
             {profile.deckStats.map((deck) => (
               <Link
                 key={deck.id}
                 href={`/players/${playerId}/decks/${deck.id}`}
-                className="block p-3 rounded-lg border border-border bg-surface hover:border-accent hover:shadow-sm transition-all"
+                className="block p-3 card-themed rounded-lg border border-border bg-surface card-hover-glow hover:border-accent hover:shadow-sm transition-all"
               >
                 <div className="flex items-center gap-3">
                   {deck.commanderImage && (
