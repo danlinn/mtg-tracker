@@ -918,21 +918,20 @@ export default function TrackerPage() {
     />
   );
 
-  // Layout fills the viewport on mobile (sticky 56px nav) and fills the
-  // remaining space on desktop (where the nav is in flow and takes ~104px).
-  // Using `fixed inset-0 top-*` is viewport-relative so it works the same
-  // regardless of page scroll.
+  // Layout fills the viewport below the nav. Uses absolute positioning
+  // inside the tracker wrapper (which is also absolute), keeping
+  // everything below the nav's z-50 stacking context.
   let layout: React.ReactNode;
   if (playerCount === 2) {
     layout = (
-      <div className="fixed inset-0 top-14 lg:top-[104px] z-0 flex flex-col">
+      <div className="absolute inset-0 flex flex-col">
         <div className="flex-1 min-h-0">{renderBox(0, true)}</div>
         <div className="flex-1 min-h-0 border-t border-white/20">{renderBox(1)}</div>
       </div>
     );
   } else if (playerCount === 3) {
     layout = (
-      <div className="fixed inset-0 top-14 lg:top-[104px] z-0 flex flex-col">
+      <div className="absolute inset-0 flex flex-col">
         <div className="flex-1 min-h-0">{renderBox(0, true)}</div>
         <div className="flex-1 min-h-0 border-t border-white/20 flex">
           <div className="flex-1 min-w-0">{renderBox(1)}</div>
@@ -942,7 +941,7 @@ export default function TrackerPage() {
     );
   } else {
     layout = (
-      <div className="fixed inset-0 top-14 lg:top-[104px] z-0 flex flex-col">
+      <div className="absolute inset-0 flex flex-col">
         <div className="flex-1 min-h-0 flex">
           <div className="flex-1 min-w-0">{renderBox(0, true)}</div>
           <div className="flex-1 min-w-0 border-l border-white/20">{renderBox(1, true)}</div>
@@ -957,7 +956,7 @@ export default function TrackerPage() {
 
   return (
     <div
-      className="relative z-0"
+      className="absolute inset-0 top-14 lg:top-[104px] overflow-hidden"
       onTouchMove={handleTouchMoveSwap}
       onTouchEnd={handleEndSwap}
       onTouchCancel={() => { setSwapSource(null); setSwapTarget(null); }}
@@ -977,8 +976,7 @@ export default function TrackerPage() {
       {layout}
 
       <div
-        className="fixed left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-3"
-        style={{ top: "calc(50% + 1.75rem)" }}
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-3"
       >
         <button
           type="button"
@@ -1022,7 +1020,7 @@ export default function TrackerPage() {
 
       {confirmAction && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4"
           onClick={() => setConfirmAction(null)}
         >
           <div
@@ -1065,7 +1063,7 @@ export default function TrackerPage() {
       )}
 
       {logOverlayOpen && winnerIdx !== null && (
-        <div className="fixed inset-0 bg-black/70 z-40 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4">
           <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white">
               <h3 className="font-semibold text-gray-900 text-lg">Log game</h3>
@@ -1260,7 +1258,7 @@ export default function TrackerPage() {
 
       {assignSeatFor !== null && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setAssignSeatFor(null); }}
           onTouchEnd={(e) => e.stopPropagation()}
         >
@@ -1318,7 +1316,7 @@ export default function TrackerPage() {
 
       {colorPickerFor !== null && (
         <div
-          className="fixed inset-0 bg-black/60 z-30 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setColorPickerFor(null); }}
         >
           <div
