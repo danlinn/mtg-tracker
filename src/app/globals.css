@@ -111,7 +111,11 @@ body {
 .mtg-mobile-menu { background: #111827 !important; }
 [data-theme="synth"] .mtg-mobile-menu { background: linear-gradient(180deg, #110e1a 0%, #0a0812 100%) !important; }
 [data-theme="cyber"] .mtg-mobile-menu { background: #05050a !important; }
-[data-theme="flame"] .mtg-mobile-menu { background: #2a0040 !important; border-color: #ff6e27 !important; }
+[data-theme="flame"] .mtg-mobile-menu { background: #2a0040 !important; border-color: #ff6e27 !important; color: #fff0f5 !important; }
+[data-theme="flame"] .mtg-mobile-menu a,
+[data-theme="flame"] .mtg-mobile-menu button,
+[data-theme="flame"] .mtg-mobile-menu span,
+[data-theme="flame"] .mtg-mobile-menu select { color: #fff0f5 !important; }
 [data-theme="chris"] .mtg-mobile-menu { background: #000000 !important; }
 [data-theme="phyrexia"] .mtg-mobile-menu { background: linear-gradient(180deg, #0e120e 0%, #080a08 100%) !important; }
 [data-theme="stained-glass"] .mtg-mobile-menu { background: linear-gradient(180deg, #14102a 0%, #0c0818 100%) !important; }
