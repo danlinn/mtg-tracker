@@ -782,14 +782,14 @@ export default function TrackerPage() {
   let layout: React.ReactNode;
   if (playerCount === 2) {
     layout = (
-      <div className="fixed inset-0 top-14 lg:top-[104px] flex flex-col">
+      <div className="fixed inset-0 top-14 lg:top-[104px] z-0 flex flex-col">
         <div className="flex-1 min-h-0">{renderBox(0, true)}</div>
         <div className="flex-1 min-h-0 border-t border-white/20">{renderBox(1)}</div>
       </div>
     );
   } else if (playerCount === 3) {
     layout = (
-      <div className="fixed inset-0 top-14 lg:top-[104px] flex flex-col">
+      <div className="fixed inset-0 top-14 lg:top-[104px] z-0 flex flex-col">
         <div className="flex-1 min-h-0">{renderBox(0, true)}</div>
         <div className="flex-1 min-h-0 border-t border-white/20 flex">
           <div className="flex-1 min-w-0">{renderBox(1)}</div>
@@ -799,7 +799,7 @@ export default function TrackerPage() {
     );
   } else {
     layout = (
-      <div className="fixed inset-0 top-14 lg:top-[104px] flex flex-col">
+      <div className="fixed inset-0 top-14 lg:top-[104px] z-0 flex flex-col">
         <div className="flex-1 min-h-0 flex">
           <div className="flex-1 min-w-0">{renderBox(0, true)}</div>
           <div className="flex-1 min-w-0 border-l border-white/20">{renderBox(1, true)}</div>
