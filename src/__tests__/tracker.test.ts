@@ -39,6 +39,19 @@ describe("isAlive", () => {
   it("is not affected by combined commander damage below 21 each", () => {
     expect(isAlive({ life: 40, damage: { 0: 20, 1: 20, 2: 20 } })).toBe(true);
   });
+
+  // Partner commander damage (string keys like "0b")
+  it("lethal from partner commander B kills the player", () => {
+    expect(isAlive({ life: 40, damage: { "0": 10, "0b": 21 } })).toBe(false);
+  });
+
+  it("partner damage below 21 each keeps player alive", () => {
+    expect(isAlive({ life: 40, damage: { "0": 20, "0b": 20 } })).toBe(true);
+  });
+
+  it("partner damage from different opponents tracked independently", () => {
+    expect(isAlive({ life: 40, damage: { "0": 10, "0b": 5, "1": 20, "1b": 20 } })).toBe(true);
+  });
 });
 
 // ---- updateSeat padding logic ----
