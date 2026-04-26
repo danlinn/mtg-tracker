@@ -237,7 +237,11 @@ function PlayerBox({
       <button
         type="button"
         onClick={() => handleTap(-1)}
-        className="absolute bottom-0 left-0 right-0 h-1/2 active:bg-black/10"
+        className="absolute left-0 right-0 active:bg-black/10"
+        style={hasCommander
+          ? { top: "50%", height: "calc(50% - 6rem)", minHeight: "2rem" }
+          : { top: "50%", bottom: 0 }
+        }
         aria-label={`Player ${index + 1} -1 life`}
         {...longPressHandlers}
       />
@@ -398,6 +402,26 @@ export default function TrackerPage() {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = prev; };
+  }, [setupDone]);
+
+  // Keep the screen awake while the tracker is active
+  useEffect(() => {
+    if (!setupDone) return;
+    let wakeLock: WakeLockSentinel | null = null;
+    async function acquire() {
+      try {
+        if ("wakeLock" in navigator) {
+          wakeLock = await navigator.wakeLock.request("screen");
+        }
+      } catch { /* non-fatal — user denied or unsupported */ }
+    }
+    acquire();
+    const reacquire = () => { if (document.visibilityState === "visible") acquire(); };
+    document.addEventListener("visibilitychange", reacquire);
+    return () => {
+      document.removeEventListener("visibilitychange", reacquire);
+      wakeLock?.release();
+    };
   }, [setupDone]);
 
   // A player is out of the game if they hit 0 life OR took 21+ from
