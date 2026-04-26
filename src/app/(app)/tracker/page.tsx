@@ -237,7 +237,11 @@ function PlayerBox({
       <button
         type="button"
         onClick={() => handleTap(-1)}
-        className="absolute bottom-0 left-0 right-0 h-1/2 active:bg-black/10"
+        className="absolute left-0 right-0 active:bg-black/10"
+        style={hasCommander
+          ? { top: "50%", height: "calc(50% - 6rem)", minHeight: "2rem" }
+          : { top: "50%", bottom: 0 }
+        }
         aria-label={`Player ${index + 1} -1 life`}
         {...longPressHandlers}
       />
