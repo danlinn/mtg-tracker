@@ -40,7 +40,7 @@ export default function CardDetailModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
+        className="bg-surface rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button over image */}
@@ -73,37 +73,37 @@ export default function CardDetailModal({
         <div className="p-4 space-y-3">
           {/* Header */}
           <div>
-            <h3 className="text-lg font-bold text-gray-900">
+            <h3 className="text-lg font-bold text-text-primary">
               {flipped ? card.backName ?? card.name : card.name}
             </h3>
             {!flipped && card.manaCost && (
-              <span className="text-sm text-gray-500">{card.manaCost}</span>
+              <span className="text-sm text-text-tertiary">{card.manaCost}</span>
             )}
           </div>
 
           {/* Type line */}
           {(flipped ? card.backTypeLine : card.typeLine) && (
-            <div className="text-sm font-medium text-gray-700">
+            <div className="text-sm font-medium text-text-secondary">
               {flipped ? card.backTypeLine : card.typeLine}
             </div>
           )}
 
           {/* Oracle text */}
           {(flipped ? card.backOracleText : card.oracleText) && (
-            <div className="text-sm text-gray-600 whitespace-pre-wrap border-t border-gray-100 pt-2">
+            <div className="text-sm text-text-secondary whitespace-pre-wrap border-t border-border-light pt-2">
               {flipped ? card.backOracleText : card.oracleText}
             </div>
           )}
 
           {/* P/T */}
           {(flipped ? card.backPower : card.power) != null && (flipped ? card.backToughness : card.toughness) != null && (
-            <div className="text-sm font-semibold text-gray-800">
+            <div className="text-sm font-semibold text-text-primary">
               {flipped ? card.backPower : card.power}/{flipped ? card.backToughness : card.toughness}
             </div>
           )}
 
           {/* Stats row */}
-          <div className="flex gap-4 text-xs text-gray-500 border-t border-gray-100 pt-2">
+          <div className="flex gap-4 text-xs text-text-tertiary border-t border-border-light pt-2">
             {card.rarity && (
               <span className="capitalize">{card.rarity}</span>
             )}
@@ -112,21 +112,21 @@ export default function CardDetailModal({
           </div>
 
           {/* Pricing */}
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs font-semibold text-gray-500 mb-1">
+          <div className="bg-surface-raised rounded-lg p-3">
+            <div className="text-xs font-semibold text-text-tertiary mb-1">
               Pricing
             </div>
             <div className="flex gap-4">
               <div>
-                <div className="text-xs text-gray-400">Regular</div>
-                <div className="text-sm font-semibold text-green-600">
+                <div className="text-xs text-text-muted">Regular</div>
+                <div className="text-sm font-semibold text-success">
                   {card.priceUsd != null
                     ? `$${card.priceUsd.toFixed(2)}`
                     : "—"}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-400">Foil</div>
+                <div className="text-xs text-text-muted">Foil</div>
                 <div className="text-sm font-semibold text-purple-600">
                   {card.priceFoil != null
                     ? `$${card.priceFoil.toFixed(2)}`
@@ -135,10 +135,10 @@ export default function CardDetailModal({
               </div>
               {card.quantity > 1 && card.priceUsd != null && (
                 <div>
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-text-muted">
                     {card.quantity}x Total
                   </div>
-                  <div className="text-sm font-semibold text-green-600">
+                  <div className="text-sm font-semibold text-success">
                     ${(card.priceUsd * card.quantity).toFixed(2)}
                   </div>
                 </div>
@@ -148,21 +148,21 @@ export default function CardDetailModal({
 
           {/* Rulings */}
           <div>
-            <div className="text-xs font-semibold text-gray-500 mb-1">
+            <div className="text-xs font-semibold text-text-tertiary mb-1">
               Rulings
             </div>
             {rulings === null ? (
-              <div className="text-xs text-gray-400">Loading...</div>
+              <div className="text-xs text-text-muted">Loading...</div>
             ) : rulings.length === 0 ? (
-              <div className="text-xs text-gray-400">No rulings found.</div>
+              <div className="text-xs text-text-muted">No rulings found.</div>
             ) : (
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {rulings.map((r, i) => (
                   <div
                     key={i}
-                    className="text-xs text-gray-600 border-l-2 border-gray-200 pl-2"
+                    className="text-xs text-text-secondary border-l-2 border-border pl-2"
                   >
-                    <div className="text-gray-400 mb-0.5">
+                    <div className="text-text-muted mb-0.5">
                       {r.publishedAt} &middot; {r.source}
                     </div>
                     {r.comment}
@@ -178,7 +178,7 @@ export default function CardDetailModal({
               href={card.scryfallUri}
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-center text-sm text-blue-600 hover:text-blue-800 pt-1"
+              className="block text-center text-sm text-accent hover:text-accent-hover pt-1"
             >
               View on Scryfall &rarr;
             </a>

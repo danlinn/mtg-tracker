@@ -27,7 +27,7 @@ export default function PlaygroupsPage() {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
@@ -35,7 +35,7 @@ export default function PlaygroupsPage() {
       <h1 className="text-2xl font-bold">My Playgroups</h1>
 
       {playgroups.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-text-tertiary">
           You&apos;re not in any playgroups yet.
         </div>
       ) : (
@@ -44,19 +44,19 @@ export default function PlaygroupsPage() {
             <Link
               key={pg.id}
               href={`/playgroups/${pg.id}`}
-              className="block p-4 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm transition-all"
+              className="block p-4 rounded-lg border border-border bg-surface hover:border-accent hover:shadow-sm transition-all"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium text-gray-900">{pg.name}</div>
+                  <div className="font-medium text-text-primary">{pg.name}</div>
                   {pg.description && (
-                    <div className="text-sm text-gray-500">{pg.description}</div>
+                    <div className="text-sm text-text-tertiary">{pg.description}</div>
                   )}
-                  <div className="text-xs text-gray-400 mt-1">
+                  <div className="text-xs text-text-muted mt-1">
                     {pg.memberCount} members &middot; {pg.gameCount} games
                   </div>
                 </div>
-                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                <span className="text-xs px-2 py-1 rounded-full bg-surface-sunken text-text-secondary">
                   {pg.role}
                 </span>
               </div>

@@ -93,7 +93,7 @@ export default function PlaygroupDetailPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
@@ -101,18 +101,18 @@ export default function PlaygroupDetailPage() {
       <h1 className="text-2xl font-bold">Playgroup</h1>
 
       {/* Invite Section */}
-      <div className="border border-gray-200 rounded-lg bg-white p-4 space-y-4">
-        <h2 className="font-semibold text-gray-900">Invite Players</h2>
+      <div className="border border-border rounded-lg bg-surface p-4 space-y-4">
+        <h2 className="font-semibold text-text-primary">Invite Players</h2>
 
         {error && (
-          <div className="bg-red-50 text-red-600 px-3 py-2 rounded text-sm">
+          <div className="bg-danger-bg text-danger px-3 py-2 rounded text-sm">
             {error}
           </div>
         )}
 
         {/* Invite by email */}
         <div>
-          <label className="block text-sm text-gray-500 mb-1">
+          <label className="block text-sm text-text-tertiary mb-1">
             Send invite by email
           </label>
           <div className="flex gap-2">
@@ -121,12 +121,12 @@ export default function PlaygroupDetailPage() {
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
               placeholder="friend@example.com"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+              className="flex-1 px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
             />
             <button
               onClick={handleInviteByEmail}
               disabled={sending || !inviteEmail.trim()}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
             >
               {sending ? "Sending..." : "Send"}
             </button>
@@ -135,7 +135,7 @@ export default function PlaygroupDetailPage() {
 
         {/* Generate shareable link */}
         <div>
-          <label className="block text-sm text-gray-500 mb-1">
+          <label className="block text-sm text-text-tertiary mb-1">
             Or generate a shareable link
           </label>
           {inviteLink ? (
@@ -144,11 +144,11 @@ export default function PlaygroupDetailPage() {
                 type="text"
                 readOnly
                 value={inviteLink}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 text-sm"
+                className="flex-1 px-3 py-2 border border-border-strong rounded-lg bg-surface-raised text-text-secondary text-sm"
               />
               <button
                 onClick={copyLink}
-                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+                className="bg-surface-sunken text-text-secondary px-4 py-2 rounded-lg text-sm font-medium hover:bg-surface-hover transition-colors"
               >
                 Copy
               </button>
@@ -157,31 +157,31 @@ export default function PlaygroupDetailPage() {
             <button
               onClick={handleGenerateLink}
               disabled={sending}
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors"
+              className="bg-surface-sunken text-text-secondary px-4 py-2 rounded-lg text-sm font-medium hover:bg-surface-hover disabled:opacity-50 transition-colors"
             >
               Generate Invite Link
             </button>
           )}
-          <p className="text-xs text-gray-400 mt-1">Link expires in 7 days</p>
+          <p className="text-xs text-text-muted mt-1">Link expires in 7 days</p>
         </div>
       </div>
 
       {/* Members */}
-      <div className="border border-gray-200 rounded-lg bg-white p-4">
-        <h2 className="font-semibold text-gray-900 mb-3">
+      <div className="border border-border rounded-lg bg-surface p-4">
+        <h2 className="font-semibold text-text-primary mb-3">
           Members ({members.length})
         </h2>
         <div className="space-y-2">
           {members.map((m) => (
             <div
               key={m.id}
-              className="flex items-center justify-between p-2 bg-gray-50 rounded"
+              className="flex items-center justify-between p-2 bg-surface-raised rounded"
             >
               <div>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm font-medium text-text-primary">
                   {m.user.name}
                 </span>
-                <span className="text-xs text-gray-400 ml-2">{m.role}</span>
+                <span className="text-xs text-text-muted ml-2">{m.role}</span>
               </div>
             </div>
           ))}
@@ -190,30 +190,30 @@ export default function PlaygroupDetailPage() {
 
       {/* Pending Invites */}
       {invites.length > 0 && (
-        <div className="border border-gray-200 rounded-lg bg-white p-4">
-          <h2 className="font-semibold text-gray-900 mb-3">
+        <div className="border border-border rounded-lg bg-surface p-4">
+          <h2 className="font-semibold text-text-primary mb-3">
             Invites
           </h2>
           <div className="space-y-2">
             {invites.map((inv) => (
               <div
                 key={inv.id}
-                className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm"
+                className="flex items-center justify-between p-2 bg-surface-raised rounded text-sm"
               >
                 <div>
-                  <span className="text-gray-900">
+                  <span className="text-text-primary">
                     {inv.email ?? "Link invite"}
                   </span>
-                  <span className="text-xs text-gray-400 ml-2">
+                  <span className="text-xs text-text-muted ml-2">
                     by {inv.invitedBy.name}
                   </span>
                 </div>
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full ${
                     inv.usedAt
-                      ? "bg-green-100 text-green-700"
+                      ? "bg-green-100 text-success"
                       : inv.expiresAt && new Date(inv.expiresAt) < new Date()
-                      ? "bg-gray-100 text-gray-500"
+                      ? "bg-surface-sunken text-text-tertiary"
                       : "bg-yellow-100 text-yellow-700"
                   }`}
                 >

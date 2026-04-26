@@ -28,7 +28,7 @@ export default function GradientDemoPage() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold">Gradient Style Mockups</h1>
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-text-tertiary">
         Each row shows one gradient style applied to different color combos.
         Switch themes in the menu to see how they adapt.
       </p>

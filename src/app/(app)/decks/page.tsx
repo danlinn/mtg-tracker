@@ -135,7 +135,7 @@ export default function DecksPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
@@ -144,7 +144,7 @@ export default function DecksPage() {
         <h1 className="text-2xl font-bold">My Decks</h1>
         <Link
           href="/decks/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
         >
           Add Deck
         </Link>
@@ -154,7 +154,7 @@ export default function DecksPage() {
         <div className="flex flex-wrap items-center gap-4">
           {/* Color filter */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Filter:</span>
+            <span className="text-sm text-text-tertiary">Filter:</span>
             {FILTER_COLORS.map((c) => (
               <button
                 key={c.key}
@@ -174,7 +174,7 @@ export default function DecksPage() {
                   setColorFilter({ colorW: false, colorU: false, colorB: false, colorR: false, colorG: false });
                   setBracketFilter("");
                 }}
-                className="text-xs text-gray-400 hover:text-gray-600 ml-1"
+                className="text-xs text-text-muted hover:text-text-secondary ml-1"
               >
                 Clear
               </button>
@@ -183,11 +183,11 @@ export default function DecksPage() {
 
           {/* Bracket filter */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Bracket:</span>
+            <span className="text-sm text-text-tertiary">Bracket:</span>
             <select
               value={bracketFilter}
               onChange={(e) => setBracketFilter(e.target.value)}
-              className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-900"
+              className="text-sm border border-border-strong rounded-lg px-2 py-1 bg-surface text-text-primary"
             >
               <option value="">All</option>
               <option value="1">1</option>
@@ -200,11 +200,11 @@ export default function DecksPage() {
 
           {/* Sort */}
           <div className="flex items-center gap-2 ml-auto">
-            <span className="text-sm text-gray-500">Sort:</span>
+            <span className="text-sm text-text-tertiary">Sort:</span>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortOption)}
-              className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-900"
+              className="text-sm border border-border-strong rounded-lg px-2 py-1 bg-surface text-text-primary"
             >
               <option value="date">Date Added</option>
               <option value="name">Name</option>
@@ -213,7 +213,7 @@ export default function DecksPage() {
             </select>
             <button
               onClick={() => setSortAsc(!sortAsc)}
-              className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-900 hover:bg-gray-50 transition-colors"
+              className="text-sm border border-border-strong rounded-lg px-2 py-1 bg-surface text-text-primary hover:bg-surface-raised transition-colors"
               title={sortAsc ? "Ascending" : "Descending"}
             >
               {sortAsc ? "↑" : "↓"}
@@ -223,14 +223,14 @@ export default function DecksPage() {
       )}
 
       {decks.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-text-tertiary">
           <p>No decks yet.</p>
-          <Link href="/decks/new" className="text-blue-600 hover:underline">
+          <Link href="/decks/new" className="text-accent hover:underline">
             Create your first deck
           </Link>
         </div>
       ) : filteredAndSorted.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-text-tertiary">
           No decks match the selected colors.
         </div>
       ) : (
@@ -245,7 +245,7 @@ export default function DecksPage() {
             <div
               key={deck.id}
               onClick={() => userId && router.push(`/players/${userId}/decks/${deck.id}`)}
-              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
+              className="flex items-center justify-between p-4 rounded-lg border border-border cursor-pointer hover:shadow-md transition-shadow"
               style={deckGradient(deck, palette)}
             >
               <div className="space-y-1 min-w-0 flex-1">
@@ -263,12 +263,12 @@ export default function DecksPage() {
                 {(deck.bracket != null || deck.edhp != null) && (
                   <div className="flex gap-3 text-xs">
                     {deck.bracket != null && (
-                      <span className={`px-2 py-0.5 rounded ${whiteOnly ? "bg-white/60 text-gray-800" : "bg-gray-100 text-gray-700"}`}>
+                      <span className={`px-2 py-0.5 rounded ${whiteOnly ? "bg-surface/60 text-text-primary" : "bg-surface-sunken text-text-secondary"}`}>
                         Bracket {deck.bracket}
                       </span>
                     )}
                     {deck.edhp != null && (
-                      <span className={`px-2 py-0.5 rounded ${whiteOnly ? "bg-white/60 text-gray-800" : "bg-gray-100 text-gray-700"}`}>
+                      <span className={`px-2 py-0.5 rounded ${whiteOnly ? "bg-surface/60 text-text-primary" : "bg-surface-sunken text-text-secondary"}`}>
                         EDHP {deck.edhp.toFixed(2)}
                       </span>
                     )}
@@ -277,13 +277,13 @@ export default function DecksPage() {
                 <div className="flex gap-3 pt-1" onClick={(e) => e.stopPropagation()}>
                   <Link
                     href={`/decks/${deck.id}/edit`}
-                    className={`text-xs font-medium ${whiteOnly ? "text-blue-800 hover:text-blue-950" : "text-blue-600 hover:text-blue-800"}`}
+                    className={`text-xs font-medium ${whiteOnly ? "text-blue-800 hover:text-blue-950" : "text-accent hover:text-accent-hover"}`}
                   >
                     Edit
                   </Link>
                   <button
                     onClick={() => handleDelete(deck.id)}
-                    className={`text-xs ${whiteOnly ? "text-red-700 hover:text-red-900" : "text-red-500 hover:text-red-700"}`}
+                    className={`text-xs ${whiteOnly ? "text-red-700 hover:text-danger" : "text-danger hover:text-danger"}`}
                   >
                     Delete
                   </button>

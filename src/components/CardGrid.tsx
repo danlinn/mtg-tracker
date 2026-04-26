@@ -31,8 +31,8 @@ export interface DeckCard {
 }
 
 const RARITY_COLORS: Record<string, string> = {
-  common: "text-gray-500",
-  uncommon: "text-gray-400",
+  common: "text-text-tertiary",
+  uncommon: "text-text-muted",
   rare: "text-yellow-500",
   mythic: "text-orange-500",
 };
@@ -52,7 +52,7 @@ export default function CardGrid({
         <h2 className="text-lg font-semibold">
           Cards ({cards.reduce((sum, c) => sum + c.quantity, 0)})
         </h2>
-        <div className="text-sm font-semibold text-green-600">
+        <div className="text-sm font-semibold text-success">
           ${totalPrice.toFixed(2)}
         </div>
       </div>
@@ -62,7 +62,7 @@ export default function CardGrid({
           <button
             key={`${card.name}-${i}`}
             onClick={() => setSelected(card)}
-            className="text-left rounded-lg overflow-hidden border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md transition-all"
+            className="text-left rounded-lg overflow-hidden border border-border bg-surface hover:border-accent hover:shadow-md transition-all"
           >
             {card.imageSmall ? (
               <img
@@ -72,27 +72,27 @@ export default function CardGrid({
                 loading="lazy"
               />
             ) : (
-              <div className="w-full aspect-[5/7] bg-gray-100 flex items-center justify-center text-xs text-gray-400 p-2 text-center">
+              <div className="w-full aspect-[5/7] bg-surface-sunken flex items-center justify-center text-xs text-text-muted p-2 text-center">
                 {card.name}
               </div>
             )}
             <div className="p-1.5">
-              <div className="text-xs font-medium text-gray-900 truncate">
+              <div className="text-xs font-medium text-text-primary truncate">
                 {card.quantity > 1 && (
-                  <span className="text-gray-400">{card.quantity}x </span>
+                  <span className="text-text-muted">{card.quantity}x </span>
                 )}
                 {card.name}
               </div>
               <div className="flex items-center justify-between mt-0.5">
-                <span className={`text-xs capitalize ${RARITY_COLORS[card.rarity ?? ""] ?? "text-gray-400"}`}>
+                <span className={`text-xs capitalize ${RARITY_COLORS[card.rarity ?? ""] ?? "text-text-muted"}`}>
                   {card.rarity ?? "—"}
                 </span>
                 {card.priceUsd != null ? (
-                  <span className="text-xs text-green-600 font-medium">
+                  <span className="text-xs text-success font-medium">
                     ${card.priceUsd.toFixed(2)}
                   </span>
                 ) : (
-                  <span className="text-xs text-gray-300">—</span>
+                  <span className="text-xs text-text-muted">—</span>
                 )}
               </div>
             </div>

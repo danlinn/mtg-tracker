@@ -135,7 +135,7 @@ export default function EditDeckPage() {
   }
 
   if (fetching) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
@@ -143,7 +143,7 @@ export default function EditDeckPage() {
       <h1 className="text-2xl font-bold mb-6">Edit Deck</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 text-red-600 px-4 py-2 rounded text-sm">
+          <div className="bg-danger-bg text-danger px-4 py-2 rounded text-sm">
             {error}
           </div>
         )}
@@ -157,7 +157,7 @@ export default function EditDeckPage() {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+            className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary"
           />
         </div>
         <div>
@@ -190,7 +190,7 @@ export default function EditDeckPage() {
                   <button
                     type="button"
                     onClick={() => { setShowPartner(false); setCommander2(""); setCommander2Image(null); }}
-                    className="text-xs text-gray-400 hover:text-gray-600"
+                    className="text-xs text-text-muted hover:text-text-secondary"
                   >
                     Remove
                   </button>
@@ -216,7 +216,7 @@ export default function EditDeckPage() {
           <button
             type="button"
             onClick={() => setShowPartner(true)}
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="text-sm text-accent hover:text-accent-hover"
           >
             + Add Partner / Second Commander
           </button>
@@ -254,7 +254,7 @@ export default function EditDeckPage() {
             onChange={(e) => setDecklist(e.target.value)}
             placeholder={"1 Sol Ring\n1 Command Tower\n1 Arcane Signet\n..."}
             rows={6}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 text-sm font-mono"
+            className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary text-sm font-mono"
           />
           {decklist.trim() && (
             <a
@@ -281,7 +281,7 @@ export default function EditDeckPage() {
               value={bracket}
               onChange={(e) => setBracket(e.target.value)}
               placeholder="e.g. 3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary"
             />
           </div>
           <div>
@@ -297,7 +297,7 @@ export default function EditDeckPage() {
               value={edhp}
               onChange={(e) => setEdhp(e.target.value)}
               placeholder="e.g. 7.5"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary"
             />
           </div>
         </div>
@@ -305,13 +305,13 @@ export default function EditDeckPage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="flex-1 bg-accent text-white py-2 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
           >
             {loading ? "Saving..." : "Save Changes"}
           </button>
           <Link
             href="/decks"
-            className="flex-1 border border-gray-300 text-center py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            className="flex-1 border border-border-strong text-center py-2 rounded-lg font-medium hover:bg-surface-raised transition-colors"
           >
             Cancel
           </Link>

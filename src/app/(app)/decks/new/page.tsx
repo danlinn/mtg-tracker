@@ -151,7 +151,7 @@ function NewDeckForm() {
       <h1 className="text-2xl font-bold mb-6">New Deck</h1>
 
       {/* Moxfield Import */}
-      <div className="mb-6 p-3 border border-gray-200 rounded-lg bg-gray-50">
+      <div className="mb-6 p-3 border border-border rounded-lg bg-surface-raised">
         <div className="text-sm font-medium mb-2">Import from Moxfield</div>
         <div className="flex gap-2">
           <input
@@ -159,13 +159,13 @@ function NewDeckForm() {
             value={moxfieldUrl}
             onChange={(e) => setMoxfieldUrl(e.target.value)}
             placeholder="https://www.moxfield.com/decks/..."
-            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+            className="flex-1 px-3 py-2 text-sm border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary"
           />
           <button
             type="button"
             onClick={handleMoxfieldImport}
             disabled={importing || !moxfieldUrl.trim()}
-            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent-hover disabled:opacity-50 transition-colors"
           >
             {importing ? "Importing..." : "Import"}
           </button>
@@ -173,7 +173,7 @@ function NewDeckForm() {
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 text-red-600 px-4 py-2 rounded text-sm">
+          <div className="bg-danger-bg text-danger px-4 py-2 rounded text-sm">
             {error}
           </div>
         )}
@@ -188,7 +188,7 @@ function NewDeckForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Krenko Goblins"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+            className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary"
           />
         </div>
         <div>
@@ -221,7 +221,7 @@ function NewDeckForm() {
                   <button
                     type="button"
                     onClick={() => { setShowPartner(false); setCommander2(""); setCommander2Image(null); }}
-                    className="text-xs text-gray-400 hover:text-gray-600"
+                    className="text-xs text-text-muted hover:text-text-secondary"
                   >
                     Remove
                   </button>
@@ -247,7 +247,7 @@ function NewDeckForm() {
           <button
             type="button"
             onClick={() => setShowPartner(true)}
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="text-sm text-accent hover:text-accent-hover"
           >
             + Add Partner / Second Commander
           </button>
@@ -285,7 +285,7 @@ function NewDeckForm() {
             onChange={(e) => setDecklist(e.target.value)}
             placeholder={"1 Sol Ring\n1 Command Tower\n1 Arcane Signet\n..."}
             rows={6}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 text-sm font-mono"
+            className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary text-sm font-mono"
           />
           {decklist.trim() && (
             <a
@@ -312,7 +312,7 @@ function NewDeckForm() {
               value={bracket}
               onChange={(e) => setBracket(e.target.value)}
               placeholder="e.g. 3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary"
             />
           </div>
           <div>
@@ -328,14 +328,14 @@ function NewDeckForm() {
               value={edhp}
               onChange={(e) => setEdhp(e.target.value)}
               placeholder="e.g. 7.5"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary"
             />
           </div>
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          className="w-full bg-accent text-white py-2 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
         >
           {loading ? "Creating..." : "Create Deck"}
         </button>

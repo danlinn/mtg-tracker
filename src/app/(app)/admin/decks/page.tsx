@@ -60,14 +60,14 @@ export default function AdminDecksPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Manage Decks</h1>
-        <Link href="/admin" className="text-blue-600 hover:underline text-sm">
+        <Link href="/admin" className="text-accent hover:underline text-sm">
           Back to Admin
         </Link>
       </div>
@@ -76,7 +76,7 @@ export default function AdminDecksPage() {
         {decks.map((deck) => (
           <div
             key={deck.id}
-            className="p-4 rounded-lg border border-gray-200 bg-white"
+            className="p-4 rounded-lg border border-border bg-surface"
           >
             {editing === deck.id ? (
               <div className="space-y-2">
@@ -86,7 +86,7 @@ export default function AdminDecksPage() {
                     onChange={(e) =>
                       setEditForm({ ...editForm, name: e.target.value })
                     }
-                    className="px-2 py-1 border rounded text-sm bg-white text-gray-900"
+                    className="px-2 py-1 border rounded text-sm bg-surface text-text-primary"
                     placeholder="Deck Name"
                   />
                   <input
@@ -94,20 +94,20 @@ export default function AdminDecksPage() {
                     onChange={(e) =>
                       setEditForm({ ...editForm, commander: e.target.value })
                     }
-                    className="px-2 py-1 border rounded text-sm bg-white text-gray-900"
+                    className="px-2 py-1 border rounded text-sm bg-surface text-text-primary"
                     placeholder="Commander"
                   />
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => saveEdit(deck.id)}
-                    className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                    className="text-sm bg-accent text-white px-3 py-1 rounded hover:bg-accent-hover"
                   >
                     Save
                   </button>
                   <button
                     onClick={() => setEditing(null)}
-                    className="text-sm text-gray-500 hover:text-gray-700"
+                    className="text-sm text-text-tertiary hover:text-text-secondary"
                   >
                     Cancel
                   </button>
@@ -116,8 +116,8 @@ export default function AdminDecksPage() {
             ) : (
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <div className="font-medium text-gray-900">{deck.name}</div>
-                  <div className="text-sm text-gray-500">{deck.commander}</div>
+                  <div className="font-medium text-text-primary">{deck.name}</div>
+                  <div className="text-sm text-text-tertiary">{deck.commander}</div>
                   <ColorPips
                     colors={{
                       W: deck.colorW,
@@ -127,20 +127,20 @@ export default function AdminDecksPage() {
                       G: deck.colorG,
                     }}
                   />
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-text-muted">
                     Owner: {deck.user.name} ({deck.user.email})
                   </div>
                 </div>
                 <div className="flex gap-3 items-center">
                   <button
                     onClick={() => startEdit(deck)}
-                    className="text-blue-600 hover:text-blue-800 text-sm"
+                    className="text-accent hover:text-accent-hover text-sm"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(deck.id)}
-                    className="text-red-500 hover:text-red-700 text-sm"
+                    className="text-danger hover:text-danger text-sm"
                   >
                     Delete
                   </button>
@@ -150,7 +150,7 @@ export default function AdminDecksPage() {
           </div>
         ))}
         {decks.length === 0 && (
-          <div className="text-center py-12 text-gray-500">No decks found.</div>
+          <div className="text-center py-12 text-text-tertiary">No decks found.</div>
         )}
       </div>
     </div>

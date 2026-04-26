@@ -49,7 +49,7 @@ function LoginForm() {
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           {verified === "true" && (
-            <div className="bg-green-50 text-green-700 px-4 py-2 rounded text-sm">
+            <div className="bg-success-bg text-success px-4 py-2 rounded text-sm">
               Email verified! You can now sign in.
             </div>
           )}
@@ -59,7 +59,7 @@ function LoginForm() {
             </div>
           )}
           {error && (
-            <div className="bg-red-50 text-red-600 px-4 py-2 rounded text-sm">
+            <div className="bg-danger-bg text-danger px-4 py-2 rounded text-sm">
               {error}
             </div>
           )}
@@ -73,7 +73,7 @@ function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary"
             />
           </div>
           <div>
@@ -89,25 +89,25 @@ function LoginForm() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="w-full bg-accent text-white py-2 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
           <div className="text-right">
-            <Link href="/forgot-password" className="text-sm text-gray-500 hover:text-blue-600">
+            <Link href="/forgot-password" className="text-sm text-text-tertiary hover:text-accent">
               Forgot password?
             </Link>
           </div>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-sm text-text-tertiary mt-4">
           No account?{" "}
-          <Link href="/sign-up-here" className="text-blue-600 hover:underline">
+          <Link href="/sign-up-here" className="text-accent hover:underline">
             Register
           </Link>
         </p>

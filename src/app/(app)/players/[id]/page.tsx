@@ -60,23 +60,23 @@ export default function PlayerProfilePage() {
   if (error) {
     return (
       <div className="space-y-4">
-        <Link href="/players" className="text-sm text-gray-400 hover:text-gray-600">&larr; Back to Players</Link>
-        <div className="text-center py-12 text-gray-500">{error}</div>
+        <Link href="/players" className="text-sm text-text-muted hover:text-text-secondary">&larr; Back to Players</Link>
+        <div className="text-center py-12 text-text-tertiary">{error}</div>
       </div>
     );
   }
 
   if (!profile) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm">
-        <Link href="/players" className="text-gray-400 hover:text-gray-600">&larr; Players</Link>
-        <span className="text-gray-300">/</span>
-        <span className="text-gray-600 font-medium">{profile.name}</span>
+        <Link href="/players" className="text-text-muted hover:text-text-secondary">&larr; Players</Link>
+        <span className="text-text-muted">/</span>
+        <span className="text-text-secondary font-medium">{profile.name}</span>
       </div>
 
       <h1 className="text-2xl font-bold">{profile.name}</h1>
@@ -98,7 +98,7 @@ export default function PlayerProfilePage() {
               <Link
                 key={deck.id}
                 href={`/players/${playerId}/decks/${deck.id}`}
-                className="block p-3 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm transition-all"
+                className="block p-3 rounded-lg border border-border bg-surface hover:border-accent hover:shadow-sm transition-all"
               >
                 <div className="flex items-center gap-3">
                   {deck.commanderImage && (
@@ -111,16 +111,16 @@ export default function PlayerProfilePage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-medium text-gray-900">{deck.name}</div>
-                        <div className="text-sm text-gray-500">
+                        <div className="font-medium text-text-primary">{deck.name}</div>
+                        <div className="text-sm text-text-tertiary">
                           {deck.commander}{deck.commander2 ? ` & ${deck.commander2}` : ""}
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold text-gray-900">
+                        <div className="font-semibold text-text-primary">
                           {deck.wins}W - {deck.games - deck.wins}L
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-text-tertiary">
                           {deck.winRate}% win rate
                         </div>
                       </div>
@@ -136,12 +136,12 @@ export default function PlayerProfilePage() {
                         }}
                       />
                       {deck.bracket != null && (
-                        <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs">
+                        <span className="bg-surface-sunken text-text-secondary px-2 py-0.5 rounded text-xs">
                           Bracket {deck.bracket}
                         </span>
                       )}
                       {deck.edhp != null && (
-                        <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs">
+                        <span className="bg-surface-sunken text-text-secondary px-2 py-0.5 rounded text-xs">
                           EDHP {deck.edhp.toFixed(2)}
                         </span>
                       )}
@@ -149,21 +149,21 @@ export default function PlayerProfilePage() {
                   </div>
                 </div>
                 {deck.games > 0 && (
-                  <div className="flex gap-3 mt-2 pt-2 border-t border-gray-100">
+                  <div className="flex gap-3 mt-2 pt-2 border-t border-border-light">
                     {([2, 3, 4] as const).map((count) => {
                       const stat = deck.winRateByPlayerCount[count];
                       return (
                         <div key={count} className="flex-1 text-center text-xs">
-                          <div className="text-gray-400">{count}-player</div>
+                          <div className="text-text-muted">{count}-player</div>
                           {stat ? (
-                            <div className="font-semibold text-gray-700">
+                            <div className="font-semibold text-text-secondary">
                               {stat.winRate}%{" "}
-                              <span className="text-gray-400 font-normal">
+                              <span className="text-text-muted font-normal">
                                 ({stat.games})
                               </span>
                             </div>
                           ) : (
-                            <div className="text-gray-300">&mdash;</div>
+                            <div className="text-text-muted">&mdash;</div>
                           )}
                         </div>
                       );
@@ -177,7 +177,7 @@ export default function PlayerProfilePage() {
       )}
 
       {profile.totalGames === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-text-tertiary">
           No games recorded yet.
         </div>
       )}
@@ -187,9 +187,9 @@ export default function PlayerProfilePage() {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
-      <div className="text-sm text-gray-500">{label}</div>
+    <div className="bg-surface border border-border rounded-lg p-4 text-center">
+      <div className="text-2xl font-bold text-text-primary">{value}</div>
+      <div className="text-sm text-text-tertiary">{label}</div>
     </div>
   );
 }

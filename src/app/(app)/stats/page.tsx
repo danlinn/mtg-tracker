@@ -267,7 +267,7 @@ export default function StatsPage() {
     deckFilter || playerCountFilter || activeColorFilters.length > 0 || colorCountFilter;
 
   if (loading || !data) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
@@ -278,7 +278,7 @@ export default function StatsPage() {
         <select
           value={playerId}
           onChange={(e) => setPlayerId(e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 max-w-full"
+          className="px-3 py-2 text-sm border border-border-strong rounded-lg bg-surface text-text-primary max-w-full"
         >
           {players.map((p) => (
             <option key={p.id} value={p.id}>
@@ -290,26 +290,26 @@ export default function StatsPage() {
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white border border-gray-200 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{totalGames}</div>
-          <div className="text-xs text-gray-500">Games</div>
+        <div className="bg-surface border border-border rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-text-primary">{totalGames}</div>
+          <div className="text-xs text-text-tertiary">Games</div>
         </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{totalWins}</div>
-          <div className="text-xs text-gray-500">Wins</div>
+        <div className="bg-surface border border-border rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-text-primary">{totalWins}</div>
+          <div className="text-xs text-text-tertiary">Wins</div>
         </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{overallWinRate}%</div>
-          <div className="text-xs text-gray-500">Win Rate</div>
+        <div className="bg-surface border border-border rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-text-primary">{overallWinRate}%</div>
+          <div className="text-xs text-text-tertiary">Win Rate</div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+      <div className="bg-surface border border-border rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900 text-sm">Filters</h2>
+          <h2 className="font-semibold text-text-primary text-sm">Filters</h2>
           {hasFilters && (
-            <button onClick={clearFilters} className="text-xs text-gray-500 hover:text-gray-700">
+            <button onClick={clearFilters} className="text-xs text-text-tertiary hover:text-text-secondary">
               Clear
             </button>
           )}
@@ -318,7 +318,7 @@ export default function StatsPage() {
           <select
             value={deckFilter}
             onChange={(e) => setDeckFilter(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900"
+            className="px-3 py-2 text-sm border border-border-strong rounded-lg bg-surface text-text-primary"
           >
             <option value="">All Decks</option>
             {data.decks.map((d) => (
@@ -330,7 +330,7 @@ export default function StatsPage() {
           <select
             value={playerCountFilter}
             onChange={(e) => setPlayerCountFilter(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900"
+            className="px-3 py-2 text-sm border border-border-strong rounded-lg bg-surface text-text-primary"
           >
             <option value="">All Player Counts</option>
             <option value="2">2-player</option>
@@ -339,7 +339,7 @@ export default function StatsPage() {
           </select>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-gray-500">Colors:</span>
+          <span className="text-xs text-text-tertiary">Colors:</span>
           {COLOR_KEYS.map((c) => (
             <button
               key={c}
@@ -356,10 +356,10 @@ export default function StatsPage() {
       </div>
 
       {/* Win Rate Over Time */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <h2 className="font-semibold text-gray-900 mb-3">Win Rate Over Time</h2>
+      <div className="bg-surface border border-border rounded-lg p-4">
+        <h2 className="font-semibold text-text-primary mb-3">Win Rate Over Time</h2>
         {winHistory.length === 0 ? (
-          <div className="text-center text-gray-400 text-sm py-8">No data</div>
+          <div className="text-center text-text-muted text-sm py-8">No data</div>
         ) : (
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={winHistory} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -379,13 +379,13 @@ export default function StatsPage() {
       </div>
 
       {/* Deck Color Usage (pie) */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
+      <div className="bg-surface border border-border rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-gray-900">Deck Color Combos</h2>
+          <h2 className="font-semibold text-text-primary">Deck Color Combos</h2>
           <select
             value={colorCountFilter}
             onChange={(e) => setColorCountFilter(e.target.value)}
-            className="text-xs border border-gray-300 rounded px-2 py-1 bg-white text-gray-900"
+            className="text-xs border border-border-strong rounded px-2 py-1 bg-surface text-text-primary"
           >
             <option value="">All</option>
             <option value="0">Colorless</option>
@@ -397,7 +397,7 @@ export default function StatsPage() {
           </select>
         </div>
         {colorUsage.length === 0 ? (
-          <div className="text-center text-gray-400 text-sm py-8">No data</div>
+          <div className="text-center text-text-muted text-sm py-8">No data</div>
         ) : (
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
@@ -466,10 +466,10 @@ export default function StatsPage() {
       </div>
 
       {/* Win Rate per Color */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <h2 className="font-semibold text-gray-900 mb-3">Win Rate by Color</h2>
+      <div className="bg-surface border border-border rounded-lg p-4">
+        <h2 className="font-semibold text-text-primary mb-3">Win Rate by Color</h2>
         {filteredGames.length === 0 ? (
-          <div className="text-center text-gray-400 text-sm py-8">No data</div>
+          <div className="text-center text-text-muted text-sm py-8">No data</div>
         ) : (
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={winRateByColor} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -496,10 +496,10 @@ export default function StatsPage() {
       </div>
 
       {/* Color Usage — how many games each color has appeared in (across all combos) */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <h2 className="font-semibold text-gray-900 mb-3">Color Usage</h2>
+      <div className="bg-surface border border-border rounded-lg p-4">
+        <h2 className="font-semibold text-text-primary mb-3">Color Usage</h2>
         {filteredGames.length === 0 ? (
-          <div className="text-center text-gray-400 text-sm py-8">No data</div>
+          <div className="text-center text-text-muted text-sm py-8">No data</div>
         ) : (
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={winRateByColor} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -526,10 +526,10 @@ export default function StatsPage() {
       </div>
 
       {/* Win Labels */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <h2 className="font-semibold text-gray-900 mb-3">Win Types</h2>
+      <div className="bg-surface border border-border rounded-lg p-4">
+        <h2 className="font-semibold text-text-primary mb-3">Win Types</h2>
         {totalWins === 0 ? (
-          <div className="text-center text-gray-400 text-sm py-8">No wins yet</div>
+          <div className="text-center text-text-muted text-sm py-8">No wins yet</div>
         ) : (
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={winLabels} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>

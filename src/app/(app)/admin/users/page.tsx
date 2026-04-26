@@ -56,14 +56,14 @@ export default function AdminUsersPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Manage Users</h1>
-        <Link href="/admin" className="text-blue-600 hover:underline text-sm">
+        <Link href="/admin" className="text-accent hover:underline text-sm">
           Back to Admin
         </Link>
       </div>
@@ -72,7 +72,7 @@ export default function AdminUsersPage() {
         {users.map((user) => (
           <div
             key={user.id}
-            className="p-4 rounded-lg border border-gray-200 bg-white"
+            className="p-4 rounded-lg border border-border bg-surface"
           >
             {editing === user.id ? (
               <div className="space-y-2">
@@ -82,7 +82,7 @@ export default function AdminUsersPage() {
                     onChange={(e) =>
                       setEditForm({ ...editForm, name: e.target.value })
                     }
-                    className="px-2 py-1 border rounded text-sm bg-white text-gray-900"
+                    className="px-2 py-1 border rounded text-sm bg-surface text-text-primary"
                     placeholder="Name"
                   />
                   <input
@@ -90,7 +90,7 @@ export default function AdminUsersPage() {
                     onChange={(e) =>
                       setEditForm({ ...editForm, email: e.target.value })
                     }
-                    className="px-2 py-1 border rounded text-sm bg-white text-gray-900"
+                    className="px-2 py-1 border rounded text-sm bg-surface text-text-primary"
                     placeholder="Email"
                   />
                   <select
@@ -98,7 +98,7 @@ export default function AdminUsersPage() {
                     onChange={(e) =>
                       setEditForm({ ...editForm, role: e.target.value })
                     }
-                    className="px-2 py-1 border rounded text-sm bg-white text-gray-900"
+                    className="px-2 py-1 border rounded text-sm bg-surface text-text-primary"
                   >
                     <option value="user">user</option>
                     <option value="admin">admin</option>
@@ -107,13 +107,13 @@ export default function AdminUsersPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => saveEdit(user.id)}
-                    className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                    className="text-sm bg-accent text-white px-3 py-1 rounded hover:bg-accent-hover"
                   >
                     Save
                   </button>
                   <button
                     onClick={() => setEditing(null)}
-                    className="text-sm text-gray-500 hover:text-gray-700"
+                    className="text-sm text-text-tertiary hover:text-text-secondary"
                   >
                     Cancel
                   </button>
@@ -125,7 +125,7 @@ export default function AdminUsersPage() {
                   href={`/admin/users/${user.id}`}
                   className="flex-1 hover:opacity-70 transition-opacity"
                 >
-                  <div className="font-medium text-gray-900">
+                  <div className="font-medium text-text-primary">
                     {user.name}{" "}
                     {user.role === "admin" && (
                       <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full ml-1">
@@ -133,21 +133,21 @@ export default function AdminUsersPage() {
                       </span>
                     )}
                   </div>
-                  <div className="text-sm text-gray-500">{user.email}</div>
-                  <div className="text-xs text-gray-400 mt-1">
+                  <div className="text-sm text-text-tertiary">{user.email}</div>
+                  <div className="text-xs text-text-muted mt-1">
                     {user._count.decks} decks, {user._count.gameEntries} games
                   </div>
                 </Link>
                 <div className="flex gap-3 items-center shrink-0">
                   <button
                     onClick={() => startEdit(user)}
-                    className="text-blue-600 hover:text-blue-800 text-sm"
+                    className="text-accent hover:text-accent-hover text-sm"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(user.id)}
-                    className="text-red-500 hover:text-red-700 text-sm"
+                    className="text-danger hover:text-danger text-sm"
                   >
                     Delete
                   </button>

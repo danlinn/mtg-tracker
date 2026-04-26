@@ -151,16 +151,16 @@ export default function EditGamePage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   if (error && players.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500">{error}</p>
+        <p className="text-danger">{error}</p>
         <button
           onClick={() => router.push("/games")}
-          className="mt-4 text-blue-600 hover:underline"
+          className="mt-4 text-accent hover:underline"
         >
           Back to Games
         </button>
@@ -173,7 +173,7 @@ export default function EditGamePage() {
       <h1 className="text-2xl font-bold mb-6">Edit Game</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 text-red-600 px-4 py-2 rounded text-sm">
+          <div className="bg-danger-bg text-danger px-4 py-2 rounded text-sm">
             {error}
           </div>
         )}
@@ -187,7 +187,7 @@ export default function EditGamePage() {
             type="date"
             value={playedAt}
             onChange={(e) => setPlayedAt(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+            className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary"
           />
         </div>
 
@@ -203,8 +203,8 @@ export default function EditGamePage() {
                 onClick={() => handlePlayerCountChange(n)}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
                   playerCount === n
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-accent text-white"
+                    : "bg-surface-sunken text-text-secondary hover:bg-surface-hover"
                 }`}
               >
                 {n}
@@ -216,7 +216,7 @@ export default function EditGamePage() {
         {players.slice(0, playerCount).map((player, index) => (
           <div
             key={index}
-            className="border border-gray-200 rounded-lg p-3 space-y-2"
+            className="border border-border rounded-lg p-3 space-y-2"
           >
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Player {index + 1}</span>
@@ -226,7 +226,7 @@ export default function EditGamePage() {
                 className={`text-xs px-3 py-1 rounded-full transition-colors ${
                   player.isWinner
                     ? "bg-green-500 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-green-100"
+                    : "bg-surface-sunken text-text-secondary hover:bg-green-100"
                 }`}
               >
                 {player.isWinner ? "Winner" : "Set Winner"}
@@ -235,7 +235,7 @@ export default function EditGamePage() {
             <select
               value={player.userId}
               onChange={(e) => updatePlayer(index, "userId", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
             >
               <option value="">Select player...</option>
               {users.map((u) => (
@@ -248,7 +248,7 @@ export default function EditGamePage() {
               <select
                 value={player.deckId}
                 onChange={(e) => updatePlayer(index, "deckId", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
               >
                 <option value="">Select deck...</option>
                 {getDecksForUser(player.userId).map((d) => (
@@ -271,7 +271,7 @@ export default function EditGamePage() {
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Optional game notes..."
             rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+            className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
           />
         </div>
 
@@ -280,7 +280,7 @@ export default function EditGamePage() {
             type="checkbox"
             checked={asterisk}
             onChange={(e) => setAsterisk(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300"
+            className="w-4 h-4 rounded border-border-strong"
           />
           <span className="text-sm font-medium">Asterisk *</span>
         </label>
@@ -289,14 +289,14 @@ export default function EditGamePage() {
           <button
             type="button"
             onClick={() => router.push("/games")}
-            className="flex-1 border border-gray-300 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            className="flex-1 border border-border-strong py-3 rounded-lg font-medium hover:bg-surface-raised transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="flex-1 bg-accent text-white py-3 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
           >
             {saving ? "Saving..." : "Save Changes"}
           </button>
