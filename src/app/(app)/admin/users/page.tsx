@@ -72,7 +72,7 @@ export default function AdminUsersPage() {
         {users.map((user) => (
           <div
             key={user.id}
-            className="p-4 rounded-lg border border-border bg-surface"
+            className="p-4 card-themed rounded-lg border border-border bg-surface"
           >
             {editing === user.id ? (
               <div className="space-y-2">
@@ -107,7 +107,7 @@ export default function AdminUsersPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => saveEdit(user.id)}
-                    className="text-sm bg-accent text-white px-3 py-1 rounded hover:bg-accent-hover"
+                    className="text-sm btn-primary bg-accent text-white px-3 py-1 rounded hover:bg-accent-hover"
                   >
                     Save
                   </button>

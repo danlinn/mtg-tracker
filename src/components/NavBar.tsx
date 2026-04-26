@@ -114,9 +114,9 @@ export default function NavBar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`px-3 py-2 rounded text-sm font-medium transition-colors shrink-0 ${
+              className={`nav-link px-3 py-2 rounded text-sm font-medium transition-colors shrink-0 ${
                 pathname === item.href
-                  ? "bg-nav-active-bg text-nav-text-hover"
+                  ? "nav-link-active bg-nav-active-bg text-nav-text-hover"
                   : "text-nav-text hover:text-nav-text-hover hover:bg-nav-hover-bg"
               }`}
             >
@@ -138,9 +138,9 @@ export default function NavBar() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
-                className={`block px-3 py-2 rounded text-sm font-medium ${
+                className={`nav-link block px-3 py-2 rounded text-sm font-medium ${
                   pathname === item.href
-                    ? "bg-nav-active-bg text-nav-text-hover"
+                    ? "nav-link-active bg-nav-active-bg text-nav-text-hover"
                     : "text-nav-text hover:text-nav-text-hover hover:bg-nav-hover-bg"
                 }`}
               >

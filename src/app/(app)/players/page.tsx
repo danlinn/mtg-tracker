@@ -55,7 +55,7 @@ export default function PlayersPage() {
             <Link
               key={player.id}
               href={`/players/${player.id}`}
-              className="flex items-center justify-between p-4 rounded-lg border border-border bg-surface hover:border-accent hover:shadow-sm transition-all"
+              className="flex items-center justify-between p-4 card-themed rounded-lg border border-border bg-surface card-hover-glow hover:border-accent hover:shadow-sm transition-all"
             >
               <div>
                 <div className="font-medium text-text-primary">{player.name}</div>

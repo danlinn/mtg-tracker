@@ -74,7 +74,7 @@ export default function GamesPage() {
         <h1 className="text-2xl font-bold">Game History</h1>
         <Link
           href="/games/new"
-          className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
+          className="btn-primary bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
         >
           Log Game
         </Link>
@@ -95,7 +95,7 @@ export default function GamesPage() {
             return (
               <div
                 key={game.id}
-                className="p-4 rounded-lg border border-border bg-surface"
+                className="p-4 card-themed rounded-lg border border-border bg-surface"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-text-tertiary">

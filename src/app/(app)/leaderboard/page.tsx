@@ -79,7 +79,7 @@ export default function LeaderboardPage() {
               onClick={() => setPlayerCountFilter(f)}
               className={`px-3 py-1 text-sm rounded-lg transition-colors ${
                 playerCountFilter === f
-                  ? "bg-accent text-white"
+                  ? "btn-primary bg-accent text-white"
                   : "bg-surface-sunken text-text-secondary hover:bg-surface-hover"
               }`}
             >
@@ -102,16 +102,16 @@ export default function LeaderboardPage() {
               <Link
                 key={entry.id}
                 href={`/players/${entry.id}`}
-                className="flex items-center gap-4 p-4 rounded-lg border border-border bg-surface hover:border-accent hover:shadow-sm transition-all"
+                className="flex items-center gap-4 p-4 card-themed rounded-lg border border-border bg-surface card-hover-glow hover:border-accent hover:shadow-sm transition-all"
               >
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                     (page - 1) * perPage + index === 0
-                      ? "bg-yellow-400 text-yellow-900"
+                      ? "medal-gold bg-yellow-400 text-yellow-900"
                       : (page - 1) * perPage + index === 1
-                      ? "bg-surface-sunken text-text-secondary"
+                      ? "medal-silver bg-surface-sunken text-text-secondary"
                       : (page - 1) * perPage + index === 2
-                      ? "bg-orange-300 text-orange-800"
+                      ? "medal-bronze bg-orange-300 text-orange-800"
                       : "bg-surface-sunken text-text-tertiary"
                   }`}
                 >

@@ -126,7 +126,7 @@ export default function PlaygroupDetailPage() {
             <button
               onClick={handleInviteByEmail}
               disabled={sending || !inviteEmail.trim()}
-              className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
+              className="btn-primary bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
             >
               {sending ? "Sending..." : "Send"}
             </button>

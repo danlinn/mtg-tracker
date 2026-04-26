@@ -44,7 +44,7 @@ export default function PlaygroupsPage() {
             <Link
               key={pg.id}
               href={`/playgroups/${pg.id}`}
-              className="block p-4 rounded-lg border border-border bg-surface hover:border-accent hover:shadow-sm transition-all"
+              className="block p-4 card-themed rounded-lg border border-border bg-surface card-hover-glow hover:border-accent hover:shadow-sm transition-all"
             >
               <div className="flex items-center justify-between">
                 <div>

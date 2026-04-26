@@ -249,7 +249,7 @@ export default function NewGamePage() {
                 onClick={() => handlePlayerCountChange(n)}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
                   playerCount === n
-                    ? "bg-accent text-white"
+                    ? "btn-primary bg-accent text-white"
                     : "bg-surface-sunken text-text-secondary hover:bg-surface-hover"
                 }`}
               >
@@ -332,7 +332,7 @@ export default function NewGamePage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-accent text-white py-3 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
+          className="w-full btn-primary bg-accent text-white py-3 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
         >
           {loading ? "Saving..." : "Log Game"}
         </button>

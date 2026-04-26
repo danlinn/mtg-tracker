@@ -291,15 +291,15 @@ export default function StatsPage() {
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-surface border border-border rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-text-primary">{totalGames}</div>
+          <div className="stat-value text-2xl font-bold text-text-primary">{totalGames}</div>
           <div className="text-xs text-text-tertiary">Games</div>
         </div>
         <div className="bg-surface border border-border rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-text-primary">{totalWins}</div>
+          <div className="stat-value text-2xl font-bold text-text-primary">{totalWins}</div>
           <div className="text-xs text-text-tertiary">Wins</div>
         </div>
         <div className="bg-surface border border-border rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-text-primary">{overallWinRate}%</div>
+          <div className="stat-value text-2xl font-bold text-text-primary">{overallWinRate}%</div>
           <div className="text-xs text-text-tertiary">Win Rate</div>
         </div>
       </div>

@@ -116,7 +116,7 @@ export default function RecommendationsModal({
                   className={`text-left rounded-lg overflow-hidden border transition-all ${
                     selected?.name === card.name
                       ? "border-blue-400 shadow-md"
-                      : "border-border hover:border-accent hover:shadow-sm"
+                      : "border-border card-hover-glow hover:border-accent hover:shadow-sm"
                   }`}
                 >
                   {card.imageSmall ? (
