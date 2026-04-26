@@ -21,11 +21,13 @@ export type GradientStyleName =
   | "pixelated"
   | "mesh"
   | "radial-shards"
-  | "ripple";
+  | "ripple"
+  | "stained-glass";
 
 export interface GradientStyleDef {
   name: GradientStyleName;
   label: string;
+  minColors?: number;
   fn: (combo: ColorKey[], palette: Palette) => string;
 }
 
@@ -212,6 +214,23 @@ export const GRADIENT_STYLES: GradientStyleDef[] = [
       return `linear-gradient(90deg, ${stops.join(", ")})`;
     },
   },
+  {
+    name: "stained-glass",
+    label: "Stained Glass",
+    minColors: 3,
+    fn: (combo, palette) => {
+      const hexes = getHexes(combo, palette);
+      if (hexes.length <= 1) return hexes[0] ?? palette.C.hex;
+      if (hexes.length === 2) return `linear-gradient(135deg, ${hexes[0]} 10%, ${hexes[1]} 90%)`;
+      // Encode hex colors for SVG (strip #, use %23)
+      const fills = hexes.map((h) => h.replace("#", "%23"));
+      // Assign colors to triangle groups in the pattern
+      const assignColor = (i: number) => fills[i % fills.length];
+      const svg = `%3Csvg xmlns='http://www.w3.org/2000/svg' width='540' height='450' viewBox='0 0 1080 900'%3E%3Cg fill-opacity='.85'%3E%3Cpolygon fill='${assignColor(0)}' points='90 150 0 300 180 300'/%3E%3Cpolygon fill='${assignColor(1)}' points='90 150 180 0 0 0'/%3E%3Cpolygon fill='${assignColor(2)}' points='270 150 360 0 180 0'/%3E%3Cpolygon fill='${assignColor(0)}' points='450 150 360 300 540 300'/%3E%3Cpolygon fill='${assignColor(1)}' points='450 150 540 0 360 0'/%3E%3Cpolygon fill='${assignColor(2)}' points='630 150 540 300 720 300'/%3E%3Cpolygon fill='${assignColor(0)}' points='630 150 720 0 540 0'/%3E%3Cpolygon fill='${assignColor(1)}' points='810 150 720 300 900 300'/%3E%3Cpolygon fill='${assignColor(2)}' points='810 150 900 0 720 0'/%3E%3Cpolygon fill='${assignColor(0)}' points='990 150 900 300 1080 300'/%3E%3Cpolygon fill='${assignColor(1)}' points='990 150 1080 0 900 0'/%3E%3Cpolygon fill='${assignColor(2)}' points='90 450 0 600 180 600'/%3E%3Cpolygon fill='${assignColor(0)}' points='90 450 180 300 0 300'/%3E%3Cpolygon fill='${assignColor(1)}' points='270 450 180 600 360 600'/%3E%3Cpolygon fill='${assignColor(2)}' points='270 450 360 300 180 300'/%3E%3Cpolygon fill='${assignColor(0)}' points='450 450 360 600 540 600'/%3E%3Cpolygon fill='${assignColor(1)}' points='450 450 540 300 360 300'/%3E%3Cpolygon fill='${assignColor(2)}' points='630 450 540 600 720 600'/%3E%3Cpolygon fill='${assignColor(0)}' points='630 450 720 300 540 300'/%3E%3Cpolygon fill='${assignColor(1)}' points='810 450 720 600 900 600'/%3E%3Cpolygon fill='${assignColor(2)}' points='810 450 900 300 720 300'/%3E%3Cpolygon fill='${assignColor(0)}' points='990 450 900 600 1080 600'/%3E%3Cpolygon fill='${assignColor(1)}' points='990 450 1080 300 900 300'/%3E%3Cpolygon fill='${assignColor(2)}' points='90 750 0 900 180 900'/%3E%3Cpolygon fill='${assignColor(0)}' points='270 750 180 900 360 900'/%3E%3Cpolygon fill='${assignColor(1)}' points='270 750 360 600 180 600'/%3E%3Cpolygon fill='${assignColor(2)}' points='450 750 540 600 360 600'/%3E%3Cpolygon fill='${assignColor(0)}' points='630 750 540 900 720 900'/%3E%3Cpolygon fill='${assignColor(1)}' points='630 750 720 600 540 600'/%3E%3Cpolygon fill='${assignColor(2)}' points='810 750 720 900 900 900'/%3E%3Cpolygon fill='${assignColor(0)}' points='810 750 900 600 720 600'/%3E%3Cpolygon fill='${assignColor(1)}' points='990 750 900 900 1080 900'/%3E%3C/g%3E%3C/svg%3E`;
+      const bgColor = hexes[0];
+      return `${bgColor} url("data:image/svg+xml,${svg}")`;
+    },
+  },
 ];
 
 export const THEME_DEFAULT_GRADIENT: Record<ThemeName, GradientStyleName> = {
@@ -222,7 +241,7 @@ export const THEME_DEFAULT_GRADIENT: Record<ThemeName, GradientStyleName> = {
   chris: "pixelated",
   phyrexia: "diagonal-shards",
   grixis: "diagonal-shards",
-  "stained-glass": "radial-shards",
+  "stained-glass": "stained-glass",
   "neon-dynasty": "mesh",
   dungeon: "linear",
 };
@@ -239,5 +258,9 @@ export function bgForComboStyled(
   if (combo.length === 0) return palette.C.hex;
   const ordered = GRADIENT_ORDER.filter((c) => combo.includes(c));
   if (ordered.length === 1) return palette[ordered[0]].hex;
+  const style = getGradientStyle(styleName);
+  if (style.minColors && ordered.length < style.minColors) {
+    return getGradientStyle("linear").fn(combo, palette);
+  }
   return getGradientStyle(styleName).fn(combo, palette);
 }

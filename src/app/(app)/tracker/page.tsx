@@ -1365,7 +1365,7 @@ export default function TrackerPage() {
               <div>
                 <label className="text-sm text-gray-600 block mb-1">Gradient style:</label>
                 <div className="grid grid-cols-4 gap-1.5">
-                  {GRADIENT_STYLES.map((style) => {
+                  {GRADIENT_STYLES.filter((s) => !s.minColors || players[colorPickerFor].colorCombo!.length >= s.minColors).map((style) => {
                     const p = players[colorPickerFor];
                     const preview = style.fn(p.colorCombo!, palette);
                     const isActive = (p.gradientStyle ?? defaultGradient) === style.name;

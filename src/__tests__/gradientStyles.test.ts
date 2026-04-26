@@ -124,8 +124,8 @@ describe("THEME_DEFAULT_GRADIENT", () => {
     expect(THEME_DEFAULT_GRADIENT.chris).toBe("pixelated");
   });
 
-  it("stained-glass defaults to radial-shards", () => {
-    expect(THEME_DEFAULT_GRADIENT["stained-glass"]).toBe("radial-shards");
+  it("stained-glass defaults to stained-glass", () => {
+    expect(THEME_DEFAULT_GRADIENT["stained-glass"]).toBe("stained-glass");
   });
 });
 

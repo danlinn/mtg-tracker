@@ -108,6 +108,7 @@ body {
 }
 
 /* Mobile menu gets the same background as the nav on each theme */
+.mtg-mobile-menu { background: #111827 !important; }
 [data-theme="synth"] .mtg-mobile-menu { background: linear-gradient(180deg, #110e1a 0%, #0a0812 100%) !important; }
 [data-theme="cyber"] .mtg-mobile-menu { background: #05050a !important; }
 [data-theme="flame"] .mtg-mobile-menu { background: linear-gradient(180deg, #150028 0%, #0c001a 100%) !important; }
