@@ -6,6 +6,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "MTG Commander Tracker",
   description: "Track your Magic: The Gathering Commander games, decks, and stats",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "MTG Tracker",
+  },
 };
 
 export const viewport: Viewport = {

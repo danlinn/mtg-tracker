@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useCallback, useEffect, useSyncExternalStore, ReactNode } from "react";
+import { createContext, useContext, useCallback, useEffect, useMemo, useSyncExternalStore, ReactNode } from "react";
 import { getPalette } from "@/lib/themePalettes";
 
 export type ThemeName = "default" | "synth" | "cyber" | "flame" | "chris" | "phyrexia" | "stained-glass" | "dungeon" | "neon-dynasty" | "grixis";
@@ -43,15 +43,21 @@ function subscribe(listener: () => void) {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  // Load theme from server on mount
+  // Load theme from server on mount — only apply if the user hasn't
+  // changed it client-side since mount (avoids overwriting a selection
+  // made while the fetch was in flight).
   useEffect(() => {
+    const mountTheme = localStorage.getItem("mtg-tracker-theme");
     fetch("/api/theme")
       .then((r) => r.json())
       .then((data) => {
         if (data.theme && isValidTheme(data.theme)) {
-          localStorage.setItem("mtg-tracker-theme", data.theme);
-          document.documentElement.setAttribute("data-theme", data.theme);
-          listeners.forEach((l) => l());
+          const current = localStorage.getItem("mtg-tracker-theme");
+          if (current === mountTheme) {
+            localStorage.setItem("mtg-tracker-theme", data.theme);
+            document.documentElement.setAttribute("data-theme", data.theme);
+            listeners.forEach((l) => l());
+          }
         }
       })
       .catch(() => {});
@@ -75,8 +81,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute("data-theme", theme);
   }
 
+  const value = useMemo(() => ({ theme, setTheme }), [theme, setTheme]);
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
