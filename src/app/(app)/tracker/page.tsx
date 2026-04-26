@@ -956,7 +956,7 @@ export default function TrackerPage() {
 
   return (
     <div
-      className="absolute inset-0 top-14 lg:top-[104px] overflow-hidden"
+      className="fixed inset-0 top-14 lg:top-[104px] overflow-hidden"
       onTouchMove={handleTouchMoveSwap}
       onTouchEnd={handleEndSwap}
       onTouchCancel={() => { setSwapSource(null); setSwapTarget(null); }}
@@ -1320,7 +1320,7 @@ export default function TrackerPage() {
           onClick={(e) => { if (e.target === e.currentTarget) setColorPickerFor(null); }}
         >
           <div
-            className="bg-white rounded-lg p-4 max-w-sm w-full space-y-3"
+            className="bg-white rounded-lg p-4 max-w-sm w-full space-y-3 max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="font-semibold text-gray-900">Pick a color</h3>
