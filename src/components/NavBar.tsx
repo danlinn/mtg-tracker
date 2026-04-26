@@ -131,11 +131,14 @@ export default function NavBar() {
           ))}
         </div>
 
-        {/* Mobile menu (< lg) — absolute overlay so it renders above fixed tracker content */}
+        {/* Mobile menu: absolute on tracker (overlays fixed content), in-flow elsewhere */}
         {menuOpen && (
           <div
             data-testid="mobile-menu"
-            className="mtg-mobile-menu lg:hidden absolute left-0 right-0 top-full z-50 bg-gray-900 border border-gray-600 rounded-b-lg shadow-2xl shadow-black/80 pb-3 pt-2 space-y-1"
+            className={`mtg-mobile-menu lg:hidden pb-3 pt-2 space-y-1 border-t-2 border-gray-500 ${
+              isTracker ? "absolute left-0 right-0 top-full z-50 rounded-b-lg shadow-2xl shadow-black/80" : ""
+            }`}
+            style={{ background: "inherit" }}
           >
             {allNavItems.map((item) => (
               <Link

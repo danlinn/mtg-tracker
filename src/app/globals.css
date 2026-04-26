@@ -107,9 +107,8 @@ body {
   border-color: var(--card-border) !important;
 }
 
-/* Mobile menu dropdown must be visible on all themes */
+/* Mobile menu: inherits nav background via inline style, border for contrast */
 .mtg-mobile-menu {
-  background: var(--card-bg, #111827) !important;
   border-color: var(--card-border, #374151) !important;
 }
 
