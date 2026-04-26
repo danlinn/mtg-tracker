@@ -50,7 +50,13 @@ function bgForCombo(combo: ColorKey[], palette: Palette): string {
   if (combo.length === 0) return palette.C.hex;
   const ordered = GRADIENT_ORDER.filter((c) => combo.includes(c));
   if (ordered.length === 1) return palette[ordered[0]].hex;
-  return `linear-gradient(135deg, ${ordered.map((c) => palette[c].hex).join(", ")})`;
+  const stops = ordered.map((c, i) => {
+    const hex = palette[c].hex;
+    if (i === 0) return `${hex} 10%`;
+    if (i === ordered.length - 1) return `${hex} 90%`;
+    return hex;
+  });
+  return `linear-gradient(135deg, ${stops.join(", ")})`;
 }
 
 // All 31 non-empty subsets of WUBRG + colorless = 32 presets, computed

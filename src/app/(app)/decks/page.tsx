@@ -54,8 +54,13 @@ function deckGradient(deck: Deck, palette: Palette): React.CSSProperties {
   const isBlackOnly = deck.colorB && !deck.colorW && !deck.colorU && !deck.colorR && !deck.colorG;
   const textColor = isBlackOnly ? palette.B.text : isWhiteOnly ? palette.W.text : undefined;
   if (active.length === 1) return { background: active[0].hex, color: textColor };
+  const stops = active.map((s, i) => {
+    if (i === 0) return `${s.hex} 10%`;
+    if (i === active.length - 1) return `${s.hex} 90%`;
+    return s.hex;
+  });
   return {
-    background: `linear-gradient(135deg, ${active.map((s) => s.hex).join(", ")})`,
+    background: `linear-gradient(135deg, ${stops.join(", ")})`,
     color: textColor,
   };
 }
