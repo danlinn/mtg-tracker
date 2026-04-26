@@ -226,11 +226,17 @@ function PlayerBox({
         transition: "filter 300ms, opacity 300ms",
       }}
     >
-      {/* Tap zones — still active when dead, so you can revive */}
+      {/* Tap zones — even split of the area above the info bar / commander damage.
+           When opponents exist, reserve 7rem at the bottom (info bar + commander).
+           Each zone gets exactly half the remaining space. */}
       <button
         type="button"
         onClick={() => handleTap(1)}
-        className="absolute top-0 left-0 right-0 h-1/2 active:bg-white/10"
+        className="absolute top-0 left-0 right-0 active:bg-white/10"
+        style={hasCommander
+          ? { height: "calc(50% - 3.5rem)" }
+          : { height: "50%" }
+        }
         aria-label={`Player ${index + 1} +1 life`}
         {...longPressHandlers}
       />
@@ -239,8 +245,8 @@ function PlayerBox({
         onClick={() => handleTap(-1)}
         className="absolute left-0 right-0 active:bg-black/10"
         style={hasCommander
-          ? { top: "50%", height: "calc(50% - 6rem)", minHeight: "2rem" }
-          : { top: "50%", bottom: 0 }
+          ? { top: "calc(50% - 3.5rem)", height: "calc(50% - 3.5rem)" }
+          : { top: "50%", height: "50%" }
         }
         aria-label={`Player ${index + 1} -1 life`}
         {...longPressHandlers}
