@@ -166,7 +166,12 @@ export default function NewGamePage() {
         asterisk,
         activePlaygroupId,
       });
-      router.push("/decks/new?returnTo=/games/new");
+      const userId = players[index]?.userId;
+      if (userId) {
+        router.push(`/admin/users/${userId}/decks/new?returnTo=/games/new`);
+      } else {
+        router.push("/decks/new?returnTo=/games/new");
+      }
       return;
     }
     updatePlayer(index, "deckId", value);

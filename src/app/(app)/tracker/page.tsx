@@ -676,7 +676,14 @@ export default function TrackerPage() {
   const ADD_DECK = "__add_deck__";
   function handleDeckSelect(value: string, seatIdx: number, context: "setup" | "overlay") {
     if (value === ADD_DECK) {
-      window.location.href = "/decks/new?returnTo=/tracker";
+      const userId = context === "setup"
+        ? seatsForCount[seatIdx]?.userId
+        : players[seatIdx]?.userId;
+      if (userId) {
+        window.location.href = `/admin/users/${userId}/decks/new?returnTo=/tracker`;
+      } else {
+        window.location.href = "/decks/new?returnTo=/tracker";
+      }
       return;
     }
     if (context === "setup") {
