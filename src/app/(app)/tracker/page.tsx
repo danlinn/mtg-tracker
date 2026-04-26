@@ -929,6 +929,7 @@ export default function TrackerPage() {
 
   return (
     <div
+      className="relative z-0"
       onTouchMove={handleTouchMoveSwap}
       onTouchEnd={handleEndSwap}
       onTouchCancel={() => { setSwapSource(null); setSwapTarget(null); }}
