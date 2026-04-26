@@ -1,5 +1,6 @@
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
@@ -54,7 +55,8 @@ function createPrismaClient() {
     return new PrismaClient({ adapter });
   }
 
-  return new PrismaClient({ datasourceUrl: winner.val });
+  const adapter = new PrismaPg({ connectionString: winner.val });
+  return new PrismaClient({ adapter });
 }
 
 export const prisma = globalForPrisma.prisma || createPrismaClient();
