@@ -20,7 +20,8 @@ export type GradientStyleName =
   | "chevron"
   | "pixelated"
   | "mesh"
-  | "radial-shards";
+  | "radial-shards"
+  | "ripple";
 
 export interface GradientStyleDef {
   name: GradientStyleName;
@@ -192,6 +193,23 @@ export const GRADIENT_STYLES: GradientStyleDef[] = [
         `${h} ${((i + 1) * deg).toFixed(1)}deg`,
       ]);
       return `conic-gradient(from 0deg, ${stops.join(", ")})`;
+    },
+  },
+  {
+    name: "ripple",
+    label: "Ripple",
+    fn: (combo, palette) => {
+      const hexes = getHexes(combo, palette);
+      if (hexes.length <= 1) return hexes[0] ?? palette.C.hex;
+      // Oscillate through colors with varying stop positions
+      const stops: string[] = [];
+      const segments = hexes.length * 3;
+      for (let i = 0; i <= segments; i++) {
+        const colorIdx = i % hexes.length;
+        const pct = (i / segments) * 100;
+        stops.push(`${hexes[colorIdx]} ${pct.toFixed(0)}%`);
+      }
+      return `linear-gradient(90deg, ${stops.join(", ")})`;
     },
   },
 ];
