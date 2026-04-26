@@ -246,25 +246,9 @@ function PlayerBox({
         {...longPressHandlers}
       />
 
-      {deckLabel ? (
-        <div
-          className="absolute top-2 left-2 right-12 text-xs font-semibold pointer-events-none truncate z-10"
-          style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
-        >
-          {deckLabel}
-        </div>
-      ) : needsAssignment ? (
-        <div
-          className="absolute top-2 left-2 right-12 text-xs font-medium pointer-events-none truncate z-10 opacity-60"
-          style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
-        >
-          Hold to assign player
-        </div>
-      ) : null}
-
       <div
         className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
-        style={{ paddingBottom: opponents.length > 0 ? "6rem" : 0 }}
+        style={{ paddingBottom: opponents.length > 0 ? "8rem" : 0 }}
       >
         <div className="text-7xl sm:text-8xl font-bold tabular-nums" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>
           {player.life}
@@ -281,20 +265,71 @@ function PlayerBox({
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); onOpenColor(); }}
-        className="absolute top-0 right-0 w-11 h-11 z-10 flex items-center justify-center"
-        aria-label="Change background color"
-      >
-        <span
-          className="w-5 h-5 rounded-full shadow-md border block"
-          style={{
-            background: "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
-            borderColor: textColor,
-          }}
-        />
-      </button>
+      {/* Info bar: name/deck + color picker, between life and commander damage */}
+      {opponents.length > 0 && (
+        <div
+          className="absolute left-0 right-0 flex items-center justify-between px-2 z-10 pointer-events-none"
+          style={{ bottom: "5.5rem" }}
+        >
+          <div
+            className="text-xs font-semibold truncate flex-1 mr-2"
+            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
+          >
+            {deckLabel || (needsAssignment ? (
+              <span className="opacity-60">Hold to assign</span>
+            ) : null)}
+          </div>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onOpenColor(); }}
+            className="w-8 h-8 flex items-center justify-center pointer-events-auto"
+            aria-label="Change background color"
+          >
+            <span
+              className="w-4 h-4 rounded-full shadow-md border block"
+              style={{
+                background: "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
+                borderColor: textColor,
+              }}
+            />
+          </button>
+        </div>
+      )}
+
+      {/* Fallback: when no commander damage bar, keep label + color picker at top */}
+      {opponents.length === 0 && (
+        <>
+          {deckLabel ? (
+            <div
+              className="absolute top-2 left-2 right-12 text-xs font-semibold pointer-events-none truncate z-10"
+              style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
+            >
+              {deckLabel}
+            </div>
+          ) : needsAssignment ? (
+            <div
+              className="absolute top-2 left-2 right-12 text-xs font-medium pointer-events-none truncate z-10 opacity-60"
+              style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
+            >
+              Hold to assign player
+            </div>
+          ) : null}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onOpenColor(); }}
+            className="absolute top-0 right-0 w-11 h-11 z-10 flex items-center justify-center"
+            aria-label="Change background color"
+          >
+            <span
+              className="w-5 h-5 rounded-full shadow-md border block"
+              style={{
+                background: "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
+                borderColor: textColor,
+              }}
+            />
+          </button>
+        </>
+      )}
 
       {opponents.length > 0 && (
         <div
@@ -593,6 +628,11 @@ export default function TrackerPage() {
     const missing = players.some((p) => !p.userId || !p.deckId);
     if (missing) {
       setLogError("Every seat needs a player and a deck.");
+      return;
+    }
+    const userIds = players.map((p) => p.userId);
+    if (new Set(userIds).size !== userIds.length) {
+      setLogError("Each seat must be a different player.");
       return;
     }
     setLogSaving(true);
