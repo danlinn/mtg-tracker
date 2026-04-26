@@ -23,7 +23,7 @@ interface Game {
 const WIN_LABEL_DISPLAY = {
   nice: { text: "Nice Win", color: "text-blue-500" },
   big: { text: "Big Win!", color: "text-yellow-500" },
-  easy: { text: "Easy Win", color: "text-gray-400" },
+  easy: { text: "Easy Win", color: "text-text-muted" },
 } as const;
 
 function getWinLabel(game: Game): { text: string; color: string } | null {
@@ -65,7 +65,7 @@ export default function GamesPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
@@ -74,16 +74,16 @@ export default function GamesPage() {
         <h1 className="text-2xl font-bold">Game History</h1>
         <Link
           href="/games/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
         >
           Log Game
         </Link>
       </div>
 
       {games.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-text-tertiary">
           <p>No games recorded yet.</p>
-          <Link href="/games/new" className="text-blue-600 hover:underline">
+          <Link href="/games/new" className="text-accent hover:underline">
             Log your first game
           </Link>
         </div>
@@ -95,14 +95,14 @@ export default function GamesPage() {
             return (
               <div
                 key={game.id}
-                className="p-4 rounded-lg border border-gray-200 bg-white"
+                className="p-4 rounded-lg border border-border bg-surface"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-text-tertiary">
                     {new Date(game.playedAt).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles" })}
                     {game.asterisk && <span className="text-yellow-500 ml-1" title="Asterisk">*</span>}
                     {game.playgroup && (
-                      <span className="ml-2 text-xs text-gray-400">{game.playgroup.name}</span>
+                      <span className="ml-2 text-xs text-text-muted">{game.playgroup.name}</span>
                     )}
                   </span>
                   <div className="flex items-center gap-2">
@@ -111,20 +111,20 @@ export default function GamesPage() {
                         {winLabel.text}
                       </span>
                     )}
-                    <span className="text-sm font-medium text-green-600">
+                    <span className="text-sm font-medium text-success">
                       Winner: {winner?.user.name}
                     </span>
                     {isAdmin && (
                       <div className="flex gap-1">
                         <Link
                           href={`/games/${game.id}/edit`}
-                          className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                          className="text-xs px-2 py-1 rounded bg-surface-sunken text-text-secondary hover:bg-surface-hover transition-colors"
                         >
                           Edit
                         </Link>
                         <button
                           onClick={() => handleDelete(game.id)}
-                          className="text-xs px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                          className="text-xs px-2 py-1 rounded bg-danger-bg text-danger hover:bg-red-100 transition-colors"
                         >
                           Delete
                         </button>
@@ -138,21 +138,21 @@ export default function GamesPage() {
                       key={p.user.id}
                       className={`text-sm p-2 rounded ${
                         p.isWinner
-                          ? "bg-green-50 border border-green-200"
-                          : "bg-gray-50"
+                          ? "bg-success-bg border border-green-200"
+                          : "bg-surface-raised"
                       }`}
                     >
-                      <div className="font-medium text-gray-900">
+                      <div className="font-medium text-text-primary">
                         {p.user.name}
                       </div>
-                      <div className="text-gray-500 text-xs">
+                      <div className="text-text-tertiary text-xs">
                         {p.deck.commander}{p.deck.edhp != null || p.deck.bracket != null ? ` p:${p.deck.edhp != null ? p.deck.edhp.toFixed(2) : "-"}/b:${p.deck.bracket ?? "-"}` : ""}
                       </div>
                     </div>
                   ))}
                 </div>
                 {game.notes && (
-                  <div className="mt-2 text-xs text-gray-500 italic">
+                  <div className="mt-2 text-xs text-text-tertiary italic">
                     {game.notes}
                   </div>
                 )}
@@ -165,33 +165,33 @@ export default function GamesPage() {
       {total > 0 && (
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Per page:</span>
+            <span className="text-sm text-text-tertiary">Per page:</span>
             <select
               value={perPage}
               onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
-              className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-900"
+              className="text-sm border border-border-strong rounded-lg px-2 py-1 bg-surface text-text-primary"
             >
               <option value={20}>20</option>
               <option value={50}>50</option>
               <option value={100}>100</option>
             </select>
-            <span className="text-sm text-gray-400">{total} total</span>
+            <span className="text-sm text-text-muted">{total} total</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+              className="px-3 py-1 text-sm rounded-lg border border-border-strong disabled:opacity-30 hover:bg-surface-raised transition-colors"
             >
               Prev
             </button>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-text-tertiary">
               {page} / {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+              className="px-3 py-1 text-sm rounded-lg border border-border-strong disabled:opacity-30 hover:bg-surface-raised transition-colors"
             >
               Next
             </button>

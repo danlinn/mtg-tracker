@@ -86,14 +86,14 @@ export default function AdminAddDeckForUserPage() {
 
   return (
     <div className="max-w-md mx-auto">
-      <Link href={`/admin/users/${userId}`} className="text-blue-600 hover:underline text-sm">
+      <Link href={`/admin/users/${userId}`} className="text-accent hover:underline text-sm">
         &larr; Back to {userName || "user"}
       </Link>
       <h1 className="text-2xl font-bold mt-2 mb-6">Add Deck for {userName}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 text-red-600 px-4 py-2 rounded text-sm">
+          <div className="bg-danger-bg text-danger px-4 py-2 rounded text-sm">
             {error}
           </div>
         )}
@@ -107,7 +107,7 @@ export default function AdminAddDeckForUserPage() {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+            className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary"
           />
         </div>
         <div>
@@ -155,7 +155,7 @@ export default function AdminAddDeckForUserPage() {
               max="5"
               value={bracket}
               onChange={(e) => setBracket(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary"
             />
           </div>
           <div>
@@ -166,14 +166,14 @@ export default function AdminAddDeckForUserPage() {
               step="0.01"
               value={edhp}
               onChange={(e) => setEdhp(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary"
             />
           </div>
         </div>
         <button
           type="submit"
           disabled={loading || !name.trim() || !commander.trim()}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          className="w-full bg-accent text-white py-2 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
         >
           {loading ? "Creating..." : "Create Deck"}
         </button>

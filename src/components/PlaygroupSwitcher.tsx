@@ -39,7 +39,7 @@ export default function PlaygroupSwitcher() {
 
   if (playgroups.length === 1) {
     return (
-      <span className="text-xs text-gray-400 truncate max-w-[100px]">
+      <span className="text-xs text-nav-text-muted truncate max-w-[100px]">
         {playgroups[0].name}
       </span>
     );
@@ -49,7 +49,7 @@ export default function PlaygroupSwitcher() {
     <select
       value={active}
       onChange={(e) => handleSwitch(e.target.value)}
-      className="bg-gray-800 text-gray-300 text-sm rounded px-2 py-1 border border-gray-700 max-w-[140px]"
+      className="bg-nav-select-bg text-nav-text text-sm rounded px-2 py-1 border border-nav-select-border max-w-[140px]"
     >
       <option value="all">All Groups</option>
       {playgroups.map((pg) => (

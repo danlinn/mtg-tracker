@@ -211,7 +211,7 @@ export default function NewGamePage() {
   }
 
   if (!initialized) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
@@ -219,7 +219,7 @@ export default function NewGamePage() {
       <h1 className="text-2xl font-bold mb-6">Log Game</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 text-red-600 px-4 py-2 rounded text-sm">
+          <div className="bg-danger-bg text-danger px-4 py-2 rounded text-sm">
             {error}
           </div>
         )}
@@ -233,7 +233,7 @@ export default function NewGamePage() {
             type="date"
             value={playedAt}
             onChange={(e) => setPlayedAt(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+            className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary"
           />
         </div>
 
@@ -249,8 +249,8 @@ export default function NewGamePage() {
                 onClick={() => handlePlayerCountChange(n)}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
                   playerCount === n
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-accent text-white"
+                    : "bg-surface-sunken text-text-secondary hover:bg-surface-hover"
                 }`}
               >
                 {n}
@@ -260,7 +260,7 @@ export default function NewGamePage() {
         </div>
 
         {players.slice(0, playerCount).map((player, index) => (
-          <div key={index} className="border border-gray-200 rounded-lg p-3 space-y-2">
+          <div key={index} className="border border-border rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Player {index + 1}</span>
               <button
@@ -269,7 +269,7 @@ export default function NewGamePage() {
                 className={`text-xs px-3 py-1 rounded-full transition-colors ${
                   player.isWinner
                     ? "bg-green-500 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-green-100"
+                    : "bg-surface-sunken text-text-secondary hover:bg-green-100"
                 }`}
               >
                 {player.isWinner ? "Winner" : "Set Winner"}
@@ -278,7 +278,7 @@ export default function NewGamePage() {
             <select
               value={player.userId}
               onChange={(e) => updatePlayer(index, "userId", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+              className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
             >
               <option value="">Select player...</option>
               {users.map((u) => (
@@ -291,7 +291,7 @@ export default function NewGamePage() {
               <select
                 value={player.deckId}
                 onChange={(e) => handleDeckChange(index, e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+                className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
               >
                 <option value="">Select deck...</option>
                 {getDecksForUser(player.userId).map((d) => (
@@ -315,7 +315,7 @@ export default function NewGamePage() {
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Optional game notes..."
             rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+            className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
           />
         </div>
 
@@ -324,7 +324,7 @@ export default function NewGamePage() {
             type="checkbox"
             checked={asterisk}
             onChange={(e) => setAsterisk(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300"
+            className="w-4 h-4 rounded border-border-strong"
           />
           <span className="text-sm font-medium">Asterisk *</span>
         </label>
@@ -332,7 +332,7 @@ export default function NewGamePage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          className="w-full bg-accent text-white py-3 rounded-lg font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
         >
           {loading ? "Saving..." : "Log Game"}
         </button>

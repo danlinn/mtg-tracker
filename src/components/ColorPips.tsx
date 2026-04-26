@@ -12,7 +12,7 @@ interface ColorPipsProps {
 export default function ColorPips({ colors }: ColorPipsProps) {
   const active = (["W", "U", "B", "R", "G"] as const).filter((k) => colors[k]);
   if (active.length === 0) {
-    return <span className="text-gray-400 text-xs">Colorless</span>;
+    return <span className="text-text-muted text-xs">Colorless</span>;
   }
   return (
     <div className="flex gap-1">

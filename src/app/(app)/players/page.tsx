@@ -34,19 +34,19 @@ export default function PlayersPage() {
   }, [page, perPage]);
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Link href="/dashboard" className="text-sm text-gray-400 hover:text-gray-600">&larr; Dashboard</Link>
-        <span className="text-gray-300">/</span>
+        <Link href="/dashboard" className="text-sm text-text-muted hover:text-text-secondary">&larr; Dashboard</Link>
+        <span className="text-text-muted">/</span>
         <h1 className="text-2xl font-bold">Players</h1>
       </div>
 
       {players.length === 0 && page === 1 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-text-tertiary">
           No players yet.
         </div>
       ) : (
@@ -55,19 +55,19 @@ export default function PlayersPage() {
             <Link
               key={player.id}
               href={`/players/${player.id}`}
-              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm transition-all"
+              className="flex items-center justify-between p-4 rounded-lg border border-border bg-surface hover:border-accent hover:shadow-sm transition-all"
             >
               <div>
-                <div className="font-medium text-gray-900">{player.name}</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium text-text-primary">{player.name}</div>
+                <div className="text-sm text-text-tertiary">
                   {player.games} games played
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-semibold text-gray-900">
+                <div className="font-semibold text-text-primary">
                   {player.wins}W - {player.games - player.wins}L
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-text-tertiary">
                   {player.winRate}% win rate
                 </div>
               </div>
@@ -79,33 +79,33 @@ export default function PlayersPage() {
       {total > 0 && (
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Per page:</span>
+            <span className="text-sm text-text-tertiary">Per page:</span>
             <select
               value={perPage}
               onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
-              className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-900"
+              className="text-sm border border-border-strong rounded-lg px-2 py-1 bg-surface text-text-primary"
             >
               <option value={20}>20</option>
               <option value={50}>50</option>
               <option value={100}>100</option>
             </select>
-            <span className="text-sm text-gray-400">{total} players</span>
+            <span className="text-sm text-text-muted">{total} players</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+              className="px-3 py-1 text-sm rounded-lg border border-border-strong disabled:opacity-30 hover:bg-surface-raised transition-colors"
             >
               Prev
             </button>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-text-tertiary">
               {page} / {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+              className="px-3 py-1 text-sm rounded-lg border border-border-strong disabled:opacity-30 hover:bg-surface-raised transition-colors"
             >
               Next
             </button>

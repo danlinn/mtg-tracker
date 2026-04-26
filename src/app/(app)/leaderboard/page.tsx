@@ -65,7 +65,7 @@ export default function LeaderboardPage() {
   });
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
@@ -79,8 +79,8 @@ export default function LeaderboardPage() {
               onClick={() => setPlayerCountFilter(f)}
               className={`px-3 py-1 text-sm rounded-lg transition-colors ${
                 playerCountFilter === f
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-accent text-white"
+                  : "bg-surface-sunken text-text-secondary hover:bg-surface-hover"
               }`}
             >
               {f === "all" ? "All" : `${f}p`}
@@ -90,7 +90,7 @@ export default function LeaderboardPage() {
       </div>
 
       {sorted.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-text-tertiary">
           No games recorded yet.
         </div>
       ) : (
@@ -102,24 +102,24 @@ export default function LeaderboardPage() {
               <Link
                 key={entry.id}
                 href={`/players/${entry.id}`}
-                className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm transition-all"
+                className="flex items-center gap-4 p-4 rounded-lg border border-border bg-surface hover:border-accent hover:shadow-sm transition-all"
               >
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                     (page - 1) * perPage + index === 0
                       ? "bg-yellow-400 text-yellow-900"
                       : (page - 1) * perPage + index === 1
-                      ? "bg-gray-300 text-gray-700"
+                      ? "bg-surface-sunken text-text-secondary"
                       : (page - 1) * perPage + index === 2
                       ? "bg-orange-300 text-orange-800"
-                      : "bg-gray-100 text-gray-500"
+                      : "bg-surface-sunken text-text-tertiary"
                   }`}
                 >
                   {(page - 1) * perPage + index + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900">{entry.name}</div>
-                  <div className="text-sm text-gray-500">
+                  <div className="font-medium text-text-primary">{entry.name}</div>
+                  <div className="text-sm text-text-tertiary">
                     {filtered.games} games played
                   </div>
                   {(entry.niceWins > 0 || entry.bigWins > 0 || entry.easyWins > 0) && playerCountFilter === "all" && (
@@ -131,27 +131,27 @@ export default function LeaderboardPage() {
                         <span className="text-xs font-bold text-blue-500">{entry.niceWins} Nice</span>
                       )}
                       {entry.easyWins > 0 && (
-                        <span className="text-xs text-gray-400">{entry.easyWins} Easy</span>
+                        <span className="text-xs text-text-muted">{entry.easyWins} Easy</span>
                       )}
                     </div>
                   )}
                   {/* Per-player-count breakdown */}
                   {playerCountFilter === "all" && (
-                    <div className="flex gap-3 mt-2 pt-2 border-t border-gray-100">
+                    <div className="flex gap-3 mt-2 pt-2 border-t border-border-light">
                       {([2, 3, 4] as const).map((count) => {
                         const stat = entry.winRateByPlayerCount[count];
                         return (
                           <div key={count} className="flex-1 text-center text-xs">
-                            <div className="text-gray-400">{count}p</div>
+                            <div className="text-text-muted">{count}p</div>
                             {stat ? (
-                              <div className="font-semibold text-gray-700">
+                              <div className="font-semibold text-text-secondary">
                                 {stat.winRate}%{" "}
-                                <span className="text-gray-400 font-normal">
+                                <span className="text-text-muted font-normal">
                                   ({stat.wins}/{stat.games})
                                 </span>
                               </div>
                             ) : (
-                              <div className="text-gray-300">&mdash;</div>
+                              <div className="text-text-muted">&mdash;</div>
                             )}
                           </div>
                         );
@@ -160,10 +160,10 @@ export default function LeaderboardPage() {
                   )}
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-semibold text-gray-900">
+                  <div className="font-semibold text-text-primary">
                     {filtered.wins}W - {filtered.games - filtered.wins}L
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-text-tertiary">
                     {filtered.winRate}% win rate
                   </div>
                 </div>
@@ -176,33 +176,33 @@ export default function LeaderboardPage() {
       {total > 0 && (
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Per page:</span>
+            <span className="text-sm text-text-tertiary">Per page:</span>
             <select
               value={perPage}
               onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
-              className="text-sm border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-900"
+              className="text-sm border border-border-strong rounded-lg px-2 py-1 bg-surface text-text-primary"
             >
               <option value={20}>20</option>
               <option value={50}>50</option>
               <option value={100}>100</option>
             </select>
-            <span className="text-sm text-gray-400">{total} players</span>
+            <span className="text-sm text-text-muted">{total} players</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+              className="px-3 py-1 text-sm rounded-lg border border-border-strong disabled:opacity-30 hover:bg-surface-raised transition-colors"
             >
               Prev
             </button>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-text-tertiary">
               {page} / {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="px-3 py-1 text-sm rounded-lg border border-gray-300 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+              className="px-3 py-1 text-sm rounded-lg border border-border-strong disabled:opacity-30 hover:bg-surface-raised transition-colors"
             >
               Next
             </button>

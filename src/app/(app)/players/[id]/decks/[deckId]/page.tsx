@@ -78,25 +78,25 @@ export default function PlayerDeckPage() {
   if (error) {
     return (
       <div className="space-y-4">
-        <Link href={`/players/${playerId}`} className="text-sm text-gray-400 hover:text-gray-600">&larr; Back</Link>
-        <div className="text-center py-12 text-gray-500">{error}</div>
+        <Link href={`/players/${playerId}`} className="text-sm text-text-muted hover:text-text-secondary">&larr; Back</Link>
+        <div className="text-center py-12 text-text-tertiary">{error}</div>
       </div>
     );
   }
 
   if (!deck) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm flex-wrap">
-        <Link href="/players" className="text-gray-400 hover:text-gray-600">&larr; Players</Link>
-        <span className="text-gray-300">/</span>
-        <Link href={`/players/${playerId}`} className="text-gray-400 hover:text-gray-600">{deck.owner.name}</Link>
-        <span className="text-gray-300">/</span>
-        <span className="text-gray-600 font-medium">{deck.name}</span>
+        <Link href="/players" className="text-text-muted hover:text-text-secondary">&larr; Players</Link>
+        <span className="text-text-muted">/</span>
+        <Link href={`/players/${playerId}`} className="text-text-muted hover:text-text-secondary">{deck.owner.name}</Link>
+        <span className="text-text-muted">/</span>
+        <span className="text-text-secondary font-medium">{deck.name}</span>
       </div>
 
       {/* Commander images */}
@@ -121,7 +121,7 @@ export default function PlayerDeckPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold">{deck.name}</h1>
-          <p className="text-gray-500">
+          <p className="text-text-tertiary">
             {deck.commander}{deck.commander2 ? ` & ${deck.commander2}` : ""}
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function PlayerDeckPage() {
           <div className="flex gap-2 flex-shrink-0">
             <Link
               href={`/decks/${deckId}/edit`}
-              className="px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-3 py-1.5 text-sm font-medium border border-border-strong rounded-lg hover:bg-surface-raised transition-colors"
             >
               Edit
             </Link>
@@ -139,7 +139,7 @@ export default function PlayerDeckPage() {
                 await fetch(`/api/decks/${deckId}`, { method: "DELETE" });
                 router.push("/decks");
               }}
-              className="px-3 py-1.5 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+              className="px-3 py-1.5 text-sm font-medium text-danger border border-red-200 rounded-lg hover:bg-danger-bg transition-colors"
             >
               Delete
             </button>
@@ -159,12 +159,12 @@ export default function PlayerDeckPage() {
           }}
         />
         {deck.bracket != null && (
-          <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs">
+          <span className="bg-surface-sunken text-text-secondary px-2 py-0.5 rounded text-xs">
             Bracket {deck.bracket}
           </span>
         )}
         {deck.edhp != null && (
-          <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs">
+          <span className="bg-surface-sunken text-text-secondary px-2 py-0.5 rounded text-xs">
             EDHP {deck.edhp.toFixed(2)}
           </span>
         )}
@@ -172,17 +172,17 @@ export default function PlayerDeckPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white border border-gray-200 rounded-lg p-3 text-center">
-          <div className="text-xl font-bold text-gray-900">{deck.wins}W - {deck.games - deck.wins}L</div>
-          <div className="text-xs text-gray-500">Record</div>
+        <div className="bg-surface border border-border rounded-lg p-3 text-center">
+          <div className="text-xl font-bold text-text-primary">{deck.wins}W - {deck.games - deck.wins}L</div>
+          <div className="text-xs text-text-tertiary">Record</div>
         </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-3 text-center">
-          <div className="text-xl font-bold text-gray-900">{deck.winRate}%</div>
-          <div className="text-xs text-gray-500">Win Rate</div>
+        <div className="bg-surface border border-border rounded-lg p-3 text-center">
+          <div className="text-xl font-bold text-text-primary">{deck.winRate}%</div>
+          <div className="text-xs text-text-tertiary">Win Rate</div>
         </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-3 text-center">
-          <div className="text-xl font-bold text-gray-900">{deck.games}</div>
-          <div className="text-xs text-gray-500">Games</div>
+        <div className="bg-surface border border-border rounded-lg p-3 text-center">
+          <div className="text-xl font-bold text-text-primary">{deck.games}</div>
+          <div className="text-xs text-text-tertiary">Games</div>
         </div>
       </div>
 
@@ -192,14 +192,14 @@ export default function PlayerDeckPage() {
           {([2, 3, 4] as const).map((count) => {
             const stat = deck.winRateByPlayerCount[count];
             return (
-              <div key={count} className="flex-1 bg-white border border-gray-200 rounded-lg p-3 text-center">
-                <div className="text-xs text-gray-400 mb-1">{count}-player</div>
+              <div key={count} className="flex-1 bg-surface border border-border rounded-lg p-3 text-center">
+                <div className="text-xs text-text-muted mb-1">{count}-player</div>
                 {stat ? (
-                  <div className="font-semibold text-gray-700">
-                    {stat.winRate}% <span className="text-gray-400 font-normal text-xs">({stat.games})</span>
+                  <div className="font-semibold text-text-secondary">
+                    {stat.winRate}% <span className="text-text-muted font-normal text-xs">({stat.games})</span>
                   </div>
                 ) : (
-                  <div className="text-gray-300">&mdash;</div>
+                  <div className="text-text-muted">&mdash;</div>
                 )}
               </div>
             );
@@ -211,7 +211,7 @@ export default function PlayerDeckPage() {
       <div className="flex gap-2 flex-wrap">
         <button
           onClick={() => setShowRecs(true)}
-          className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 text-sm font-medium bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
         >
           Get Recommendations
         </button>
@@ -219,7 +219,7 @@ export default function PlayerDeckPage() {
           href={`https://edhrec.com/commanders/${deck.commander.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "")}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 text-sm font-medium border border-border-strong rounded-lg hover:bg-surface-raised transition-colors"
         >
           View on EDHREC
         </a>
@@ -229,11 +229,11 @@ export default function PlayerDeckPage() {
       {deckCards ? (
         <CardGrid cards={deckCards} totalPrice={totalPrice} />
       ) : deck.decklist ? (
-        <div className="text-center py-6 text-gray-400 text-sm">
+        <div className="text-center py-6 text-text-muted text-sm">
           Loading cards...
         </div>
       ) : (
-        <div className="text-center py-6 text-gray-400 text-sm">
+        <div className="text-center py-6 text-text-muted text-sm">
           No decklist available.
         </div>
       )}

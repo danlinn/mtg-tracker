@@ -122,7 +122,7 @@ export default function AdminGamesPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   return (
@@ -138,7 +138,7 @@ export default function AdminGamesPage() {
             <select
               value={bulkTarget}
               onChange={(e) => setBulkTarget(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+              className="flex-1 px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
             >
               <option value="">Select playgroup...</option>
               {playgroups.map((pg) => (
@@ -150,7 +150,7 @@ export default function AdminGamesPage() {
             <button
               onClick={bulkAssign}
               disabled={!bulkTarget || bulkSaving}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-50"
+              className="px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg disabled:opacity-50"
             >
               {bulkSaving ? "Assigning..." : "Assign all"}
             </button>
@@ -159,17 +159,17 @@ export default function AdminGamesPage() {
       )}
 
       {message && (
-        <div className="bg-green-50 text-green-700 px-4 py-2 rounded-lg text-sm">
+        <div className="bg-success-bg text-success px-4 py-2 rounded-lg text-sm">
           {message}
         </div>
       )}
 
       <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500">Filter:</span>
+        <span className="text-sm text-text-tertiary">Filter:</span>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="px-3 py-1.5 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+          className="px-3 py-1.5 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
         >
           <option value="all">All ({games.length})</option>
           <option value="unassigned">Unassigned ({unassignedCount})</option>
@@ -183,17 +183,17 @@ export default function AdminGamesPage() {
 
       <div className="space-y-2">
         {filtered.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">No games match this filter.</div>
+          <div className="text-center py-8 text-text-tertiary">No games match this filter.</div>
         ) : (
           filtered.map((game) => (
             <div
               key={game.id}
               className={`border rounded-lg p-3 space-y-2 ${
-                game.playgroupId ? "border-gray-200 bg-white" : "border-yellow-300 bg-yellow-50"
+                game.playgroupId ? "border-border bg-surface" : "border-yellow-300 bg-yellow-50"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="text-sm font-medium text-gray-900">
+                <div className="text-sm font-medium text-text-primary">
                   {new Date(game.playedAt).toLocaleDateString("en-US", {
                     timeZone: "America/Los_Angeles",
                     month: "short",
@@ -201,7 +201,7 @@ export default function AdminGamesPage() {
                     year: "numeric",
                   })}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-text-tertiary">
                   {game.playgroupId ? game.playgroupName : "Unassigned"}
                 </div>
               </div>
@@ -212,7 +212,7 @@ export default function AdminGamesPage() {
                     className={`text-xs px-2 py-0.5 rounded-full ${
                       p.isWinner
                         ? "bg-green-100 text-green-800 font-semibold"
-                        : "bg-gray-100 text-gray-700"
+                        : "bg-surface-sunken text-text-secondary"
                     }`}
                   >
                     {p.userName} — {p.deckName}
@@ -227,7 +227,7 @@ export default function AdminGamesPage() {
                     assignGame(game.id, e.target.value || null)
                   }
                   disabled={saving === game.id}
-                  className="flex-1 px-2 py-1 border border-gray-300 rounded bg-white text-gray-900 text-sm"
+                  className="flex-1 px-2 py-1 border border-border-strong rounded bg-surface text-text-primary text-sm"
                 >
                   <option value="">No playgroup</option>
                   {playgroups.map((pg) => (
@@ -240,12 +240,12 @@ export default function AdminGamesPage() {
                   type="button"
                   onClick={() => deleteGame(game.id)}
                   disabled={saving === game.id}
-                  className="px-2 py-1 text-xs text-red-600 hover:text-red-800 hover:bg-red-50 rounded disabled:opacity-50"
+                  className="px-2 py-1 text-xs text-danger hover:text-red-800 hover:bg-danger-bg rounded disabled:opacity-50"
                 >
                   Delete
                 </button>
                 {saving === game.id && (
-                  <span className="text-xs text-gray-400">Saving...</span>
+                  <span className="text-xs text-text-muted">Saving...</span>
                 )}
               </div>
             </div>

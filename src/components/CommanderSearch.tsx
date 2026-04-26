@@ -113,10 +113,10 @@ export default function CommanderSearch({ value, onChange, onCardResolved }: Com
         role="combobox"
         aria-expanded={showDropdown}
         aria-activedescendant={activeIndex >= 0 ? `commander-option-${activeIndex}` : undefined}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
+        className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary"
       />
       {loading && (
-        <div className="absolute right-3 top-2.5 text-gray-400 text-xs">
+        <div className="absolute right-3 top-2.5 text-text-muted text-xs">
           ...
         </div>
       )}
@@ -124,7 +124,7 @@ export default function CommanderSearch({ value, onChange, onCardResolved }: Com
         <ul
           ref={listRef}
           role="listbox"
-          className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          className="absolute z-10 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto"
         >
           {suggestions.map((name, index) => (
             <li
@@ -137,7 +137,7 @@ export default function CommanderSearch({ value, onChange, onCardResolved }: Com
                 type="button"
                 onClick={() => selectSuggestion(name)}
                 onMouseEnter={() => setActiveIndex(index)}
-                className={`w-full text-left px-3 py-2 text-sm text-gray-900 transition-colors ${
+                className={`w-full text-left px-3 py-2 text-sm text-text-primary transition-colors ${
                   index === activeIndex ? "bg-blue-50" : "hover:bg-blue-50"
                 }`}
               >

@@ -27,8 +27,8 @@ function ResetPasswordForm() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-sm w-full space-y-4 text-center">
           <h1 className="text-2xl font-bold">Invalid Link</h1>
-          <p className="text-gray-600">This reset link is missing or invalid.</p>
-          <Link href="/forgot-password" className="text-blue-600 hover:underline text-sm">
+          <p className="text-text-secondary">This reset link is missing or invalid.</p>
+          <Link href="/forgot-password" className="text-accent hover:underline text-sm">
             Request a new one
           </Link>
         </div>
@@ -41,10 +41,10 @@ function ResetPasswordForm() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-sm w-full space-y-4 text-center">
           <h1 className="text-2xl font-bold">Password reset!</h1>
-          <p className="text-gray-600">Your password has been updated. You can now log in.</p>
+          <p className="text-text-secondary">Your password has been updated. You can now log in.</p>
           <Link
             href="/login"
-            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            className="inline-block bg-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-accent-hover transition-colors"
           >
             Go to Login
           </Link>
@@ -98,11 +98,11 @@ function ResetPasswordForm() {
       <div className="max-w-sm w-full space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Reset password</h1>
-          <p className="text-gray-500 text-sm mt-1">Enter your new password.</p>
+          <p className="text-text-tertiary text-sm mt-1">Enter your new password.</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
+          <div className="bg-danger-bg text-danger px-4 py-3 rounded-lg text-sm">
             {error}
           </div>
         )}
@@ -119,7 +119,7 @@ function ResetPasswordForm() {
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900"
+              className="w-full px-4 py-3 border border-border-strong rounded-lg bg-surface text-text-primary"
             />
           </div>
           <div>
@@ -133,14 +133,14 @@ function ResetPasswordForm() {
               minLength={6}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900"
+              className="w-full px-4 py-3 border border-border-strong rounded-lg bg-surface text-text-primary"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent-hover disabled:opacity-50 transition-colors"
           >
             {loading ? "Resetting..." : "Reset Password"}
           </button>

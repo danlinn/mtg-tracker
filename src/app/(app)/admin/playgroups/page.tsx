@@ -109,33 +109,33 @@ export default function AdminPlaygroupsPage() {
     loadMembers(playgroupId);
   }
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading...</div>;
+  if (loading) return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Manage Playgroups</h1>
 
       {/* Create playgroup */}
-      <div className="p-4 border border-gray-200 rounded-lg bg-white space-y-3">
-        <h2 className="font-semibold text-gray-900">Create Playgroup</h2>
+      <div className="p-4 border border-border rounded-lg bg-surface space-y-3">
+        <h2 className="font-semibold text-text-primary">Create Playgroup</h2>
         <input
           type="text"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="Playgroup name"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+          className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
         />
         <input
           type="text"
           value={newDesc}
           onChange={(e) => setNewDesc(e.target.value)}
           placeholder="Description (optional)"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+          className="w-full px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
         />
         <button
           onClick={handleCreate}
           disabled={creating || !newName.trim()}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-hover disabled:opacity-50 transition-colors"
         >
           {creating ? "Creating..." : "Create"}
         </button>
@@ -144,27 +144,27 @@ export default function AdminPlaygroupsPage() {
       {/* Playgroup list */}
       <div className="space-y-3">
         {playgroups.map((pg) => (
-          <div key={pg.id} className="border border-gray-200 rounded-lg bg-white">
+          <div key={pg.id} className="border border-border rounded-lg bg-surface">
             <div className="p-4 flex items-center justify-between">
               <div>
-                <div className="font-medium text-gray-900">{pg.name}</div>
+                <div className="font-medium text-text-primary">{pg.name}</div>
                 {pg.description && (
-                  <div className="text-sm text-gray-500">{pg.description}</div>
+                  <div className="text-sm text-text-tertiary">{pg.description}</div>
                 )}
-                <div className="text-xs text-gray-400 mt-1">
+                <div className="text-xs text-text-muted mt-1">
                   {pg._count.members} members &middot; {pg._count.games} games
                 </div>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => loadMembers(pg.id)}
-                  className="text-xs px-3 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                  className="text-xs px-3 py-1 rounded bg-surface-sunken text-text-secondary hover:bg-surface-hover transition-colors"
                 >
                   {expandedId === pg.id ? "Hide" : "Members"}
                 </button>
                 <button
                   onClick={() => handleDelete(pg.id)}
-                  className="text-xs px-3 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                  className="text-xs px-3 py-1 rounded bg-danger-bg text-danger hover:bg-red-100 transition-colors"
                 >
                   Delete
                 </button>
@@ -172,13 +172,13 @@ export default function AdminPlaygroupsPage() {
             </div>
 
             {expandedId === pg.id && (
-              <div className="border-t border-gray-200 p-4 space-y-3">
+              <div className="border-t border-border p-4 space-y-3">
                 {/* Add member */}
                 <div className="flex flex-col sm:flex-row gap-2">
                   <select
                     value={addUserId}
                     onChange={(e) => setAddUserId(e.target.value)}
-                    className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm min-w-0"
+                    className="w-full sm:flex-1 px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm min-w-0"
                   >
                     <option value="">Add member...</option>
                     {users
@@ -192,7 +192,7 @@ export default function AdminPlaygroupsPage() {
                   <button
                     onClick={() => handleAddMember(pg.id)}
                     disabled={!addUserId}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 shrink-0"
+                    className="bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 shrink-0"
                   >
                     Add
                   </button>
@@ -202,13 +202,13 @@ export default function AdminPlaygroupsPage() {
                 {members.map((m) => (
                   <div
                     key={m.id}
-                    className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                    className="flex items-center justify-between p-2 bg-surface-raised rounded"
                   >
                     <div>
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-text-primary">
                         {m.user.name}
                       </span>
-                      <span className="text-xs text-gray-400 ml-2">
+                      <span className="text-xs text-text-muted ml-2">
                         {m.role}
                       </span>
                     </div>
@@ -218,14 +218,14 @@ export default function AdminPlaygroupsPage() {
                         onChange={(e) =>
                           handleSetRole(pg.id, m.user.id, e.target.value)
                         }
-                        className="text-xs border border-gray-300 rounded px-2 py-1 bg-white text-gray-900"
+                        className="text-xs border border-border-strong rounded px-2 py-1 bg-surface text-text-primary"
                       >
                         <option value="member">member</option>
                         <option value="admin">admin</option>
                       </select>
                       <button
                         onClick={() => handleRemoveMember(pg.id, m.user.id)}
-                        className="text-xs text-red-500 hover:text-red-700"
+                        className="text-xs text-danger hover:text-danger"
                       >
                         Remove
                       </button>
@@ -233,7 +233,7 @@ export default function AdminPlaygroupsPage() {
                   </div>
                 ))}
                 {members.length === 0 && (
-                  <div className="text-sm text-gray-400 text-center">
+                  <div className="text-sm text-text-muted text-center">
                     No members yet
                   </div>
                 )}

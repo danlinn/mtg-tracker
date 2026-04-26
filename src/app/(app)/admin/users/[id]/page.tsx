@@ -52,14 +52,14 @@ export default function AdminUserDetailPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Loading...</div>;
+    return <div className="text-center py-12 text-text-tertiary">Loading...</div>;
   }
 
   if (!user) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500">User not found</p>
-        <Link href="/admin/users" className="text-blue-600 hover:underline mt-4 inline-block">
+        <p className="text-danger">User not found</p>
+        <Link href="/admin/users" className="text-accent hover:underline mt-4 inline-block">
           Back to Users
         </Link>
       </div>
@@ -70,7 +70,7 @@ export default function AdminUserDetailPage() {
     <div className="space-y-6 max-w-lg mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/admin/users" className="text-blue-600 hover:underline text-sm">
+          <Link href="/admin/users" className="text-accent hover:underline text-sm">
             &larr; Users
           </Link>
           <h1 className="text-2xl font-bold mt-1">
@@ -81,7 +81,7 @@ export default function AdminUserDetailPage() {
               </span>
             )}
           </h1>
-          <p className="text-sm text-gray-500">{user.email}</p>
+          <p className="text-sm text-text-tertiary">{user.email}</p>
         </div>
       </div>
 
@@ -89,24 +89,24 @@ export default function AdminUserDetailPage() {
         <h2 className="text-lg font-semibold">Decks ({user.decks.length})</h2>
         <Link
           href={`/admin/users/${userId}/decks/new`}
-          className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="bg-accent text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
         >
           Add Deck
         </Link>
       </div>
 
       {user.decks.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">No decks yet.</div>
+        <div className="text-center py-8 text-text-tertiary">No decks yet.</div>
       ) : (
         <div className="space-y-2">
           {user.decks.map((deck) => (
             <div
               key={deck.id}
-              className="flex items-center justify-between p-3 rounded-lg border border-gray-200 bg-white"
+              className="flex items-center justify-between p-3 rounded-lg border border-border bg-surface"
             >
               <div className="space-y-1">
-                <div className="font-medium text-gray-900">{deck.name}</div>
-                <div className="text-sm text-gray-500">{deck.commander}</div>
+                <div className="font-medium text-text-primary">{deck.name}</div>
+                <div className="text-sm text-text-tertiary">{deck.commander}</div>
                 <div className="flex items-center gap-2">
                   <ColorPips
                     colors={{
@@ -118,7 +118,7 @@ export default function AdminUserDetailPage() {
                     }}
                   />
                   {(deck.bracket != null || deck.edhp != null) && (
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-text-muted">
                       {deck.edhp != null ? `p:${deck.edhp.toFixed(2)}` : ""}
                       {deck.edhp != null && deck.bracket != null ? " " : ""}
                       {deck.bracket != null ? `b:${deck.bracket}` : ""}
@@ -128,7 +128,7 @@ export default function AdminUserDetailPage() {
               </div>
               <button
                 onClick={() => handleDeleteDeck(deck.id)}
-                className="text-red-500 hover:text-red-700 text-sm"
+                className="text-danger hover:text-danger text-sm"
               >
                 Delete
               </button>

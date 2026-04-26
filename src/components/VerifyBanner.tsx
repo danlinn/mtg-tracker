@@ -44,9 +44,9 @@ export default function VerifyBanner() {
     <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2 text-center text-sm text-yellow-800">
       Please check your email and verify your account.
       {sent ? (
-        <span className="ml-2 text-green-700 font-medium">Sent!</span>
+        <span className="ml-2 text-success font-medium">Sent!</span>
       ) : sendError ? (
-        <span className="ml-2 text-red-600 font-medium">{sendError}</span>
+        <span className="ml-2 text-danger font-medium">{sendError}</span>
       ) : (
         <button
           onClick={handleResend}

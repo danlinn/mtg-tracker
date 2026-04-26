@@ -18,7 +18,7 @@ export default function PendingBanner() {
 
   if (status === "rejected") {
     return (
-      <div className="bg-red-50 border-b border-red-200 px-4 py-3 text-center text-sm text-red-800">
+      <div className="bg-danger-bg border-b border-red-200 px-4 py-3 text-center text-sm text-red-800">
         Your account has been rejected. Please contact an admin for more information.
       </div>
     );
