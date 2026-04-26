@@ -286,7 +286,7 @@ function PlayerBox({
 
       <div
         className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
-        style={{ paddingBottom: opponents.length > 0 ? "8rem" : 0 }}
+        style={{ paddingBottom: opponents.length > 0 ? "7rem" : 0 }}
       >
         <div className="text-7xl sm:text-8xl font-bold tabular-nums" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>
           {player.life}
@@ -1322,7 +1322,7 @@ export default function TrackerPage() {
           onClick={(e) => { if (e.target === e.currentTarget) setColorPickerFor(null); }}
         >
           <div
-            className="bg-white rounded-lg p-4 max-w-sm w-full space-y-3"
+            className="bg-white rounded-lg p-4 max-w-sm w-full space-y-3 max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="font-semibold text-gray-900">Pick a color</h3>
@@ -1378,6 +1378,7 @@ export default function TrackerPage() {
                             gradientStyle: style.name,
                             bgColor: bgForComboStyled(pl.colorCombo!, palette, style.name),
                           }));
+                          setColorPickerFor(null);
                         }}
                         className={`aspect-square rounded-lg border-2 text-[8px] font-bold flex items-end justify-center pb-0.5 ${
                           isActive ? "border-blue-500 ring-1 ring-blue-300" : "border-gray-300"

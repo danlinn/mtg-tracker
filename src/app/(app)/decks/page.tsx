@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ColorPips from "@/components/ColorPips";
 import ManaSymbol, { type ManaColor } from "@/components/ManaSymbol";
-import { useThemePalette } from "@/lib/theme";
-import type { Palette } from "@/lib/themePalettes";
+import { useTheme, useThemePalette } from "@/lib/theme";
+import type { Palette, ColorKey } from "@/lib/themePalettes";
+import { bgForComboStyled, THEME_DEFAULT_GRADIENT } from "@/lib/gradientStyles";
 
 interface Deck {
   id: string;
@@ -47,29 +48,35 @@ const GRADIENT_ORDER: { key: (typeof COLOR_KEYS)[number]; paletteKey: "B" | "U" 
   { key: "colorW", paletteKey: "W" },
 ];
 
-function deckGradient(deck: Deck, palette: Palette): React.CSSProperties {
-  const active = GRADIENT_ORDER.filter((c) => deck[c.key]).map((c) => palette[c.paletteKey]);
-  if (active.length === 0) return {};
+function deckCombo(deck: Deck): ColorKey[] {
+  const combo: ColorKey[] = [];
+  if (deck.colorW) combo.push("W");
+  if (deck.colorU) combo.push("U");
+  if (deck.colorB) combo.push("B");
+  if (deck.colorR) combo.push("R");
+  if (deck.colorG) combo.push("G");
+  return combo;
+}
+
+function deckGradient(deck: Deck, palette: Palette, gradientStyle: string): React.CSSProperties {
+  const combo = deckCombo(deck);
+  if (combo.length === 0) return {};
   const isWhiteOnly = deck.colorW && !deck.colorB && !deck.colorU && !deck.colorR && !deck.colorG;
   const isBlackOnly = deck.colorB && !deck.colorW && !deck.colorU && !deck.colorR && !deck.colorG;
   const textColor = isBlackOnly ? palette.B.text : isWhiteOnly ? palette.W.text : undefined;
-  if (active.length === 1) return { background: active[0].hex, color: textColor };
-  const stops = active.map((s, i) => {
-    if (i === 0) return `${s.hex} 10%`;
-    if (i === active.length - 1) return `${s.hex} 90%`;
-    return s.hex;
-  });
-  return {
-    background: `linear-gradient(135deg, ${stops.join(", ")})`,
-    color: textColor,
-  };
+  // Don't use stained-glass SVG pattern on deck cards — too busy at card size
+  const style = gradientStyle === "stained-glass" ? "linear" : gradientStyle;
+  const bg = bgForComboStyled(combo, palette, style as Parameters<typeof bgForComboStyled>[2]);
+  return { background: bg, color: textColor };
 }
 
 export default function DecksPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const userId = (session?.user as { id?: string })?.id;
+  const { theme } = useTheme();
   const palette = useThemePalette();
+  const gradientStyle = THEME_DEFAULT_GRADIENT[theme] ?? "linear";
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<SortOption>("date");
@@ -246,7 +253,7 @@ export default function DecksPage() {
               key={deck.id}
               onClick={() => userId && router.push(`/players/${userId}/decks/${deck.id}`)}
               className="flex items-center justify-between p-4 rounded-lg border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
-              style={deckGradient(deck, palette)}
+              style={deckGradient(deck, palette, gradientStyle)}
             >
               <div className="space-y-1 min-w-0 flex-1">
                 <div className="text-xl font-bold" style={{ color: titleColor, textShadow: titleShadow }}>{deck.name}</div>
