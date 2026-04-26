@@ -107,10 +107,17 @@ body {
   border-color: var(--card-border) !important;
 }
 
-/* Mobile menu: inherits nav background via inline style, border for contrast */
-.mtg-mobile-menu {
-  border-color: var(--card-border, #374151) !important;
-}
+/* Mobile menu gets the same background as the nav on each theme */
+.mtg-mobile-menu { background: #111827 !important; }
+[data-theme="synth"] .mtg-mobile-menu { background: linear-gradient(180deg, #110e1a 0%, #0a0812 100%) !important; }
+[data-theme="cyber"] .mtg-mobile-menu { background: #05050a !important; }
+[data-theme="flame"] .mtg-mobile-menu { background: linear-gradient(180deg, #150028 0%, #0c001a 100%) !important; }
+[data-theme="chris"] .mtg-mobile-menu { background: #000000 !important; }
+[data-theme="phyrexia"] .mtg-mobile-menu { background: linear-gradient(180deg, #0e120e 0%, #080a08 100%) !important; }
+[data-theme="stained-glass"] .mtg-mobile-menu { background: linear-gradient(180deg, #14102a 0%, #0c0818 100%) !important; }
+[data-theme="dungeon"] .mtg-mobile-menu { background: linear-gradient(180deg, #241c14 0%, #1a1410 100%) !important; }
+[data-theme="neon-dynasty"] .mtg-mobile-menu { background: linear-gradient(180deg, #120a1e 0%, #0a0614 100%) !important; }
+[data-theme="grixis"] .mtg-mobile-menu { background: linear-gradient(180deg, #0e0a12 0%, #08060a 100%) !important; }
 
 [data-theme="synth"] .text-gray-900,
 [data-theme="cyber"] .text-gray-900,

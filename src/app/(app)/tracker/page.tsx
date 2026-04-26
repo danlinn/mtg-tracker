@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import { useThemePalette } from "@/lib/theme";
+import { useTheme, useThemePalette } from "@/lib/theme";
 import type { Palette, ColorKey } from "@/lib/themePalettes";
+import { bgForComboStyled, GRADIENT_STYLES, THEME_DEFAULT_GRADIENT, type GradientStyleName } from "@/lib/gradientStyles";
 
 interface Player {
   life: number;
   bgColor: string;
   colorCombo: ColorKey[] | null; // null = custom color from picker
+  gradientStyle: GradientStyleName;
   damage: Record<number, number>;
   userId: string;
   deckId: string;
@@ -120,13 +122,14 @@ function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
 }
 
-function makePlayers(count: number, startLife: number, palette: Palette): Player[] {
+function makePlayers(count: number, startLife: number, palette: Palette, gradientStyle: GradientStyleName): Player[] {
   return Array.from({ length: count }, (_, i) => {
     const combo = DEFAULT_SEAT_COMBOS[i % DEFAULT_SEAT_COMBOS.length];
     return {
       life: startLife,
-      bgColor: bgForCombo(combo, palette),
+      bgColor: bgForComboStyled(combo, palette, gradientStyle),
       colorCombo: combo,
+      gradientStyle,
       damage: {},
       userId: "",
       deckId: "",
@@ -415,7 +418,9 @@ function PlayerBox({
 }
 
 export default function TrackerPage() {
+  const { theme } = useTheme();
   const palette = useThemePalette();
+  const defaultGradient = THEME_DEFAULT_GRADIENT[theme] ?? "linear";
   const BG_PRESETS = useMemo(() => allCombos(palette), [palette]);
   // Hydrate from sessionStorage if we have a game in progress this tab
   const saved = typeof window !== "undefined" ? loadSession() : null;
@@ -471,12 +476,12 @@ export default function TrackerPage() {
     setPlayers((prev) =>
       prev.map((p) =>
         p.colorCombo
-          ? { ...p, bgColor: bgForCombo(p.colorCombo, palette) }
+          ? { ...p, bgColor: bgForComboStyled(p.colorCombo, palette, p.gradientStyle), gradientStyle: defaultGradient }
           : p
       )
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [palette]);
+  }, [palette, defaultGradient]);
 
   // Prevent screen from scrolling during play
   useEffect(() => {
@@ -548,14 +553,14 @@ export default function TrackerPage() {
   }
 
   function handleStart() {
-    const ps = makePlayers(playerCount, startLife, palette).map((p, i) => {
+    const ps = makePlayers(playerCount, startLife, palette, defaultGradient).map((p, i) => {
       const seat = seatsForCount[i];
       const combo = deckComboForSeat(seat?.userId ?? "", seat?.deckId ?? "");
       return {
         ...p,
         userId: seat?.userId ?? "",
         deckId: seat?.deckId ?? "",
-        ...(combo ? { colorCombo: combo, bgColor: bgForCombo(combo, palette) } : {}),
+        ...(combo ? { colorCombo: combo, bgColor: bgForComboStyled(combo, palette, defaultGradient) } : {}),
       };
     });
     setPlayers(ps);
@@ -682,7 +687,7 @@ export default function TrackerPage() {
           if (ii !== seatIdx) return pp;
           const combo = deckComboForSeat(pp.userId, value);
           if (combo) {
-            return { ...pp, deckId: value, colorCombo: combo, bgColor: bgForCombo(combo, palette) };
+            return { ...pp, deckId: value, colorCombo: combo, bgColor: bgForComboStyled(combo, palette, pp.gradientStyle ?? defaultGradient) };
           }
           return { ...pp, deckId: value };
         })
@@ -1326,7 +1331,10 @@ export default function TrackerPage() {
                 <button
                   key={preset.key}
                   onClick={() => {
-                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: preset.bg, colorCombo: preset.combo.length > 0 ? preset.combo : [] }));
+                    updatePlayer(colorPickerFor, (p) => {
+                      const combo = preset.combo.length > 0 ? preset.combo : [];
+                      return { ...p, bgColor: bgForComboStyled(combo, palette, p.gradientStyle ?? defaultGradient), colorCombo: combo };
+                    });
                     setColorPickerFor(null);
                   }}
                   className="w-full aspect-square rounded-lg border border-gray-300 flex items-end justify-center text-[10px] font-bold p-0.5"
@@ -1353,12 +1361,43 @@ export default function TrackerPage() {
                 className="w-full h-10 rounded cursor-pointer"
               />
             </div>
+            {colorPickerFor !== null && players[colorPickerFor]?.colorCombo && players[colorPickerFor].colorCombo!.length > 1 && (
+              <div>
+                <label className="text-sm text-gray-600 block mb-1">Gradient style:</label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {GRADIENT_STYLES.filter((s) => !s.minColors || players[colorPickerFor].colorCombo!.length >= s.minColors).map((style) => {
+                    const p = players[colorPickerFor];
+                    const preview = style.fn(p.colorCombo!, palette);
+                    const isActive = (p.gradientStyle ?? defaultGradient) === style.name;
+                    return (
+                      <button
+                        key={style.name}
+                        onClick={() => {
+                          updatePlayer(colorPickerFor, (pl) => ({
+                            ...pl,
+                            gradientStyle: style.name,
+                            bgColor: bgForComboStyled(pl.colorCombo!, palette, style.name),
+                          }));
+                        }}
+                        className={`aspect-square rounded-lg border-2 text-[8px] font-bold flex items-end justify-center pb-0.5 ${
+                          isActive ? "border-blue-500 ring-1 ring-blue-300" : "border-gray-300"
+                        }`}
+                        style={{ background: preview }}
+                        title={style.label}
+                      >
+                        <span className="bg-black/50 text-white px-1 rounded text-[7px]">{style.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <div className="flex gap-2">
               <button
                 onClick={() => {
                   if (colorPickerFor !== null) {
                     const combo = DEFAULT_SEAT_COMBOS[colorPickerFor % DEFAULT_SEAT_COMBOS.length];
-                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: bgForCombo(combo, palette), colorCombo: combo }));
+                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: bgForComboStyled(combo, palette, p.gradientStyle ?? defaultGradient), colorCombo: combo }));
                   }
                   setColorPickerFor(null);
                 }}
