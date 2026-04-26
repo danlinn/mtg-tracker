@@ -372,4 +372,72 @@ describe("save game after elimination", () => {
       expect(result.payload).toHaveLength(2);
     }
   });
+
+  // --- Negative tests ---
+
+  it("rejects when no players provided", () => {
+    const result = validateSave([]);
+    expect(result.ok).toBe(false);
+  });
+
+  it("single player with no opponents passes validation (API rejects 2-4 check)", () => {
+    const result = validateSave([player("u1", "d1", 40)]);
+    expect(result.ok).toBe(true);
+    // The API POST handler separately rejects < 2 players
+  });
+
+  it("rejects when winner has empty string deckId", () => {
+    const result = validateSave([
+      player("u1", "", 0),
+      player("u2", "d2", 25),
+    ]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/player and a deck/i);
+  });
+
+  it("rejects when winner has empty string userId", () => {
+    const result = validateSave([
+      player("u1", "d1", 0),
+      player("", "d2", 25),
+    ]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/player and a deck/i);
+  });
+
+  it("rejects three duplicate players", () => {
+    const result = validateSave([
+      player("u1", "d1", 0),
+      player("u1", "d2", 0),
+      player("u1", "d3", 25),
+    ]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/different player/i);
+  });
+
+  it("combined commander damage below 21 per source does not eliminate", () => {
+    // 10 + 11 from different sources — neither is ≥ 21, so u1 is alive
+    const result = validateSave([
+      player("u1", "d1", 40, { 1: 10, 2: 11 }),
+      player("u2", "d2", 0),
+      player("u3", "d3", 0),
+    ]);
+    // u1 has 21 total but no single source ≥ 21 → still alive
+    // Only u1 alive → u1 wins
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.winnerIdx).toBe(0);
+    }
+  });
+
+  it("exactly 21 from ONE source eliminates even with high life", () => {
+    const result = validateSave([
+      player("u1", "d1", 40, { 1: 21 }),
+      player("u2", "d2", 40),
+      player("u3", "d3", 0),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.winnerIdx).toBe(1);
+    }
+  });
 });

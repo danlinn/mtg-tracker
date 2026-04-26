@@ -131,9 +131,12 @@ export default function NavBar() {
           ))}
         </div>
 
-        {/* Mobile menu (< lg) */}
+        {/* Mobile menu (< lg) — absolute overlay so it renders above fixed tracker content */}
         {menuOpen && (
-          <div data-testid="mobile-menu" className="lg:hidden pb-3 space-y-1 bg-gray-900 border-t border-gray-700 shadow-lg shadow-black/50">
+          <div
+            data-testid="mobile-menu"
+            className="lg:hidden absolute left-0 right-0 top-full z-50 bg-gray-900 border-t border-gray-700 shadow-2xl shadow-black/80 pb-3 space-y-1"
+          >
             {allNavItems.map((item) => (
               <Link
                 key={item.href}
