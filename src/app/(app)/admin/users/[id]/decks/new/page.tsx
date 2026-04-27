@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import CommanderSearch from "@/components/CommanderSearch";
 
@@ -18,7 +18,9 @@ const COLOR_MAP: Record<string, string> = { W: "W", U: "U", B: "B", R: "R", G: "
 export default function AdminAddDeckForUserPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const userId = params.id as string;
+  const returnTo = searchParams.get("returnTo");
 
   const [userName, setUserName] = useState("");
   const [name, setName] = useState("");
@@ -81,7 +83,7 @@ export default function AdminAddDeckForUserPage() {
       return;
     }
 
-    router.push(`/admin/users/${userId}`);
+    router.push(returnTo ?? `/admin/users/${userId}`);
   }
 
   return (
