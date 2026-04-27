@@ -52,7 +52,7 @@ export async function GET(req: Request) {
       id: true,
       name: true,
       decks: {
-        select: { id: true, name: true, commander: true, edhp: true, bracket: true, colorW: true, colorU: true, colorB: true, colorR: true, colorG: true },
+        select: { id: true, name: true, commander: true, commander2: true, edhp: true, bracket: true, colorW: true, colorU: true, colorB: true, colorR: true, colorG: true },
         orderBy: { name: "asc" },
       },
     },

@@ -8,9 +8,9 @@ import { bgForComboStyled, GRADIENT_STYLES, THEME_DEFAULT_GRADIENT, type Gradien
 interface Player {
   life: number;
   bgColor: string;
-  colorCombo: ColorKey[] | null; // null = custom color from picker
+  colorCombo: ColorKey[] | null;
   gradientStyle: GradientStyleName;
-  damage: Record<number, number>;
+  damage: Record<string, number>; // keys: "0", "0b" (partner), "1", "1b", etc
   userId: string;
   deckId: string;
 }
@@ -19,6 +19,7 @@ interface DeckInfo {
   id: string;
   name: string;
   commander: string;
+  commander2: string | null;
   colorW: boolean;
   colorU: boolean;
   colorB: boolean;
@@ -158,9 +159,9 @@ function backgroundStyle(bg: string): React.CSSProperties {
 interface PlayerBoxProps {
   player: Player;
   index: number;
-  opponents: { index: number; player: Player }[];
+  opponents: { index: number; player: Player; hasPartner: boolean }[];
   onLifeChange: (delta: number) => void;
-  onCommanderDamage: (fromIdx: number, delta: number) => void;
+  onCommanderDamage: (damageKey: string, delta: number) => void;
   onOpenColor: () => void;
   onAssign?: () => void;
   onStartSwap?: () => void;
@@ -375,39 +376,52 @@ function PlayerBox({
           style={{ backgroundColor: "rgba(0,0,0,0.25)" }}
         >
           {opponents.map((opp) => {
-            const dmg = player.damage[opp.index] ?? 0;
             const oppBg = opp.player.bgColor;
             const oppText = textOn(oppBg);
-            const isLethal = dmg >= 21;
+            const keys = opp.hasPartner
+              ? [{ key: String(opp.index), label: "A" }, { key: `${opp.index}b`, label: "B" }]
+              : [{ key: String(opp.index), label: "" }];
+
             return (
-              <div
-                key={opp.index}
-                className={`relative flex-1 h-20 rounded-lg overflow-hidden border-2 select-none ${
-                  isLethal ? "border-red-500" : "border-white/30"
-                }`}
-                style={{ background: oppBg, color: oppText }}
-              >
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); onCommanderDamage(opp.index, 1); }}
-                  className="absolute top-0 left-0 right-0 h-1/2 flex items-start justify-center pt-1 active:bg-white/10"
-                  aria-label={`+1 commander damage from player ${opp.index + 1}`}
-                >
-                  <span className="text-[10px] font-bold opacity-70">▲</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); onCommanderDamage(opp.index, -1); }}
-                  className="absolute bottom-0 left-0 right-0 h-1/2 flex items-end justify-center pb-1 active:bg-black/10"
-                  aria-label={`-1 commander damage from player ${opp.index + 1}`}
-                >
-                  <span className="text-[10px] font-bold opacity-70">▼</span>
-                </button>
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="text-2xl font-bold tabular-nums" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}>
-                    {dmg}
-                  </span>
-                </div>
+              <div key={opp.index} className="flex-1 flex gap-0.5">
+                {keys.map((k) => {
+                  const dmg = player.damage[k.key] ?? 0;
+                  const isLethal = dmg >= 21;
+                  return (
+                    <div
+                      key={k.key}
+                      className={`relative flex-1 h-20 rounded-lg overflow-hidden border-2 select-none ${
+                        isLethal ? "border-red-500" : "border-white/30"
+                      }`}
+                      style={{ background: oppBg, color: oppText }}
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onCommanderDamage(k.key, 1); }}
+                        className="absolute top-0 left-0 right-0 h-1/2 flex items-start justify-center pt-1 active:bg-white/10"
+                        aria-label={`+1 commander damage${k.label ? ` (${k.label})` : ""} from player ${opp.index + 1}`}
+                      >
+                        <span className="text-[10px] font-bold opacity-70">▲</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onCommanderDamage(k.key, -1); }}
+                        className="absolute bottom-0 left-0 right-0 h-1/2 flex items-end justify-center pb-1 active:bg-black/10"
+                        aria-label={`-1 commander damage${k.label ? ` (${k.label})` : ""} from player ${opp.index + 1}`}
+                      >
+                        <span className="text-[10px] font-bold opacity-70">▼</span>
+                      </button>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        {k.label && (
+                          <span className="text-[8px] font-bold opacity-50">{k.label}</span>
+                        )}
+                        <span className={`${opp.hasPartner ? "text-lg" : "text-2xl"} font-bold tabular-nums`} style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}>
+                          {dmg}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
@@ -606,17 +620,17 @@ export default function TrackerPage() {
   );
 
   const handleCommanderDamage = useCallback(
-    (toIdx: number, fromIdx: number, delta: number) => {
+    (toIdx: number, damageKey: string, delta: number) => {
       setPlayers((prev) =>
         prev.map((p, i) => {
           if (i !== toIdx) return p;
-          const current = p.damage[fromIdx] ?? 0;
+          const current = p.damage[damageKey] ?? 0;
           const nextDmg = Math.max(0, current + delta);
           const actualDelta = nextDmg - current;
           return {
             ...p,
             life: p.life - actualDelta,
-            damage: { ...p.damage, [fromIdx]: nextDmg },
+            damage: { ...p.damage, [damageKey]: nextDmg },
           };
         })
       );
@@ -863,9 +877,16 @@ export default function TrackerPage() {
   // Sort opponents so their damage boxes align spatially with their
   // position on the board. For rotated pods, reverse the order since
   // 180° rotation mirrors the horizontal axis.
+  function hasPartnerDeck(p: Player): boolean {
+    if (!p.userId || !p.deckId) return false;
+    const user = users.find((u) => u.id === p.userId);
+    const deck = user?.decks.find((d) => d.id === p.deckId);
+    return !!deck?.commander2;
+  }
+
   function spatialOpponents(idx: number, rotate: boolean) {
     const opps = players
-      .map((p, i) => ({ index: i, player: p }))
+      .map((p, i) => ({ index: i, player: p, hasPartner: hasPartnerDeck(p) }))
       .filter((p) => p.index !== idx);
 
     if (playerCount <= 2) return opps;
@@ -914,7 +935,7 @@ export default function TrackerPage() {
       index={idx}
       opponents={spatialOpponents(idx, !!rotate)}
       onLifeChange={(d) => handleLife(idx, d)}
-      onCommanderDamage={(from, d) => handleCommanderDamage(idx, from, d)}
+      onCommanderDamage={(key, d) => handleCommanderDamage(idx, key, d)}
       onOpenColor={() => setColorPickerFor(idx)}
       onAssign={() => setAssignSeatFor(idx)}
       onStartSwap={() => handleStartSwap(idx)}
