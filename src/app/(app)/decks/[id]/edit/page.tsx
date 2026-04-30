@@ -35,24 +35,65 @@ export default function EditDeckPage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState("");
-  const [moxfieldUrl, setMoxfieldUrl] = useState("");
-  const [importing, setImporting] = useState(false);
+  const [moxfieldUsername, setMoxfieldUsername] = useState<string | null>(null);
+  const [moxfieldDecks, setMoxfieldDecks] = useState<{ id: string; name: string; format: string; mainboardCount: number }[]>([]);
+  const [moxfieldBrowseOpen, setMoxfieldBrowseOpen] = useState(false);
+  const [moxfieldLoading, setMoxfieldLoading] = useState(false);
+  const [importing, setImporting] = useState<string | null>(null);
   const [importMsg, setImportMsg] = useState("");
+  const [moxfieldSetup, setMoxfieldSetup] = useState("");
 
-  async function handleMoxfieldImport() {
-    if (!moxfieldUrl.trim()) return;
-    setImporting(true);
+  useEffect(() => {
+    fetch("/api/profile")
+      .then((r) => r.json())
+      .then((data) => setMoxfieldUsername(data.moxfieldUsername ?? null))
+      .catch(() => {});
+  }, []);
+
+  async function saveMoxfieldUsername() {
+    const res = await fetch("/api/profile", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ moxfieldUsername: moxfieldSetup }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setMoxfieldUsername(data.moxfieldUsername);
+      setMoxfieldSetup("");
+    }
+  }
+
+  async function browseMoxfieldDecks() {
+    setMoxfieldBrowseOpen(true);
+    setMoxfieldLoading(true);
+    setMoxfieldDecks([]);
+    try {
+      const res = await fetch("/api/moxfield/decks");
+      const data = await res.json();
+      if (res.ok) {
+        setMoxfieldDecks(data.decks ?? []);
+      } else {
+        setImportMsg(data.error ?? "Failed to load decks");
+      }
+    } catch {
+      setImportMsg("Network error loading Moxfield decks");
+    } finally {
+      setMoxfieldLoading(false);
+    }
+  }
+
+  async function importMoxfieldDeck(moxDeckId: string) {
+    setImporting(moxDeckId);
     setImportMsg("");
     try {
       const res = await fetch("/api/moxfield", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: moxfieldUrl }),
+        body: JSON.stringify({ url: moxDeckId }),
       });
       const data = await res.json();
       if (!res.ok) {
         setImportMsg(data.error ?? "Import failed");
-        setImporting(false);
         return;
       }
       if (data.name) setName(data.name);
@@ -74,11 +115,11 @@ export default function EditDeckPage() {
       }
       if (data.decklist) setDecklist(data.decklist);
       setImportMsg("Imported from Moxfield");
-      setMoxfieldUrl("");
+      setMoxfieldBrowseOpen(false);
     } catch {
       setImportMsg("Network error");
     } finally {
-      setImporting(false);
+      setImporting(null);
     }
   }
 
@@ -291,31 +332,75 @@ export default function EditDeckPage() {
           </div>
         </div>
         <div>
-          <div className="border border-border rounded-lg p-3 space-y-2">
-            <label className="block text-sm font-medium">Import from Moxfield</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={moxfieldUrl}
-                onChange={(e) => setMoxfieldUrl(e.target.value)}
-                placeholder="Paste Moxfield deck URL or ID..."
-                className="flex-1 px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
-              />
+          {moxfieldUsername ? (
+            <div className="space-y-2">
               <button
                 type="button"
-                onClick={handleMoxfieldImport}
-                disabled={importing || !moxfieldUrl.trim()}
-                className="px-4 py-2 btn-primary bg-accent text-accent-text text-sm font-medium rounded-lg hover:bg-accent-hover disabled:opacity-50"
+                onClick={browseMoxfieldDecks}
+                className="w-full py-2 border border-border-strong rounded-lg text-sm font-medium hover:bg-surface-hover transition-colors"
               >
-                {importing ? "Importing..." : "Import"}
+                Import from Moxfield ({moxfieldUsername})
               </button>
+              {moxfieldBrowseOpen && (
+                <div className="border border-border rounded-lg p-3 space-y-2 max-h-60 overflow-y-auto">
+                  {moxfieldLoading ? (
+                    <div className="text-center text-text-tertiary text-sm py-4">Loading decks...</div>
+                  ) : moxfieldDecks.length === 0 ? (
+                    <div className="text-center text-text-tertiary text-sm py-4">No public Commander decks found</div>
+                  ) : (
+                    moxfieldDecks.map((d) => (
+                      <button
+                        key={d.id}
+                        type="button"
+                        onClick={() => importMoxfieldDeck(d.id)}
+                        disabled={importing === d.id}
+                        className="w-full text-left px-3 py-2 rounded-lg border border-border hover:bg-surface-hover transition-colors text-sm"
+                      >
+                        <div className="font-medium text-text-primary">{d.name}</div>
+                        <div className="text-xs text-text-muted">{d.mainboardCount} cards</div>
+                        {importing === d.id && <div className="text-xs text-accent mt-1">Importing...</div>}
+                      </button>
+                    ))
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setMoxfieldBrowseOpen(false)}
+                    className="w-full text-xs text-text-muted hover:text-text-secondary py-1"
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+              {importMsg && (
+                <div className={`text-xs ${importMsg.toLowerCase().includes("error") || importMsg.toLowerCase().includes("fail") ? "text-danger" : "text-success"}`}>
+                  {importMsg}
+                </div>
+              )}
             </div>
-            {importMsg && (
-              <div className={`text-xs ${importMsg.includes("error") || importMsg.includes("fail") ? "text-danger" : "text-success"}`}>
-                {importMsg}
+          ) : moxfieldUsername === null ? null : (
+            <div className="border border-border rounded-lg p-3 space-y-2">
+              <label className="block text-xs text-text-tertiary">
+                Set your Moxfield username to import decks
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={moxfieldSetup}
+                  onChange={(e) => setMoxfieldSetup(e.target.value)}
+                  placeholder="Moxfield username..."
+                  className="flex-1 px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={saveMoxfieldUsername}
+                  disabled={!moxfieldSetup.trim()}
+                  className="px-4 py-2 btn-primary bg-accent text-accent-text text-sm font-medium rounded-lg hover:bg-accent-hover disabled:opacity-50"
+                >
+                  Save
+                </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           <label htmlFor="decklist" className="block text-sm font-medium mb-1">
             Decklist
