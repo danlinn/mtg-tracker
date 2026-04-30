@@ -35,6 +35,52 @@ export default function EditDeckPage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState("");
+  const [moxfieldUrl, setMoxfieldUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importMsg, setImportMsg] = useState("");
+
+  async function handleMoxfieldImport() {
+    if (!moxfieldUrl.trim()) return;
+    setImporting(true);
+    setImportMsg("");
+    try {
+      const res = await fetch("/api/moxfield", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: moxfieldUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setImportMsg(data.error ?? "Import failed");
+        setImporting(false);
+        return;
+      }
+      if (data.name) setName(data.name);
+      if (data.commanders?.[0]) {
+        setCommander(data.commanders[0]);
+        if (data.commanders[1]) {
+          setCommander2(data.commanders[1]);
+          setShowPartner(true);
+        }
+      }
+      if (data.colors) {
+        setColors({
+          W: data.colors.W ?? false,
+          U: data.colors.U ?? false,
+          B: data.colors.B ?? false,
+          R: data.colors.R ?? false,
+          G: data.colors.G ?? false,
+        });
+      }
+      if (data.decklist) setDecklist(data.decklist);
+      setImportMsg("Imported from Moxfield");
+      setMoxfieldUrl("");
+    } catch {
+      setImportMsg("Network error");
+    } finally {
+      setImporting(false);
+    }
+  }
 
   function buildEdhpUrl() {
     if (!decklist.trim()) return null;
@@ -245,6 +291,32 @@ export default function EditDeckPage() {
           </div>
         </div>
         <div>
+          <div className="border border-border rounded-lg p-3 space-y-2">
+            <label className="block text-sm font-medium">Import from Moxfield</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={moxfieldUrl}
+                onChange={(e) => setMoxfieldUrl(e.target.value)}
+                placeholder="Paste Moxfield deck URL or ID..."
+                className="flex-1 px-3 py-2 border border-border-strong rounded-lg bg-surface text-text-primary text-sm"
+              />
+              <button
+                type="button"
+                onClick={handleMoxfieldImport}
+                disabled={importing || !moxfieldUrl.trim()}
+                className="px-4 py-2 btn-primary bg-accent text-accent-text text-sm font-medium rounded-lg hover:bg-accent-hover disabled:opacity-50"
+              >
+                {importing ? "Importing..." : "Import"}
+              </button>
+            </div>
+            {importMsg && (
+              <div className={`text-xs ${importMsg.includes("error") || importMsg.includes("fail") ? "text-danger" : "text-success"}`}>
+                {importMsg}
+              </div>
+            )}
+          </div>
+
           <label htmlFor="decklist" className="block text-sm font-medium mb-1">
             Decklist
           </label>
@@ -256,16 +328,29 @@ export default function EditDeckPage() {
             rows={6}
             className="w-full px-3 py-2 border border-border-strong rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-surface text-text-primary text-sm font-mono"
           />
-          {decklist.trim() && (
-            <a
-              href={buildEdhpUrl()!}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block mt-2 text-sm bg-amber-600 text-white px-4 py-1.5 rounded-lg hover:bg-amber-700 transition-colors"
-            >
-              Check Power Level on EDHPowerLevel.com
-            </a>
-          )}
+          <div className="flex gap-2 mt-2">
+            {decklist.trim() && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(decklist);
+                  }}
+                  className="text-sm border border-border-strong px-3 py-1.5 rounded-lg hover:bg-surface-hover transition-colors"
+                >
+                  Copy Decklist
+                </button>
+                <a
+                  href={buildEdhpUrl()!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm bg-amber-600 text-white px-4 py-1.5 rounded-lg hover:bg-amber-700 transition-colors"
+                >
+                  Check Power Level
+                </a>
+              </>
+            )}
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
