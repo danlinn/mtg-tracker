@@ -35,7 +35,7 @@ export default function EditDeckPage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState("");
-  const [moxfieldUsername, setMoxfieldUsername] = useState<string | null>(null);
+  const [moxfieldUsername, setMoxfieldUsername] = useState<string | null | "loading">("loading");
   const [moxfieldDecks, setMoxfieldDecks] = useState<{ id: string; name: string; format: string; mainboardCount: number }[]>([]);
   const [moxfieldBrowseOpen, setMoxfieldBrowseOpen] = useState(false);
   const [moxfieldLoading, setMoxfieldLoading] = useState(false);
@@ -46,8 +46,8 @@ export default function EditDeckPage() {
   useEffect(() => {
     fetch("/api/profile")
       .then((r) => r.json())
-      .then((data) => setMoxfieldUsername(data.moxfieldUsername ?? null))
-      .catch(() => {});
+      .then((data) => setMoxfieldUsername(data.moxfieldUsername ?? ""))
+      .catch(() => setMoxfieldUsername(""));
   }, []);
 
   async function saveMoxfieldUsername() {
@@ -377,7 +377,7 @@ export default function EditDeckPage() {
                 </div>
               )}
             </div>
-          ) : moxfieldUsername === null ? null : (
+          ) : moxfieldUsername === "loading" ? null : (
             <div className="border border-border rounded-lg p-3 space-y-2">
               <label className="block text-xs text-text-tertiary">
                 Set your Moxfield username to import decks
