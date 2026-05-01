@@ -36,12 +36,15 @@ if [ "$answer" != "yes" ]; then
   exit 1
 fi
 
-# Temporarily backup .env.local and write a clean one with only the
-# unpooled URL so prisma.config.ts picks it up correctly.
+# Temporarily backup .env.local and write a clean one with ONLY the
+# unpooled URL on every key so prisma.config.ts picks it up regardless
+# of which env var it checks first.
 cp .env.local .env.local.bak 2>/dev/null || true
 {
-  echo "DATABASE_URL=\"$UNPOOLED\""
+  echo "POSTGRES_PRISMA_URL=\"$UNPOOLED\""
+  echo "NEON_DATABASE_URL=\"$UNPOOLED\""
   echo "POSTGRES_URL=\"$UNPOOLED\""
+  echo "DATABASE_URL=\"$UNPOOLED\""
 } > .env.local
 
 echo
