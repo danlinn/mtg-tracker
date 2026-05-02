@@ -1,6 +1,6 @@
 import type { ThemeName } from "@/lib/theme";
 
-export type TextureName = "none" | "grit" | "hex-grid" | "circuit" | "scales" | "crosshatch" | "dots" | "diamonds" | "waves" | "stone" | "diagonal-streak" | "shimmer";
+export type TextureName = "none" | "grit" | "hex-grid" | "circuit" | "scales" | "crosshatch" | "dots" | "diamonds" | "waves" | "stone" | "diagonal-streak" | "shimmer" | "pixelated";
 
 function svgUri(svg: string): string {
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
@@ -17,19 +17,20 @@ const TEXTURE_SVGS: Record<Exclude<TextureName, "none">, (opacity: number) => st
   waves: (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='40' height='10'><path d='M0 5Q10 0 20 5Q30 10 40 5' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='0.5'/></svg>`),
   stone: (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect x='0' y='0' width='20' height='20' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='0.3'/><rect x='20' y='10' width='20' height='20' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='0.3'/><rect x='10' y='20' width='20' height='20' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='0.3'/></svg>`),
   "diagonal-streak": (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect x='10' y='-5' width='12' height='6' rx='1' transform='rotate(-45 16 -2)' fill='white' fill-opacity='${o}'/><rect x='45' y='8' width='18' height='5' rx='1' transform='rotate(-45 54 10.5)' fill='white' fill-opacity='${o * 0.7}'/><rect x='5' y='30' width='8' height='4' rx='1' transform='rotate(-45 9 32)' fill='white' fill-opacity='${o * 0.5}'/><rect x='55' y='35' width='14' height='5' rx='1' transform='rotate(-45 62 37.5)' fill='white' fill-opacity='${o * 0.8}'/><rect x='25' y='50' width='10' height='4' rx='1' transform='rotate(-45 30 52)' fill='white' fill-opacity='${o * 0.6}'/><rect x='60' y='60' width='16' height='6' rx='1' transform='rotate(-45 68 63)' fill='white' fill-opacity='${o}'/><rect x='0' y='65' width='9' height='3' rx='1' transform='rotate(-45 4.5 66.5)' fill='white' fill-opacity='${o * 0.4}'/><rect x='35' y='20' width='6' height='3' rx='1' transform='rotate(-45 38 21.5)' fill='white' fill-opacity='${o * 0.5}'/><rect x='70' y='15' width='11' height='4' rx='1' transform='rotate(-45 75.5 17)' fill='white' fill-opacity='${o * 0.7}'/><rect x='20' y='72' width='13' height='5' rx='1' transform='rotate(-45 26.5 74.5)' fill='white' fill-opacity='${o * 0.6}'/></svg>`),
+  pixelated: (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' shape-rendering='crispEdges'><rect x='4' y='0' width='4' height='4' fill='white' fill-opacity='${o}'/><rect x='20' y='0' width='4' height='4' fill='white' fill-opacity='${o * 0.6}'/><rect x='36' y='4' width='4' height='4' fill='white' fill-opacity='${o * 0.8}'/><rect x='0' y='12' width='4' height='4' fill='white' fill-opacity='${o * 0.5}'/><rect x='16' y='8' width='4' height='4' fill='white' fill-opacity='${o}'/><rect x='28' y='12' width='4' height='4' fill='white' fill-opacity='${o * 0.4}'/><rect x='44' y='8' width='4' height='4' fill='white' fill-opacity='${o * 0.7}'/><rect x='8' y='16' width='4' height='4' fill='white' fill-opacity='${o * 0.7}'/><rect x='40' y='16' width='4' height='4' fill='white' fill-opacity='${o * 0.5}'/><rect x='24' y='20' width='4' height='4' fill='white' fill-opacity='${o * 0.9}'/><rect x='12' y='24' width='4' height='4' fill='white' fill-opacity='${o * 0.6}'/><rect x='32' y='24' width='4' height='4' fill='white' fill-opacity='${o}'/><rect x='0' y='28' width='4' height='4' fill='white' fill-opacity='${o * 0.8}'/><rect x='44' y='28' width='4' height='4' fill='white' fill-opacity='${o * 0.4}'/><rect x='20' y='32' width='4' height='4' fill='white' fill-opacity='${o * 0.5}'/><rect x='36' y='32' width='4' height='4' fill='white' fill-opacity='${o * 0.7}'/><rect x='8' y='36' width='4' height='4' fill='white' fill-opacity='${o}'/><rect x='28' y='40' width='4' height='4' fill='white' fill-opacity='${o * 0.6}'/><rect x='16' y='44' width='4' height='4' fill='white' fill-opacity='${o * 0.8}'/><rect x='40' y='44' width='4' height='4' fill='white' fill-opacity='${o * 0.5}'/></svg>`),
   shimmer: (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><defs><linearGradient id='s1' x1='0' y1='0' x2='0.5' y2='1'><stop offset='0%' stop-color='white' stop-opacity='0'/><stop offset='45%' stop-color='white' stop-opacity='${o * 0.8}'/><stop offset='50%' stop-color='white' stop-opacity='${o * 2.5}'/><stop offset='55%' stop-color='white' stop-opacity='${o * 0.8}'/><stop offset='100%' stop-color='white' stop-opacity='0'/></linearGradient><linearGradient id='s2' x1='0.3' y1='0' x2='0.8' y2='1'><stop offset='0%' stop-color='white' stop-opacity='0'/><stop offset='40%' stop-color='white' stop-opacity='${o * 0.5}'/><stop offset='50%' stop-color='white' stop-opacity='${o * 1.5}'/><stop offset='60%' stop-color='white' stop-opacity='${o * 0.5}'/><stop offset='100%' stop-color='white' stop-opacity='0'/></linearGradient></defs><rect width='120' height='120' fill='url(%23s1)'/><rect x='30' y='20' width='60' height='80' fill='url(%23s2)' opacity='0.6'/><line x1='0' y1='40' x2='120' y2='40' stroke='white' stroke-opacity='${o * 0.3}' stroke-width='0.5'/><line x1='0' y1='80' x2='120' y2='80' stroke='white' stroke-opacity='${o * 0.2}' stroke-width='0.5'/><line x1='40' y1='0' x2='40' y2='120' stroke='white' stroke-opacity='${o * 0.25}' stroke-width='0.5'/><line x1='80' y1='0' x2='80' y2='120' stroke='white' stroke-opacity='${o * 0.15}' stroke-width='0.5'/></svg>`),
 };
 
 export const THEME_DEFAULT_TEXTURE: Record<ThemeName, TextureName> = {
   default: "none",
-  synth: "diagonal-streak",
+  synth: "pixelated",
   cyber: "none",
   flame: "none",
   chris: "none",
   phyrexia: "grit",
   "stained-glass": "shimmer",
   dungeon: "none",
-  "neon-dynasty": "none",
+  "neon-dynasty": "diagonal-streak",
   grixis: "grit",
 };
 
