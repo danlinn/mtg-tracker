@@ -43,10 +43,13 @@ export default function NavBar() {
     : navItems;
 
   const isTracker = pathname === "/tracker";
-  const navPositionClass = isTracker ? "sticky top-0 lg:static" : "sticky top-0";
+
+  if (isTracker) {
+    return null;
+  }
 
   return (
-    <nav className={`bg-nav-bg text-nav-text-hover z-50 relative ${navPositionClass}`}>
+    <nav className="bg-nav-bg text-nav-text-hover z-50 relative sticky top-0">
       <div className="w-full px-4">
         {/* Top row */}
         <div className="flex items-center justify-between h-14 gap-4">
