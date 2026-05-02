@@ -16,7 +16,7 @@ describe("getTextureBackground", () => {
   it("returns a data URI for each texture type", () => {
     const names: TextureName[] = [
       "grit", "hex-grid", "circuit", "scales", "crosshatch",
-      "dots", "diamonds", "waves", "stone",
+      "dots", "diamonds", "waves", "stone", "diagonal-streak", "shimmer",
     ];
     for (const name of names) {
       const result = getTextureBackground(name);
