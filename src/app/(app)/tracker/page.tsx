@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import Link from "next/link";
 import { useTheme, useThemePalette } from "@/lib/theme";
 import type { Palette, ColorKey } from "@/lib/themePalettes";
 import { bgForComboStyled, GRADIENT_STYLES, THEME_DEFAULT_GRADIENT, type GradientStyleName } from "@/lib/gradientStyles";
@@ -469,6 +470,7 @@ export default function TrackerPage() {
   const [assignSeatFor, setAssignSeatFor] = useState<number | null>(null);
   const [swapSource, setSwapSource] = useState<number | null>(null);
   const [swapTarget, setSwapTarget] = useState<number | null>(null);
+  const [showNav, setShowNav] = useState(false);
 
   // Persist to sessionStorage on every relevant change
   useEffect(() => {
@@ -989,8 +991,7 @@ export default function TrackerPage() {
 
   return (
     <div
-      className="w-screen overflow-hidden -mx-4 -mt-6 -mb-6"
-      style={{ height: "100dvh" }}
+      className="fixed inset-0 z-40 overflow-hidden"
       onTouchMove={handleTouchMoveSwap}
       onTouchEnd={handleEndSwap}
       onTouchCancel={() => { setSwapSource(null); setSwapTarget(null); }}
@@ -1008,6 +1009,58 @@ export default function TrackerPage() {
       onMouseUp={handleEndSwap}
     >
       {layout}
+
+      {/* Pull-down nav trigger */}
+      {!showNav && (
+        <div
+          className="absolute top-0 left-0 right-0 h-8 z-50"
+          onTouchStart={() => setShowNav(true)}
+          onClick={() => setShowNav(true)}
+        >
+          <div className="w-12 h-1 bg-white/30 rounded-full mx-auto mt-3" />
+        </div>
+      )}
+
+      {/* Nav overlay */}
+      {showNav && (
+        <div className="absolute inset-0 z-50 flex flex-col">
+          <div className="bg-nav-bg/95 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="px-4 py-3 flex items-center justify-between">
+              <span className="nav-logo font-bold text-lg text-nav-text-hover">MTG Tracker</span>
+              <button
+                type="button"
+                onClick={() => setShowNav(false)}
+                className="text-nav-text-muted hover:text-nav-text-hover p-2"
+                aria-label="Close menu"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="px-4 pb-3 space-y-1 border-t border-nav-border">
+              {[
+                { href: "/dashboard", label: "Dashboard" },
+                { href: "/decks", label: "Decks" },
+                { href: "/games", label: "Games" },
+                { href: "/players", label: "Players" },
+                { href: "/stats", label: "Stats" },
+                { href: "/leaderboard", label: "Leaderboard" },
+                { href: "/playgroups", label: "Groups" },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="block px-3 py-2 rounded text-sm font-medium text-nav-text hover:text-nav-text-hover hover:bg-nav-hover-bg"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="flex-1" onClick={() => setShowNav(false)} />
+        </div>
+      )}
 
       <div
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-3"

@@ -103,13 +103,13 @@ describe("NavBar", () => {
     expect(screen.queryByTestId("mobile-menu")).toBeNull();
   });
 
-  it("hides nav on /tracker and reveals via pull-down", () => {
+  it("returns null on /tracker so tracker page owns the viewport", () => {
     const src = readFileSync(
       join(process.cwd(), "src/components/NavBar.tsx"),
       "utf8"
     );
     expect(src).toMatch(/pathname\s*===\s*"\/tracker"/);
-    expect(src).toMatch(/trackerNavVisible/);
+    expect(src).toMatch(/return\s+null/);
   });
 
   it("does not include legacy dynamic measurement code (prevents regression)", () => {

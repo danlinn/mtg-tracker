@@ -43,40 +43,16 @@ export default function NavBar() {
     : navItems;
 
   const isTracker = pathname === "/tracker";
-  const [trackerNavVisible, setTrackerNavVisible] = useState(false);
 
-  if (isTracker && !trackerNavVisible) {
-    return (
-      <div
-        className="fixed top-0 left-0 right-0 h-6 z-50"
-        onTouchStart={() => setTrackerNavVisible(true)}
-        onClick={() => setTrackerNavVisible(true)}
-      >
-        <div className="w-12 h-1 bg-nav-text/30 rounded-full mx-auto mt-2" />
-      </div>
-    );
+  if (isTracker) {
+    return null;
   }
 
-  const navPositionClass = isTracker ? "fixed top-0 left-0 right-0 z-50" : "sticky top-0";
-
   return (
-    <nav className={`bg-nav-bg text-nav-text-hover z-50 relative ${navPositionClass}`}>
+    <nav className="bg-nav-bg text-nav-text-hover z-50 relative sticky top-0">
       <div className="w-full px-4">
         {/* Top row */}
         <div className="flex items-center justify-between h-14 gap-4">
-          {isTracker && (
-            <button
-              type="button"
-              onClick={() => setTrackerNavVisible(false)}
-              className="text-nav-text-muted hover:text-nav-text-hover text-sm mr-2"
-              aria-label="Hide menu"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <line x1="4" y1="12" x2="20" y2="12" />
-                <line x1="12" y1="4" x2="12" y2="12" />
-              </svg>
-            </button>
-          )}
           <Link href="/dashboard" className="nav-logo font-bold text-lg whitespace-nowrap">
             MTG Tracker
           </Link>
