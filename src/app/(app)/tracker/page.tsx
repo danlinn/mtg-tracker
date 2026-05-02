@@ -2,10 +2,12 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
-import { useTheme, useThemePalette } from "@/lib/theme";
+import { signOut } from "next-auth/react";
+import { useTheme, useThemePalette, type ThemeName } from "@/lib/theme";
 import type { Palette, ColorKey } from "@/lib/themePalettes";
 import { bgForComboStyled, GRADIENT_STYLES, THEME_DEFAULT_GRADIENT, type GradientStyleName } from "@/lib/gradientStyles";
 import { THEME_DEFAULT_TEXTURE, getTextureBackground } from "@/lib/textures";
+import PlaygroupSwitcher from "@/components/PlaygroupSwitcher";
 
 interface Player {
   life: number;
@@ -436,7 +438,7 @@ function PlayerBox({
 }
 
 export default function TrackerPage() {
-  const { theme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const palette = useThemePalette();
   const defaultGradient = THEME_DEFAULT_GRADIENT[theme] ?? "linear";
   const textureOverlay = getTextureBackground(THEME_DEFAULT_TEXTURE[theme] ?? "none");
@@ -1056,6 +1058,41 @@ export default function TrackerPage() {
                   {item.label}
                 </Link>
               ))}
+              <div className="mt-2 pt-2 border-t border-nav-border space-y-1">
+                <div className="px-3 py-2 flex items-center justify-between">
+                  <span className="text-sm text-nav-text-muted">Group</span>
+                  <PlaygroupSwitcher />
+                </div>
+                <div className="px-3 py-2 flex items-center justify-between">
+                  <span className="text-sm text-nav-text-muted">Theme</span>
+                  <select
+                    value={theme}
+                    onChange={(e) => setTheme(e.target.value as ThemeName)}
+                    className="bg-nav-select-bg text-nav-text text-sm rounded px-2 py-1 border border-nav-select-border"
+                  >
+                    {(["default","synth","cyber","flame","chris","phyrexia","stained-glass","dungeon","neon-dynasty","grixis"] as const).map((v) => (
+                      <option key={v} value={v}>{v === "stained-glass" ? "Stained Glass" : v === "neon-dynasty" ? "Neon Dynasty" : v.charAt(0).toUpperCase() + v.slice(1)}</option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  onClick={() => {
+                    if ("caches" in window) {
+                      caches.keys().then((names) => names.forEach((n) => caches.delete(n)));
+                    }
+                    window.location.reload();
+                  }}
+                  className="block w-full text-left px-3 py-2 text-sm text-nav-text-muted hover:text-nav-text-hover"
+                >
+                  Reload App
+                </button>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="block w-full text-left px-3 py-2 text-sm text-nav-text-muted hover:text-nav-text-hover"
+                >
+                  Sign out
+                </button>
+              </div>
             </div>
           </div>
           <div className="flex-1" onClick={() => setShowNav(false)} />
