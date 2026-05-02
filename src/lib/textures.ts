@@ -1,6 +1,6 @@
 import type { ThemeName } from "@/lib/theme";
 
-export type TextureName = "none" | "grit" | "hex-grid" | "circuit" | "scales" | "crosshatch" | "dots" | "diamonds" | "waves" | "stone";
+export type TextureName = "none" | "grit" | "hex-grid" | "circuit" | "scales" | "crosshatch" | "dots" | "diamonds" | "waves" | "stone" | "diagonal-streak" | "shimmer";
 
 function svgUri(svg: string): string {
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
@@ -16,16 +16,18 @@ const TEXTURE_SVGS: Record<Exclude<TextureName, "none">, (opacity: number) => st
   diamonds: (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><path d='M12 0L24 12L12 24L0 12Z' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='0.5'/></svg>`),
   waves: (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='40' height='10'><path d='M0 5Q10 0 20 5Q30 10 40 5' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='0.5'/></svg>`),
   stone: (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><rect x='0' y='0' width='20' height='20' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='0.3'/><rect x='20' y='10' width='20' height='20' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='0.3'/><rect x='10' y='20' width='20' height='20' fill='none' stroke='white' stroke-opacity='${o}' stroke-width='0.3'/></svg>`),
+  "diagonal-streak": (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30'><line x1='0' y1='30' x2='30' y2='0' stroke='white' stroke-opacity='${o}' stroke-width='1'/><line x1='-5' y1='25' x2='25' y2='-5' stroke='white' stroke-opacity='${o * 0.5}' stroke-width='0.5'/><line x1='5' y1='35' x2='35' y2='5' stroke='white' stroke-opacity='${o * 0.5}' stroke-width='0.5'/></svg>`),
+  shimmer: (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'><defs><linearGradient id='s' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='white' stop-opacity='0'/><stop offset='40%' stop-color='white' stop-opacity='${o}'/><stop offset='50%' stop-color='white' stop-opacity='${o * 2}'/><stop offset='60%' stop-color='white' stop-opacity='${o}'/><stop offset='100%' stop-color='white' stop-opacity='0'/></linearGradient></defs><rect width='60' height='60' fill='url(%23s)'/></svg>`),
 };
 
 export const THEME_DEFAULT_TEXTURE: Record<ThemeName, TextureName> = {
   default: "none",
-  synth: "none",
+  synth: "diagonal-streak",
   cyber: "none",
   flame: "none",
   chris: "none",
   phyrexia: "grit",
-  "stained-glass": "none",
+  "stained-glass": "shimmer",
   dungeon: "none",
   "neon-dynasty": "none",
   grixis: "grit",
