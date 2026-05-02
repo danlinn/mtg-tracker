@@ -990,7 +990,7 @@ export default function TrackerPage() {
   return (
     <div
       className="w-screen overflow-hidden -mx-4 -mt-6 -mb-6"
-      style={{ height: "calc(100dvh - 3.5rem)" }}
+      style={{ height: "100dvh" }}
       onTouchMove={handleTouchMoveSwap}
       onTouchEnd={handleEndSwap}
       onTouchCancel={() => { setSwapSource(null); setSwapTarget(null); }}
