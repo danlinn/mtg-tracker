@@ -266,14 +266,14 @@ function PlayerBox({
       }}
     >
       {/* Tap zones — even split of the area above the info bar / commander damage.
-           When opponents exist, reserve 7rem at the bottom (info bar + commander).
+           When opponents exist, reserve 8rem at the bottom (info bar + commander).
            Each zone gets exactly half the remaining space. */}
       <button
         type="button"
         onClick={() => handleTap(1)}
         className="absolute top-0 left-0 right-0 active:bg-white/10"
         style={hasCommander
-          ? { height: "calc(50% - 3.5rem)" }
+          ? { height: "calc(50% - 4rem)" }
           : { height: "50%" }
         }
         aria-label={`Player ${index + 1} +1 life`}
@@ -284,7 +284,7 @@ function PlayerBox({
         onClick={() => handleTap(-1)}
         className="absolute left-0 right-0 active:bg-black/10"
         style={hasCommander
-          ? { top: "calc(50% - 3.5rem)", height: "calc(50% - 3.5rem)" }
+          ? { top: "calc(50% - 4rem)", height: "calc(50% - 4rem)" }
           : { top: "50%", height: "50%" }
         }
         aria-label={`Player ${index + 1} -1 life`}
@@ -396,7 +396,7 @@ function PlayerBox({
                   return (
                     <div
                       key={k.key}
-                      className={`relative flex-1 h-20 rounded-lg overflow-hidden border-2 select-none ${
+                      className={`relative flex-1 h-24 rounded-lg overflow-hidden border-2 select-none ${
                         isLethal ? "border-red-500" : "border-white/30"
                       }`}
                       style={{ background: oppBg, color: oppText }}
