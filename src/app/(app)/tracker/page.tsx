@@ -989,7 +989,8 @@ export default function TrackerPage() {
 
   return (
     <div
-      className="fixed inset-0 top-14 lg:top-[104px] overflow-hidden"
+      className="w-full overflow-hidden"
+      style={{ height: "calc(100dvh - 3.5rem)" }}
       onTouchMove={handleTouchMoveSwap}
       onTouchEnd={handleEndSwap}
       onTouchCancel={() => { setSwapSource(null); setSwapTarget(null); }}
