@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTheme, useThemePalette } from "@/lib/theme";
 import type { Palette, ColorKey } from "@/lib/themePalettes";
 import { bgForComboStyled, GRADIENT_STYLES, THEME_DEFAULT_GRADIENT, type GradientStyleName } from "@/lib/gradientStyles";
+import { THEME_DEFAULT_TEXTURE, getTextureBackground } from "@/lib/textures";
 
 interface Player {
   life: number;
@@ -169,6 +170,7 @@ interface PlayerBoxProps {
   dead?: boolean;
   deckLabel?: string;
   swapState?: "source" | "target" | null;
+  textureOverlay?: string;
 }
 
 function PlayerBox({
@@ -184,6 +186,7 @@ function PlayerBox({
   dead,
   deckLabel,
   swapState,
+  textureOverlay,
 }: PlayerBoxProps) {
   const textColor = textOn(player.bgColor);
   const lethal = Object.values(player.damage).some((d) => d >= 21);
@@ -251,7 +254,7 @@ function PlayerBox({
       data-player-idx={index}
       className={`relative w-full h-full overflow-hidden select-none ${swapRing}`}
       style={{
-        background: player.bgColor,
+        background: textureOverlay ? `${textureOverlay}, ${player.bgColor}` : player.bgColor,
         color: textColor,
         transform: rotate ? "rotate(180deg)" : undefined,
         filter: dead ? "grayscale(1)" : undefined,
@@ -435,6 +438,7 @@ export default function TrackerPage() {
   const { theme } = useTheme();
   const palette = useThemePalette();
   const defaultGradient = THEME_DEFAULT_GRADIENT[theme] ?? "linear";
+  const textureOverlay = getTextureBackground(THEME_DEFAULT_TEXTURE[theme] ?? "none");
   const BG_PRESETS = useMemo(() => allCombos(palette), [palette]);
   // Hydrate from sessionStorage if we have a game in progress this tab
   const saved = typeof window !== "undefined" ? loadSession() : null;
@@ -943,6 +947,7 @@ export default function TrackerPage() {
       dead={isDead(players[idx])}
       deckLabel={deckLabelFor(players[idx])}
       swapState={swapStateFor(idx)}
+      textureOverlay={textureOverlay}
     />
   );
 
