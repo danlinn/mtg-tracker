@@ -19,7 +19,6 @@ describe("GRADIENT_STYLES", () => {
     expect(names).toContain("radial");
     expect(names).toContain("hard-split");
     expect(names).toContain("diagonal-shards");
-    expect(names).toContain("diagonal-bleed");
     expect(names).toContain("conic");
     expect(names).toContain("horizontal-bands");
     expect(names).toContain("vignette");
@@ -129,13 +128,37 @@ describe("THEME_DEFAULT_GRADIENT", () => {
   });
 });
 
-describe("diagonal-bleed style", () => {
-  it("produces a gradient with more stops than diagonal-shards", () => {
+describe("maxColors constraint", () => {
+  it("pixelated and chevron have maxColors: 2", () => {
+    expect(getGradientStyle("pixelated").maxColors).toBe(2);
+    expect(getGradientStyle("chevron").maxColors).toBe(2);
+  });
+
+  it("bgForComboStyled falls back to linear when combo exceeds maxColors", () => {
     const combo: ColorKey[] = ["B", "R", "G"];
-    const shards = getGradientStyle("diagonal-shards").fn(combo, palette);
-    const bleed = getGradientStyle("diagonal-bleed").fn(combo, palette);
-    const shardsStops = shards.split(",").length;
-    const bleedStops = bleed.split(",").length;
-    expect(bleedStops).toBeGreaterThan(shardsStops);
+    const result = bgForComboStyled(combo, palette, "pixelated");
+    const linear = bgForComboStyled(combo, palette, "linear");
+    expect(result).toBe(linear);
+  });
+
+  it("bgForComboStyled uses the style when combo fits maxColors", () => {
+    const combo: ColorKey[] = ["B", "R"];
+    const result = bgForComboStyled(combo, palette, "pixelated");
+    expect(result).toContain("repeating-conic");
+  });
+});
+
+describe("stained-glass style", () => {
+  it("works with 2 colors", () => {
+    const result = getGradientStyle("stained-glass").fn(["W", "U"], palette);
+    expect(result).toBeTruthy();
+  });
+
+  it("uses all 5 colors when available", () => {
+    const combo: ColorKey[] = ["W", "U", "B", "R", "G"];
+    const result = getGradientStyle("stained-glass").fn(combo, palette);
+    for (const c of combo) {
+      expect(result).toContain(palette[c].hex.replace("#", "%23"));
+    }
   });
 });

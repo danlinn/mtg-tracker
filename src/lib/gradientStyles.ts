@@ -13,7 +13,6 @@ export type GradientStyleName =
   | "radial"
   | "hard-split"
   | "diagonal-shards"
-  | "diagonal-bleed"
   | "conic"
   | "horizontal-bands"
   | "vignette"
@@ -28,6 +27,7 @@ export interface GradientStyleDef {
   name: GradientStyleName;
   label: string;
   minColors?: number;
+  maxColors?: number;
   fn: (combo: ColorKey[], palette: Palette) => string;
 }
 
@@ -84,34 +84,6 @@ export const GRADIENT_STYLES: GradientStyleDef[] = [
     },
   },
   {
-    name: "diagonal-bleed",
-    label: "Diagonal Bleed",
-    fn: (combo, palette) => {
-      const hexes = getHexes(combo, palette);
-      if (hexes.length <= 1) return hexes[0] ?? palette.C.hex;
-      const pct = 100 / hexes.length;
-      const stops: string[] = [];
-      hexes.forEach((h, i) => {
-        const start = i * pct;
-        const end = (i + 1) * pct;
-        const bleed = pct * 0.08;
-        if (i > 0) {
-          stops.push(`${hexes[i - 1]} ${(start - bleed).toFixed(1)}%`);
-          stops.push(`${h} ${(start + bleed).toFixed(1)}%`);
-        } else {
-          stops.push(`${h} ${start.toFixed(1)}%`);
-        }
-        if (i < hexes.length - 1) {
-          stops.push(`${h} ${(end - bleed).toFixed(1)}%`);
-          stops.push(`${hexes[i + 1]} ${(end + bleed).toFixed(1)}%`);
-        } else {
-          stops.push(`${h} ${end.toFixed(1)}%`);
-        }
-      });
-      return `linear-gradient(135deg, ${stops.join(", ")})`;
-    },
-  },
-  {
     name: "conic",
     label: "Conic Sweep",
     fn: (combo, palette) => {
@@ -150,17 +122,19 @@ export const GRADIENT_STYLES: GradientStyleDef[] = [
   {
     name: "chevron",
     label: "Chevron",
+    maxColors: 2,
     fn: (combo, palette) => {
       const hexes = getHexes(combo, palette);
       if (hexes.length <= 1) return hexes[0] ?? palette.C.hex;
-      const mid = hexes[0];
-      const edge = hexes[hexes.length - 1];
+      const mid = hexes[hexes.length - 1];
+      const edge = hexes[0];
       return `linear-gradient(160deg, ${edge} 25%, ${mid} 50%, ${edge} 75%)`;
     },
   },
   {
     name: "pixelated",
     label: "Pixelated",
+    maxColors: 2,
     fn: (combo, palette) => {
       const hexes = getHexes(combo, palette);
       if (hexes.length <= 1) return hexes[0] ?? palette.C.hex;
@@ -217,18 +191,14 @@ export const GRADIENT_STYLES: GradientStyleDef[] = [
   {
     name: "stained-glass",
     label: "Stained Glass",
-    minColors: 3,
+    minColors: 2,
     fn: (combo, palette) => {
       const hexes = getHexes(combo, palette);
       if (hexes.length <= 1) return hexes[0] ?? palette.C.hex;
-      if (hexes.length === 2) return `linear-gradient(135deg, ${hexes[0]} 10%, ${hexes[1]} 90%)`;
-      // Encode hex colors for SVG (strip #, use %23)
       const fills = hexes.map((h) => h.replace("#", "%23"));
-      // Assign colors to triangle groups in the pattern
-      const assignColor = (i: number) => fills[i % fills.length];
-      const svg = `%3Csvg xmlns='http://www.w3.org/2000/svg' width='540' height='450' viewBox='0 0 1080 900'%3E%3Cg fill-opacity='.85'%3E%3Cpolygon fill='${assignColor(0)}' points='90 150 0 300 180 300'/%3E%3Cpolygon fill='${assignColor(1)}' points='90 150 180 0 0 0'/%3E%3Cpolygon fill='${assignColor(2)}' points='270 150 360 0 180 0'/%3E%3Cpolygon fill='${assignColor(0)}' points='450 150 360 300 540 300'/%3E%3Cpolygon fill='${assignColor(1)}' points='450 150 540 0 360 0'/%3E%3Cpolygon fill='${assignColor(2)}' points='630 150 540 300 720 300'/%3E%3Cpolygon fill='${assignColor(0)}' points='630 150 720 0 540 0'/%3E%3Cpolygon fill='${assignColor(1)}' points='810 150 720 300 900 300'/%3E%3Cpolygon fill='${assignColor(2)}' points='810 150 900 0 720 0'/%3E%3Cpolygon fill='${assignColor(0)}' points='990 150 900 300 1080 300'/%3E%3Cpolygon fill='${assignColor(1)}' points='990 150 1080 0 900 0'/%3E%3Cpolygon fill='${assignColor(2)}' points='90 450 0 600 180 600'/%3E%3Cpolygon fill='${assignColor(0)}' points='90 450 180 300 0 300'/%3E%3Cpolygon fill='${assignColor(1)}' points='270 450 180 600 360 600'/%3E%3Cpolygon fill='${assignColor(2)}' points='270 450 360 300 180 300'/%3E%3Cpolygon fill='${assignColor(0)}' points='450 450 360 600 540 600'/%3E%3Cpolygon fill='${assignColor(1)}' points='450 450 540 300 360 300'/%3E%3Cpolygon fill='${assignColor(2)}' points='630 450 540 600 720 600'/%3E%3Cpolygon fill='${assignColor(0)}' points='630 450 720 300 540 300'/%3E%3Cpolygon fill='${assignColor(1)}' points='810 450 720 600 900 600'/%3E%3Cpolygon fill='${assignColor(2)}' points='810 450 900 300 720 300'/%3E%3Cpolygon fill='${assignColor(0)}' points='990 450 900 600 1080 600'/%3E%3Cpolygon fill='${assignColor(1)}' points='990 450 1080 300 900 300'/%3E%3Cpolygon fill='${assignColor(2)}' points='90 750 0 900 180 900'/%3E%3Cpolygon fill='${assignColor(0)}' points='270 750 180 900 360 900'/%3E%3Cpolygon fill='${assignColor(1)}' points='270 750 360 600 180 600'/%3E%3Cpolygon fill='${assignColor(2)}' points='450 750 540 600 360 600'/%3E%3Cpolygon fill='${assignColor(0)}' points='630 750 540 900 720 900'/%3E%3Cpolygon fill='${assignColor(1)}' points='630 750 720 600 540 600'/%3E%3Cpolygon fill='${assignColor(2)}' points='810 750 720 900 900 900'/%3E%3Cpolygon fill='${assignColor(0)}' points='810 750 900 600 720 600'/%3E%3Cpolygon fill='${assignColor(1)}' points='990 750 900 900 1080 900'/%3E%3C/g%3E%3C/svg%3E`;
-      const bgColor = hexes[0];
-      return `${bgColor} url("data:image/svg+xml,${svg}")`;
+      const c = (i: number) => fills[i % fills.length];
+      const svg = `%3Csvg xmlns='http://www.w3.org/2000/svg' width='540' height='450' viewBox='0 0 1080 900'%3E%3Cg fill-opacity='.85'%3E%3Cpolygon fill='${c(0)}' points='90 150 0 300 180 300'/%3E%3Cpolygon fill='${c(1)}' points='90 150 180 0 0 0'/%3E%3Cpolygon fill='${c(2)}' points='270 150 360 0 180 0'/%3E%3Cpolygon fill='${c(3)}' points='450 150 360 300 540 300'/%3E%3Cpolygon fill='${c(4)}' points='450 150 540 0 360 0'/%3E%3Cpolygon fill='${c(0)}' points='630 150 540 300 720 300'/%3E%3Cpolygon fill='${c(1)}' points='630 150 720 0 540 0'/%3E%3Cpolygon fill='${c(2)}' points='810 150 720 300 900 300'/%3E%3Cpolygon fill='${c(3)}' points='810 150 900 0 720 0'/%3E%3Cpolygon fill='${c(4)}' points='990 150 900 300 1080 300'/%3E%3Cpolygon fill='${c(0)}' points='990 150 1080 0 900 0'/%3E%3Cpolygon fill='${c(1)}' points='90 450 0 600 180 600'/%3E%3Cpolygon fill='${c(2)}' points='90 450 180 300 0 300'/%3E%3Cpolygon fill='${c(3)}' points='270 450 180 600 360 600'/%3E%3Cpolygon fill='${c(4)}' points='270 450 360 300 180 300'/%3E%3Cpolygon fill='${c(0)}' points='450 450 360 600 540 600'/%3E%3Cpolygon fill='${c(1)}' points='450 450 540 300 360 300'/%3E%3Cpolygon fill='${c(2)}' points='630 450 540 600 720 600'/%3E%3Cpolygon fill='${c(3)}' points='630 450 720 300 540 300'/%3E%3Cpolygon fill='${c(4)}' points='810 450 720 600 900 600'/%3E%3Cpolygon fill='${c(0)}' points='810 450 900 300 720 300'/%3E%3Cpolygon fill='${c(1)}' points='990 450 900 600 1080 600'/%3E%3Cpolygon fill='${c(2)}' points='990 450 1080 300 900 300'/%3E%3Cpolygon fill='${c(3)}' points='90 750 0 900 180 900'/%3E%3Cpolygon fill='${c(4)}' points='270 750 180 900 360 900'/%3E%3Cpolygon fill='${c(0)}' points='270 750 360 600 180 600'/%3E%3Cpolygon fill='${c(1)}' points='450 750 540 600 360 600'/%3E%3Cpolygon fill='${c(2)}' points='630 750 540 900 720 900'/%3E%3Cpolygon fill='${c(3)}' points='630 750 720 600 540 600'/%3E%3Cpolygon fill='${c(4)}' points='810 750 720 900 900 900'/%3E%3Cpolygon fill='${c(0)}' points='810 750 900 600 720 600'/%3E%3Cpolygon fill='${c(1)}' points='990 750 900 900 1080 900'/%3E%3C/g%3E%3C/svg%3E`;
+      return `${hexes[0]} url("data:image/svg+xml,${svg}")`;
     },
   },
 ];
@@ -259,8 +229,9 @@ export function bgForComboStyled(
   const ordered = GRADIENT_ORDER.filter((c) => combo.includes(c));
   if (ordered.length === 1) return palette[ordered[0]].hex;
   const style = getGradientStyle(styleName);
-  if (style.minColors && ordered.length < style.minColors) {
+  if ((style.minColors && ordered.length < style.minColors) ||
+      (style.maxColors && ordered.length > style.maxColors)) {
     return getGradientStyle("linear").fn(combo, palette);
   }
-  return getGradientStyle(styleName).fn(combo, palette);
+  return style.fn(combo, palette);
 }
