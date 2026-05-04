@@ -18,6 +18,7 @@ const mockGameCreate = jest.fn();
 const mockDeckUpdate = jest.fn();
 const mockDeckFindMany = jest.fn();
 const mockUserFindMany = jest.fn();
+const mockPlaygroupFindUnique = jest.fn();
 const mockTransaction = jest.fn();
 jest.mock("@/lib/prisma", () => ({
   prisma: {
@@ -32,6 +33,9 @@ jest.mock("@/lib/prisma", () => ({
     },
     user: {
       findMany: (...args: unknown[]) => mockUserFindMany(...args),
+    },
+    playgroup: {
+      findUnique: (...args: unknown[]) => mockPlaygroupFindUnique(...args),
     },
     $transaction: (...args: unknown[]) => mockTransaction(...args),
   },
