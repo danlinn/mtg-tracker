@@ -314,7 +314,7 @@ function PlayerBox({
       {opponents.length > 0 && (
         <div
           className="absolute left-0 right-0 flex items-center justify-between px-2 z-10 pointer-events-none"
-          style={{ bottom: "5.5rem" }}
+          style={{ bottom: "6.75rem" }}
         >
           <div
             className="text-xs font-semibold truncate flex-1 mr-2"
