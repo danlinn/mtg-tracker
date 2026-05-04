@@ -133,22 +133,30 @@ describe("THEME_DEFAULT_GRADIENT", () => {
 });
 
 describe("maxColors constraint", () => {
-  it("pixelated and chevron have maxColors: 2", () => {
-    expect(getGradientStyle("pixelated").maxColors).toBe(2);
+  it("chevron has maxColors: 2", () => {
     expect(getGradientStyle("chevron").maxColors).toBe(2);
+  });
+
+  it("pixelated has no maxColors (supports up to 5)", () => {
+    expect(getGradientStyle("pixelated").maxColors).toBeUndefined();
+    const combo5: ColorKey[] = ["W", "U", "B", "R", "G"];
+    const result = bgForComboStyled(combo5, palette, "pixelated");
+    for (const c of combo5) {
+      expect(result).toContain(palette[c].hex.replace("#", "%23"));
+    }
   });
 
   it("bgForComboStyled falls back to linear when combo exceeds maxColors", () => {
     const combo: ColorKey[] = ["B", "R", "G"];
-    const result = bgForComboStyled(combo, palette, "pixelated");
+    const result = bgForComboStyled(combo, palette, "chevron");
     const linear = bgForComboStyled(combo, palette, "linear");
     expect(result).toBe(linear);
   });
 
-  it("bgForComboStyled uses the style when combo fits maxColors", () => {
+  it("bgForComboStyled uses chevron when combo fits maxColors", () => {
     const combo: ColorKey[] = ["B", "R"];
-    const result = bgForComboStyled(combo, palette, "pixelated");
-    expect(result).toContain("repeating-conic");
+    const result = bgForComboStyled(combo, palette, "chevron");
+    expect(result).toContain("linear-gradient");
   });
 });
 
@@ -219,12 +227,9 @@ describe("negative cases", () => {
 
   it("maxColors styles do not apply to combos exceeding their limit", () => {
     const threeColorCombo: ColorKey[] = ["W", "U", "B"];
-    // pixelated and chevron have maxColors: 2
-    const pixResult = bgForComboStyled(threeColorCombo, palette, "pixelated");
+    // chevron has maxColors: 2
     const chevResult = bgForComboStyled(threeColorCombo, palette, "chevron");
     const linearResult = bgForComboStyled(threeColorCombo, palette, "linear");
-    // Should have fallen back to linear
-    expect(pixResult).toBe(linearResult);
     expect(chevResult).toBe(linearResult);
   });
 });

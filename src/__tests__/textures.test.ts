@@ -17,6 +17,7 @@ describe("getTextureBackground", () => {
     const names: TextureName[] = [
       "grit", "hex-grid", "circuit", "scales", "crosshatch",
       "dots", "diamonds", "waves", "stone", "diagonal-streak", "shimmer", "pixelated",
+      "topographic", "maze", "woven",
     ];
     for (const name of names) {
       const result = getTextureBackground(name);
@@ -65,6 +66,7 @@ describe("negative / edge cases", () => {
     const textured: TextureName[] = [
       "grit", "hex-grid", "circuit", "scales", "crosshatch",
       "dots", "diamonds", "waves", "stone", "diagonal-streak", "shimmer", "pixelated",
+      "topographic", "maze", "woven",
     ];
     expect(getTextureBackground("none")).toBe("");
     for (const name of textured) {
