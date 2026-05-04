@@ -135,13 +135,23 @@ export const GRADIENT_STYLES: GradientStyleDef[] = [
   {
     name: "pixelated",
     label: "Pixelated",
-    maxColors: 2,
     fn: (combo, palette) => {
       const hexes = getHexes(combo, palette);
       if (hexes.length <= 1) return hexes[0] ?? palette.C.hex;
-      const a = hexes[0];
-      const b = hexes[hexes.length - 1];
-      return `repeating-conic-gradient(${a} 0% 25%, ${b} 0% 50%) 0 0 / 16px 16px`;
+      const s = 8;
+      const cols = 6;
+      const rows = 6;
+      const w = cols * s;
+      const h = rows * s;
+      const rects = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const colorIdx = (r * 3 + c * 7 + r * c) % hexes.length;
+          rects.push(`<rect x='${c * s}' y='${r * s}' width='${s}' height='${s}' fill='${hexes[colorIdx].replace("#", "%23")}'/>`);
+        }
+      }
+      const svg = `%3Csvg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' shape-rendering='crispEdges'%3E${rects.join("")}%3C/svg%3E`;
+      return `url("data:image/svg+xml,${svg}")`;
     },
   },
   {
