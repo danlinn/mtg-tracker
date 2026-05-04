@@ -14,7 +14,6 @@
 import type { ThemeName } from "@/lib/theme";
 
 export type ColorKey = "W" | "U" | "B" | "R" | "G" | "C";
-export type ManaColorKey = Exclude<ColorKey, "C">;
 
 export interface ColorSwatch {
   /** Background color (used for fill/gradient stops) */
@@ -143,24 +142,3 @@ export function getPalette(theme: ThemeName | undefined | null): Palette {
 }
 
 export { DEFAULT_PALETTE };
-
-export function textOn(bg: string): string {
-  const match = bg.match(/#[0-9a-fA-F]{6}/);
-  if (!match) return "#ffffff";
-  const hex = match[0].replace("#", "");
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness > 150 ? "#111827" : "#ffffff";
-}
-
-export function comboForDeck(deck: { colorW: boolean; colorU: boolean; colorB: boolean; colorR: boolean; colorG: boolean }): ColorKey[] {
-  const combo: ColorKey[] = [];
-  if (deck.colorW) combo.push("W");
-  if (deck.colorU) combo.push("U");
-  if (deck.colorB) combo.push("B");
-  if (deck.colorR) combo.push("R");
-  if (deck.colorG) combo.push("G");
-  return combo;
-}

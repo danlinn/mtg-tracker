@@ -2,7 +2,6 @@
 
 import { useThemePalette } from "@/lib/theme";
 import type { ColorKey } from "@/lib/themePalettes";
-import { textOn } from "@/lib/themePalettes";
 import { GRADIENT_STYLES } from "@/lib/gradientStyles";
 
 const SAMPLE_COMBOS: { label: string; combo: ColorKey[] }[] = [
@@ -12,6 +11,16 @@ const SAMPLE_COMBOS: { label: string; combo: ColorKey[] }[] = [
   { label: "WB (Orzhov)", combo: ["W", "B"] },
   { label: "UR (Izzet)", combo: ["U", "R"] },
 ];
+
+function textOn(bg: string): string {
+  const match = bg.match(/#[0-9a-fA-F]{6}/);
+  if (!match) return "#ffffff";
+  const hex = match[0].replace("#", "");
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? "#111827" : "#ffffff";
+}
 
 export default function GradientDemoPage() {
   const palette = useThemePalette();

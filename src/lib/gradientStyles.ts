@@ -1,8 +1,7 @@
 import type { ColorKey, Palette } from "@/lib/themePalettes";
 import type { ThemeName } from "@/lib/theme";
 
-export const GRADIENT_ORDER: Exclude<ColorKey, "C">[] = ["B", "U", "R", "G", "W"];
-export const COMBO_KEYS: Exclude<ColorKey, "C">[] = ["W", "U", "B", "R", "G"];
+const GRADIENT_ORDER: ColorKey[] = ["B", "U", "R", "G", "W"];
 
 function getHexes(combo: ColorKey[], palette: Palette): string[] {
   const ordered = GRADIENT_ORDER.filter((c) => combo.includes(c));

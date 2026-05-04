@@ -8,8 +8,6 @@ import ColorPips from "@/components/ColorPips";
 import ManaSymbol, { type ManaColor } from "@/components/ManaSymbol";
 import { useThemePalette } from "@/lib/theme";
 import type { Palette } from "@/lib/themePalettes";
-import { comboForDeck, textOn } from "@/lib/themePalettes";
-import { bgForComboStyled } from "@/lib/gradientStyles";
 
 interface Deck {
   id: string;
@@ -40,11 +38,31 @@ const FILTER_COLORS: { key: (typeof COLOR_KEYS)[number]; color: ManaColor; label
   { key: "colorG", color: "G", label: "Green" },
 ];
 
+// Gradient order: Black, Blue, Red, Green, White
+const GRADIENT_ORDER: { key: (typeof COLOR_KEYS)[number]; paletteKey: "B" | "U" | "R" | "G" | "W" }[] = [
+  { key: "colorB", paletteKey: "B" },
+  { key: "colorU", paletteKey: "U" },
+  { key: "colorR", paletteKey: "R" },
+  { key: "colorG", paletteKey: "G" },
+  { key: "colorW", paletteKey: "W" },
+];
+
 function deckGradient(deck: Deck, palette: Palette): React.CSSProperties {
-  const combo = comboForDeck(deck);
-  if (combo.length === 0) return {};
-  const bg = bgForComboStyled(combo, palette, "linear");
-  return { background: bg, color: textOn(bg) };
+  const active = GRADIENT_ORDER.filter((c) => deck[c.key]).map((c) => palette[c.paletteKey]);
+  if (active.length === 0) return {};
+  const isWhiteOnly = deck.colorW && !deck.colorB && !deck.colorU && !deck.colorR && !deck.colorG;
+  const isBlackOnly = deck.colorB && !deck.colorW && !deck.colorU && !deck.colorR && !deck.colorG;
+  const textColor = isBlackOnly ? palette.B.text : isWhiteOnly ? palette.W.text : undefined;
+  if (active.length === 1) return { background: active[0].hex, color: textColor };
+  const stops = active.map((s, i) => {
+    if (i === 0) return `${s.hex} 10%`;
+    if (i === active.length - 1) return `${s.hex} 90%`;
+    return s.hex;
+  });
+  return {
+    background: `linear-gradient(135deg, ${stops.join(", ")})`,
+    color: textColor,
+  };
 }
 
 export default function DecksPage() {
