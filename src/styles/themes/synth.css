@@ -1,0 +1,146 @@
+
+   SYNTH — flowing aquas, pinks, purples
+   ═══════════════════════════════════════════════ */
+
+[data-theme="synth"] {
+  --background: #0a0812;
+  --foreground: #e4dff0;
+  --card-bg: #14111f;
+  --card-border: #2e2545;
+  --accent: #6ee7d4;
+  --accent-hover: #a0f0e4;
+  --muted: #8a7faa;
+  --t-text-700: #c4bdd8;
+  --t-text-400: #5e5580;
+
+  --synth-aqua: #6ee7d4;
+  --synth-pink: #f472b6;
+  --synth-purple: #a78bfa;
+}
+
+[data-theme="synth"] body {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 10% 20%, rgba(110,231,212,0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(244,114,182,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(167,139,250,0.04) 0%, transparent 60%), 
+    var(--background);
+}
+
+[data-theme="synth"] h1,
+[data-theme="synth"] h2,
+[data-theme="synth"] h3 {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6ee7d4, #a78bfa, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="synth"] h1 {
+  text-shadow: none; /* override — gradient clip handles it */
+  filter: drop-shadow(0 0 20px rgba(110,231,212,0.3));
+}
+
+[data-theme="synth"] .card-themed {
+  box-shadow: 0 2px 12px rgba(110,231,212,0.06), 0 1px 0 rgba(167,139,250,0.08) inset;
+  border-color: #2e2545;
+}
+
+/* Buttons */
+[data-theme="synth"] .btn-primary {
+  background: linear-gradient(135deg, #6ee7d4 0%, #a78bfa 50%, #f472b6 100%);
+  color: #0a0812;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 4px 20px rgba(110,231,212,0.25), 0 2px 8px rgba(244,114,182,0.15);
+}
+
+[data-theme="synth"] .btn-primary:hover,
+[data-theme="synth"] .btn-primary:hover {
+  background: linear-gradient(135deg, #a0f0e4 0%, #c4b5fc 50%, #f9a8d4 100%);
+  box-shadow: 0 6px 28px rgba(110,231,212,0.35), 0 2px 12px rgba(244,114,182,0.25);
+}
+
+/* Nav */
+[data-theme="synth"] nav {
+  background: linear-gradient(180deg, #110e1a 0%, #0a0812 100%);
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, transparent, #6ee7d4, #a78bfa, #f472b6, transparent) 1;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+[data-theme="synth"] nav .font-bold.text-lg {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6ee7d4, #a78bfa, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="synth"] nav .nav-link-active {
+  background: rgba(110,231,212,0.15);
+  color: #6ee7d4;
+  border: 1px solid rgba(110,231,212,0.15);
+}
+
+[data-theme="synth"] nav .nav-link:hover {
+  background: rgba(167,139,250,0.1);
+}
+
+/* Decorative dividers */
+[data-theme="synth"] .section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+[data-theme="synth"] .section-heading::before,
+[data-theme="synth"] .section-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #6ee7d4, #a78bfa, #f472b6, transparent);
+}
+
+/* Leaderboard */
+[data-theme="synth"] .medal-gold {
+  background: linear-gradient(135deg, #6ee7d4, #a78bfa);
+  color: #0a0812;
+  box-shadow: 0 0 14px rgba(110,231,212,0.4);
+}
+
+[data-theme="synth"] .medal-silver {
+  background: linear-gradient(135deg, #8a7faa, #b4a8d8);
+  color: #0a0812;
+}
+
+[data-theme="synth"] .medal-bronze {
+  background: linear-gradient(135deg, #f472b6, #f9a8d4);
+  color: #0a0812;
+}
+
+/* Stats values */
+[data-theme="synth"] .stat-value {
+  color: #6ee7d4;
+  text-shadow: 0 0 12px rgba(110,231,212,0.3);
+}
+
+/* Hover glow */
+[data-theme="synth"] .card-hover-glow:hover {
+  box-shadow: 0 0 16px rgba(110,231,212,0.15), 0 0 16px rgba(244,114,182,0.1), 0 4px 12px rgba(0,0,0,0.4);
+  border-color: rgba(110,231,212,0.5);
+}
+
+/* Liquid blob animation on nav logo */
+@keyframes synth-shift {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(110,231,212,0.4)) hue-rotate(0deg); }
+  33% { filter: drop-shadow(0 0 12px rgba(167,139,250,0.5)) hue-rotate(20deg); }
+  66% { filter: drop-shadow(0 0 10px rgba(244,114,182,0.4)) hue-rotate(-10deg); }
+}
+
+[data-theme="synth"] nav .font-bold.text-lg {
+  animation: synth-shift 6s ease-in-out infinite;
+}

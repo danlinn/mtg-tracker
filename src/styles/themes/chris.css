@@ -1,0 +1,118 @@
+/* ═══════════════════════════════════════════════
+   CHRIS — stark greyscale, whites & blacks
+   ═══════════════════════════════════════════════ */
+
+[data-theme="chris"] {
+  --background: #000000;
+  --foreground: #f0f0f0;
+  --card-bg: #0a0a0a;
+  --card-border: #222222;
+  --accent: #ffffff;
+  --accent-hover: #cccccc;
+  --muted: #666666;
+  --t-text-700: #c0c0c0;
+  --t-text-400: #444444;
+}
+
+[data-theme="chris"] body {
+  font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+  background: #000000;
+}
+
+[data-theme="chris"] h1,
+[data-theme="chris"] h2,
+[data-theme="chris"] h3 {
+  font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+  text-shadow: none;
+}
+
+[data-theme="chris"] .card-themed {
+  border-color: #222;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+
+/* Buttons — stark white on black */
+[data-theme="chris"] .btn-primary {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  font-weight: 700;
+}
+
+[data-theme="chris"] .btn-primary:hover,
+[data-theme="chris"] .btn-primary:hover {
+  background: #d0d0d0;
+  color: #000000;
+}
+
+/* Nav */
+[data-theme="chris"] nav {
+  background: #000000;
+  border-bottom: 1px solid #333;
+  box-shadow: none;
+}
+
+[data-theme="chris"] nav .font-bold.text-lg {
+  font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.08em;
+  text-shadow: none;
+}
+
+[data-theme="chris"] nav .nav-link-active {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+}
+
+[data-theme="chris"] nav .nav-link:hover {
+  background: #1a1a1a;
+}
+
+/* Dividers — thin white lines */
+[data-theme="chris"] .section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+[data-theme="chris"] .section-heading::before,
+[data-theme="chris"] .section-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #333;
+}
+
+/* Leaderboard */
+[data-theme="chris"] .medal-gold {
+  background: #ffffff;
+  color: #000000;
+  box-shadow: none;
+}
+
+[data-theme="chris"] .medal-silver {
+  background: #666666;
+  color: #ffffff;
+}
+
+[data-theme="chris"] .medal-bronze {
+  background: #333333;
+  color: #ffffff;
+}
+
+/* Stats values */
+[data-theme="chris"] .stat-value {
+  color: #ffffff;
+  text-shadow: none;
+}
+
+/* Hover */
+[data-theme="chris"] .card-hover-glow:hover {
+  box-shadow: 0 0 0 1px #ffffff;
+  border-color: #ffffff;
+}

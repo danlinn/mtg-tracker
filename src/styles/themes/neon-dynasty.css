@@ -1,0 +1,152 @@
+/* ═══════════════════════════════════════════════
+   NEON DYNASTY — cherry blossom pink + cyan neon
+   ═══════════════════════════════════════════════ */
+
+[data-theme="neon-dynasty"] {
+  --background: #0a0614;
+  --foreground: #e8daf0;
+  --card-bg: #120a1e;
+  --card-border: #2a1840;
+  --accent: #ff69b4;
+  --accent-hover: #ff99cc;
+  --muted: #7a5890;
+  --t-text-700: #c8a8e0;
+  --t-text-400: #4a2868;
+}
+
+[data-theme="neon-dynasty"] body {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(255,105,180,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(0,220,255,0.05) 0%, transparent 50%),
+    linear-gradient(180deg, #0a0614 0%, #08040e 100%);
+}
+
+[data-theme="neon-dynasty"] h1,
+[data-theme="neon-dynasty"] h2,
+[data-theme="neon-dynasty"] h3 {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff69b4, #00dcff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 12px rgba(255,105,180,0.4));
+}
+
+[data-theme="neon-dynasty"] .card-themed {
+  border-color: #2a1840;
+  box-shadow: 0 0 4px rgba(255,105,180,0.1), inset 0 1px 0 rgba(0,220,255,0.05);
+}
+
+/* Buttons */
+[data-theme="neon-dynasty"] .btn-primary {
+  background: linear-gradient(135deg, #ff69b4 0%, #00dcff 100%);
+  color: #0a0614;
+  border: none;
+  font-weight: 700;
+  box-shadow: 0 4px 20px rgba(255,105,180,0.3), 0 0 20px rgba(0,220,255,0.15);
+}
+
+[data-theme="neon-dynasty"] .btn-primary:hover,
+[data-theme="neon-dynasty"] .btn-primary:hover {
+  background: linear-gradient(135deg, #ff99cc 0%, #60eaff 100%);
+  box-shadow: 0 6px 28px rgba(255,105,180,0.4), 0 0 30px rgba(0,220,255,0.25);
+}
+
+/* Nav */
+[data-theme="neon-dynasty"] nav {
+  background: linear-gradient(180deg, #120a1e 0%, #0a0614 100%);
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, transparent, #ff69b4, #00dcff, transparent) 1;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+[data-theme="neon-dynasty"] nav .font-bold.text-lg {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff69b4, #00dcff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 10px rgba(255,105,180,0.5));
+}
+
+[data-theme="neon-dynasty"] nav .nav-link-active {
+  background: rgba(255,105,180,0.15);
+  color: #ff69b4;
+  border: 1px solid rgba(255,105,180,0.2);
+}
+
+[data-theme="neon-dynasty"] nav .nav-link:hover {
+  background: rgba(0,220,255,0.08);
+}
+
+/* Decorative dividers */
+[data-theme="neon-dynasty"] .section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+[data-theme="neon-dynasty"] .section-heading::before,
+[data-theme="neon-dynasty"] .section-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #ff69b4, #00dcff, transparent);
+}
+
+/* Leaderboard */
+[data-theme="neon-dynasty"] .medal-gold {
+  background: linear-gradient(135deg, #ff69b4, #00dcff);
+  color: #0a0614;
+  box-shadow: 0 0 14px rgba(255,105,180,0.5);
+}
+
+[data-theme="neon-dynasty"] .medal-silver {
+  background: linear-gradient(135deg, #7a5890, #a078c0);
+  color: #e8daf0;
+}
+
+[data-theme="neon-dynasty"] .medal-bronze {
+  background: linear-gradient(135deg, #00dcff, #60eaff);
+  color: #0a0614;
+}
+
+/* Stats values */
+[data-theme="neon-dynasty"] .stat-value {
+  color: #ff69b4;
+  text-shadow: 0 0 12px rgba(255,105,180,0.4);
+}
+
+/* Hover glow */
+[data-theme="neon-dynasty"] .card-hover-glow:hover {
+  box-shadow: 0 0 14px rgba(255,105,180,0.2), 0 0 10px rgba(0,220,255,0.15), 0 4px 12px rgba(0,0,0,0.5);
+  border-color: #ff69b4;
+}
+
+/* Neon bloom animation */
+@keyframes neon-dynasty-bloom {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(255,105,180,0.5)); }
+  50% { filter: drop-shadow(0 0 16px rgba(0,220,255,0.6)); }
+}
+
+[data-theme="neon-dynasty"] nav .font-bold.text-lg {
+  animation: neon-dynasty-bloom 4s ease-in-out infinite;
+}
+
+/* Cherry blossom petal overlay */
+[data-theme="neon-dynasty"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background:
+    radial-gradient(2px 2px at 15% 25%, rgba(255,105,180,0.15), transparent),
+    radial-gradient(2px 2px at 75% 15%, rgba(255,105,180,0.1), transparent),
+    radial-gradient(2px 2px at 45% 75%, rgba(0,220,255,0.08), transparent),
+    radial-gradient(2px 2px at 85% 65%, rgba(255,105,180,0.08), transparent);
+}
+

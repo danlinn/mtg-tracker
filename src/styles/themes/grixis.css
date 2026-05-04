@@ -1,0 +1,201 @@
+/* ═══════════════════════════════════════════════
+   GRIXIS — U/B/R, mostly black, red & blue touches
+   ═══════════════════════════════════════════════ */
+
+[data-theme="grixis"] {
+  --background: #06080c;
+  --foreground: #c8d0e0;
+  --card-bg: #0c1018;
+  --card-border: #18202e;
+  --accent: #cc3344;
+  --accent-hover: #e04858;
+  --muted: #4858708;
+  --t-text-700: #98a8c0;
+  --t-text-400: #283040;
+}
+
+[data-theme="grixis"] body {
+  font-family: 'Cinzel', Georgia, serif;
+  background-color: #06080c;
+  background-image:
+    radial-gradient(ellipse at 15% 20%, rgba(180,30,40,0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 85% 80%, rgba(30,50,200,0.08) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 50%, rgba(20,30,80,0.05) 0%, transparent 60%),
+    linear-gradient(180deg, #06080c 0%, #08060e 50%, #060a10 100%);
+  background-attachment: fixed;
+}
+
+/* Drip overlay — blood red and heavy blue streaks */
+[data-theme="grixis"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.08;
+  background:
+    repeating-linear-gradient(
+      177deg,
+      transparent 0px, transparent 35px,
+      rgba(180,30,40,0.4) 35px,
+      rgba(180,30,40,0.12) 38px,
+      transparent 42px
+    ),
+    repeating-linear-gradient(
+      183deg,
+      transparent 0px, transparent 45px,
+      rgba(30,50,200,0.45) 45px,
+      rgba(30,50,200,0.15) 48px,
+      transparent 52px
+    ),
+    repeating-linear-gradient(
+      190deg,
+      transparent 0px, transparent 70px,
+      rgba(40,60,180,0.3) 70px,
+      rgba(40,60,180,0.08) 73px,
+      transparent 77px
+    );
+}
+
+[data-theme="grixis"] main,
+[data-theme="grixis"] nav {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="grixis"] h1,
+[data-theme="grixis"] h2,
+[data-theme="grixis"] h3 {
+  font-family: 'Cinzel', Georgia, serif;
+  font-weight: 700;
+  color: #cc3344;
+  text-shadow:
+    0 0 15px rgba(200,40,60,0.4),
+    0 0 30px rgba(40,60,200,0.25),
+    0 2px 4px rgba(0,0,0,0.7);
+  letter-spacing: 0.03em;
+}
+
+/* Cards — deep black with red/blue inset glow */
+[data-theme="grixis"] .card-themed {
+  border-color: #18202e;
+  box-shadow:
+    0 0 6px rgba(180,30,40,0.1),
+    0 0 8px rgba(30,50,200,0.12),
+    0 4px 14px rgba(0,0,0,0.7),
+    inset 0 0 25px rgba(6,8,18,0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="grixis"] .card-themed::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(180,30,40,0.04) 0%, transparent 20%, transparent 75%, rgba(30,50,200,0.07) 100%),
+    radial-gradient(ellipse at 90% 95%, rgba(180,30,40,0.04) 0%, transparent 40%),
+    radial-gradient(ellipse at 5% 5%, rgba(30,60,200,0.05) 0%, transparent 40%);
+}
+
+[data-theme="grixis"] .card-themed > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Buttons — blood red */
+[data-theme="grixis"] .btn-primary {
+  background: linear-gradient(180deg, #cc3344 0%, #801820 100%);
+  color: #f0e0e0;
+  border: 1px solid rgba(200,50,60,0.4);
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(180,30,40,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+[data-theme="grixis"] .btn-primary:hover,
+[data-theme="grixis"] .btn-primary:hover {
+  background: linear-gradient(180deg, #e04858 0%, #a02030 100%);
+  box-shadow: 0 4px 20px rgba(200,50,60,0.45), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+/* Nav — deep black with red bottom border */
+[data-theme="grixis"] nav {
+  background: linear-gradient(180deg, #0e0a12 0%, #08060a 100%);
+  border-bottom: 2px solid #401828;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.7);
+}
+
+[data-theme="grixis"] nav .font-bold.text-lg {
+  font-family: 'Cinzel', Georgia, serif;
+  font-weight: 700;
+  color: #cc3344;
+  text-shadow: 0 0 12px rgba(200,40,60,0.5), 0 0 25px rgba(40,50,180,0.2);
+  letter-spacing: 0.06em;
+}
+
+[data-theme="grixis"] nav .nav-link-active {
+  background: rgba(200,50,60,0.15);
+  color: #e05868;
+  border: 1px solid rgba(200,50,60,0.2);
+}
+
+[data-theme="grixis"] nav .nav-link:hover {
+  background: rgba(200,50,60,0.08);
+}
+
+/* Dividers — red to blue */
+[data-theme="grixis"] .section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+[data-theme="grixis"] .section-heading::before,
+[data-theme="grixis"] .section-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #cc3344, #3344cc, transparent);
+}
+
+/* Leaderboard — blood, bruise, bone */
+[data-theme="grixis"] .medal-gold {
+  background: linear-gradient(135deg, #cc3344, #e05060);
+  color: #08060a;
+  box-shadow: 0 0 12px rgba(200,50,60,0.5);
+}
+
+[data-theme="grixis"] .medal-silver {
+  background: linear-gradient(135deg, #3344aa, #4455cc);
+  color: #d0c8d8;
+}
+
+[data-theme="grixis"] .medal-bronze {
+  background: linear-gradient(135deg, #201828, #302040);
+  color: #d0c8d8;
+}
+
+/* Stats */
+[data-theme="grixis"] .stat-value {
+  color: #cc3344;
+  text-shadow: 0 0 8px rgba(200,50,60,0.3);
+}
+
+/* Hover */
+[data-theme="grixis"] .card-hover-glow:hover {
+  box-shadow: 0 0 10px rgba(180,30,40,0.2), 0 0 10px rgba(30,40,160,0.12), 0 4px 12px rgba(0,0,0,0.5);
+  border-color: #cc3344;
+}
+
+/* Pulse — alternates red and blue glow */
+@keyframes grixis-pulse {
+  0%, 100% { text-shadow: 0 0 12px rgba(200,40,60,0.5), 0 0 25px rgba(40,50,180,0.2); }
+  50% { text-shadow: 0 0 12px rgba(40,50,180,0.4), 0 0 25px rgba(200,40,60,0.2); }
+}
+
+[data-theme="grixis"] nav .font-bold.text-lg {
+  animation: grixis-pulse 4s ease-in-out infinite;
+}
