@@ -1,6 +1,6 @@
 import type { ThemeName } from "@/lib/theme";
 
-export type TextureName = "none" | "grit" | "hex-grid" | "circuit" | "scales" | "crosshatch" | "dots" | "diamonds" | "waves" | "stone" | "diagonal-streak" | "shimmer" | "pixelated" | "topographic" | "maze" | "woven";
+export type TextureName = "none" | "grit" | "hex-grid" | "circuit" | "scales" | "crosshatch" | "dots" | "diamonds" | "waves" | "stone" | "diagonal-streak" | "shimmer" | "pixelated" | "topographic" | "maze" | "woven" | "matrix-rain" | "flames";
 
 function svgUri(svg: string): string {
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
@@ -23,17 +23,19 @@ const TEXTURE_SVGS: Record<Exclude<TextureName, "none">, (opacity: number) => st
   topographic: (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'><path d='M30 10C40 10 50 20 50 30C50 40 40 50 30 50C20 50 10 40 10 30C10 20 20 10 30 10Z' fill='none' stroke='${C}' stroke-opacity='${o}' stroke-width='0.5'/><path d='M30 18C36 18 42 24 42 30C42 36 36 42 30 42C24 42 18 36 18 30C18 24 24 18 30 18Z' fill='none' stroke='${C}' stroke-opacity='${o * 0.7}' stroke-width='0.5'/><path d='M30 26C33 26 36 28 36 30C36 33 33 36 30 36C27 36 24 33 24 30C24 28 27 26 30 26Z' fill='none' stroke='${C}' stroke-opacity='${o * 0.5}' stroke-width='0.5'/></svg>`),
   maze: (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><path d='M0 0h16v8h-8v8h-8zM16 0h16v16h-8v-8h-8zM0 16h8v8h8v8h-16zM16 24h8v-8h8v16h-16z' fill='none' stroke='${C}' stroke-opacity='${o}' stroke-width='0.5'/></svg>`),
   woven: (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><path d='M0 12h8v-4h8v4h8' fill='none' stroke='${C}' stroke-opacity='${o}' stroke-width='0.7'/><path d='M4 0v8h4v8h-4v8' fill='none' stroke='${C}' stroke-opacity='${o * 0.6}' stroke-width='0.7'/><path d='M12 0v4h4v8h-4v4h-4v8' fill='none' stroke='${C}' stroke-opacity='${o * 0.8}' stroke-width='0.5'/></svg>`),
+  flames: (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='60' height='80'><path d='M10 80Q8 60 15 45Q20 30 12 15Q18 5 20 0Q22 10 25 20Q30 35 22 50Q18 65 20 80Z' fill='%23ff6600' fill-opacity='${o}'/><path d='M30 80Q28 55 35 40Q40 25 33 10Q38 0 40 0Q42 8 45 18Q50 32 42 48Q38 62 40 80Z' fill='%23ff4400' fill-opacity='${o * 0.7}'/><path d='M50 80Q48 65 52 50Q56 38 50 22Q54 12 55 5Q57 15 58 28Q60 42 55 58Q52 70 54 80Z' fill='%23ff8800' fill-opacity='${o * 0.5}'/><path d='M0 80Q2 68 5 55Q10 42 4 28Q8 18 10 10Q12 20 14 32Q16 45 10 60Q6 72 8 80Z' fill='%23ffaa00' fill-opacity='${o * 0.4}'/></svg>`),
+  "matrix-rain": (o) => svgUri(`<svg xmlns='http://www.w3.org/2000/svg' width='80' height='100' font-family='monospace' font-size='10' fill='%2300ff41' fill-opacity='${o}'><text x='4' y='12'>ア</text><text x='4' y='36' fill-opacity='${o * 0.6}'>0</text><text x='4' y='60' fill-opacity='${o * 0.3}'>ネ</text><text x='4' y='84'>1</text><text x='20' y='8' fill-opacity='${o * 0.7}'>カ</text><text x='20' y='28'>7</text><text x='20' y='52' fill-opacity='${o * 0.4}'>ム</text><text x='20' y='76'>3</text><text x='20' y='96' fill-opacity='${o * 0.5}'>ヲ</text><text x='36' y='16'>タ</text><text x='36' y='40' fill-opacity='${o * 0.5}'>9</text><text x='36' y='68'>ハ</text><text x='36' y='92' fill-opacity='${o * 0.7}'>2</text><text x='52' y='4' fill-opacity='${o * 0.4}'>ク</text><text x='52' y='24'>5</text><text x='52' y='48' fill-opacity='${o * 0.8}'>シ</text><text x='52' y='72'>0</text><text x='52' y='96' fill-opacity='${o * 0.3}'>マ</text><text x='68' y='12' fill-opacity='${o * 0.6}'>リ</text><text x='68' y='32'>4</text><text x='68' y='56'>ソ</text><text x='68' y='80' fill-opacity='${o * 0.5}'>8</text></svg>`),
 };
 
 export const THEME_DEFAULT_TEXTURE: Record<ThemeName, TextureName> = {
   default: "none",
   synth: "pixelated",
-  cyber: "none",
-  flame: "none",
+  cyber: "matrix-rain",
+  flame: "flames",
   chris: "none",
   phyrexia: "grit",
   "stained-glass": "shimmer",
-  dungeon: "none",
+  dungeon: "stone",
   "neon-dynasty": "diagonal-streak",
   grixis: "grit",
 };

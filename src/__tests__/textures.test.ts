@@ -17,7 +17,7 @@ describe("getTextureBackground", () => {
     const names: TextureName[] = [
       "grit", "hex-grid", "circuit", "scales", "crosshatch",
       "dots", "diamonds", "waves", "stone", "diagonal-streak", "shimmer", "pixelated",
-      "topographic", "maze", "woven",
+      "topographic", "maze", "woven", "matrix-rain", "flames",
     ];
     for (const name of names) {
       const result = getTextureBackground(name);
@@ -52,6 +52,7 @@ describe("THEME_DEFAULT_TEXTURE", () => {
     const validNames: TextureName[] = [
       "none", "grit", "hex-grid", "circuit", "scales", "crosshatch",
       "dots", "diamonds", "waves", "stone", "diagonal-streak", "shimmer", "pixelated",
+      "topographic", "maze", "woven", "matrix-rain", "flames",
     ];
     for (const t of themes) {
       const val = THEME_DEFAULT_TEXTURE[t as keyof typeof THEME_DEFAULT_TEXTURE];
@@ -66,7 +67,7 @@ describe("negative / edge cases", () => {
     const textured: TextureName[] = [
       "grit", "hex-grid", "circuit", "scales", "crosshatch",
       "dots", "diamonds", "waves", "stone", "diagonal-streak", "shimmer", "pixelated",
-      "topographic", "maze", "woven",
+      "topographic", "maze", "woven", "matrix-rain", "flames",
     ];
     expect(getTextureBackground("none")).toBe("");
     for (const name of textured) {
