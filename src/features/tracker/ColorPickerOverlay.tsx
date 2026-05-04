@@ -1,0 +1,138 @@
+import type { Palette } from "@/lib/themePalettes";
+import { bgForComboStyled, GRADIENT_STYLES, type GradientStyleName } from "@/lib/gradientStyles";
+import { DEFAULT_SEAT_COMBOS } from "@/lib/tracker-logic";
+import type { Player } from "./types";
+
+interface BgPreset {
+  key: string;
+  combo: import("@/lib/themePalettes").ColorKey[];
+  bg: string;
+}
+
+interface ColorPickerOverlayProps {
+  playerIndex: number;
+  player: Player;
+  palette: Palette;
+  defaultGradient: GradientStyleName;
+  BG_PRESETS: BgPreset[];
+  updatePlayer: (idx: number, updater: (p: Player) => Player) => void;
+  onClose: () => void;
+}
+
+// Determine the right CSS property for a color value that may be a
+// hex, rgb(), or a `linear-gradient(...)` expression.
+function backgroundStyle(bg: string): React.CSSProperties {
+  return { background: bg };
+}
+
+export function ColorPickerOverlay({
+  playerIndex,
+  player,
+  palette,
+  defaultGradient,
+  BG_PRESETS,
+  updatePlayer,
+  onClose,
+}: ColorPickerOverlayProps) {
+  return (
+    <div
+      className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        className="bg-surface rounded-lg p-4 max-w-sm w-full space-y-3 max-h-[85vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="font-semibold text-text-primary">Pick a color</h3>
+        <div className="grid grid-cols-6 gap-2 max-h-80 overflow-y-auto">
+          {BG_PRESETS.map((preset) => (
+            <button
+              key={preset.key}
+              onClick={() => {
+                updatePlayer(playerIndex, (p) => {
+                  const combo = preset.combo.length > 0 ? preset.combo : [];
+                  return { ...p, bgColor: bgForComboStyled(combo, palette, p.gradientStyle ?? defaultGradient), colorCombo: combo };
+                });
+                onClose();
+              }}
+              className="w-full aspect-square rounded-lg border border-border flex items-end justify-center text-[10px] font-bold p-0.5"
+              style={backgroundStyle(preset.bg)}
+              aria-label={preset.key}
+            >
+              <span className="px-1 rounded bg-black/40 text-white">{preset.key}</span>
+            </button>
+          ))}
+        </div>
+        <div>
+          <label className="text-sm text-text-tertiary block mb-1">Custom:</label>
+          <input
+            type="color"
+            value={
+              player.bgColor.startsWith("#")
+                ? player.bgColor
+                : "#000000"
+            }
+            onChange={(e) => {
+              const v = e.target.value;
+              updatePlayer(playerIndex, (p) => ({ ...p, bgColor: v, colorCombo: null }));
+            }}
+            className="w-full h-10 rounded cursor-pointer"
+          />
+        </div>
+        {player.colorCombo && player.colorCombo.length > 1 && (
+          <div>
+            <label className="text-sm text-text-tertiary block mb-1">Gradient style:</label>
+            <div className="grid grid-cols-4 gap-1.5">
+              {GRADIENT_STYLES.filter((s) => {
+                const n = player.colorCombo!.length;
+                if (s.minColors && n < s.minColors) return false;
+                if (s.maxColors && n > s.maxColors) return false;
+                return true;
+              }).map((style) => {
+                const preview = style.fn(player.colorCombo!, palette);
+                const isActive = (player.gradientStyle ?? defaultGradient) === style.name;
+                return (
+                  <button
+                    key={style.name}
+                    onClick={() => {
+                      updatePlayer(playerIndex, (pl) => ({
+                        ...pl,
+                        gradientStyle: style.name,
+                        bgColor: bgForComboStyled(pl.colorCombo!, palette, style.name),
+                      }));
+                    }}
+                    className={`aspect-square rounded-lg border-2 text-[8px] font-bold flex items-end justify-center pb-0.5 ${
+                      isActive ? "border-accent ring-1 ring-accent" : "border-border"
+                    }`}
+                    style={{ background: preview }}
+                    title={style.label}
+                  >
+                    <span className="bg-black/50 text-white px-1 rounded text-[7px]">{style.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              const combo = DEFAULT_SEAT_COMBOS[playerIndex % DEFAULT_SEAT_COMBOS.length];
+              updatePlayer(playerIndex, (p) => ({ ...p, bgColor: bgForComboStyled(combo, palette, p.gradientStyle ?? defaultGradient), colorCombo: combo }));
+              onClose();
+            }}
+            className="flex-1 py-2 rounded-lg border border-border text-text-secondary text-sm font-medium hover:bg-surface-hover"
+          >
+            Default color
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 py-2 rounded-lg bg-accent text-accent-text font-medium"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
