@@ -40,6 +40,27 @@ export const THEME_DEFAULT_TEXTURE: Record<ThemeName, TextureName> = {
   grixis: "grit",
 };
 
+export const ALL_TEXTURES: { name: TextureName; label: string }[] = [
+  { name: "none", label: "None" },
+  { name: "grit", label: "Grit" },
+  { name: "hex-grid", label: "Hex Grid" },
+  { name: "circuit", label: "Circuit" },
+  { name: "scales", label: "Scales" },
+  { name: "crosshatch", label: "Crosshatch" },
+  { name: "dots", label: "Dots" },
+  { name: "diamonds", label: "Diamonds" },
+  { name: "waves", label: "Waves" },
+  { name: "stone", label: "Stone" },
+  { name: "diagonal-streak", label: "Diagonal" },
+  { name: "shimmer", label: "Shimmer" },
+  { name: "pixelated", label: "Pixelated" },
+  { name: "topographic", label: "Topo" },
+  { name: "maze", label: "Maze" },
+  { name: "woven", label: "Woven" },
+  { name: "matrix-rain", label: "Matrix" },
+  { name: "flames", label: "Flames" },
+];
+
 export function getTextureBackground(name: TextureName, opacity: number = 0.18): string {
   if (name === "none") return "";
   return TEXTURE_SVGS[name](opacity);

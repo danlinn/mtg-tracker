@@ -1,11 +1,13 @@
 import type { ColorKey } from "@/lib/themePalettes";
 import type { GradientStyleName } from "@/lib/gradientStyles";
+import type { TextureName } from "@/lib/textures";
 
 export interface Player {
   life: number;
   bgColor: string;
   colorCombo: ColorKey[] | null;
   gradientStyle: GradientStyleName;
+  texture: TextureName;
   damage: Record<string, number>; // keys: "0", "0b" (partner), "1", "1b", etc
   userId: string;
   deckId: string;

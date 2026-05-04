@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { textOn } from "@/lib/themePalettes";
+import { getTextureBackground } from "@/lib/textures";
 import type { Player } from "./types";
 
 export interface PlayerBoxProps {
@@ -15,7 +16,6 @@ export interface PlayerBoxProps {
   dead?: boolean;
   deckLabel?: string;
   swapState?: "source" | "target" | null;
-  textureOverlay?: string;
 }
 
 export function PlayerBox({
@@ -31,8 +31,8 @@ export function PlayerBox({
   dead,
   deckLabel,
   swapState,
-  textureOverlay,
 }: PlayerBoxProps) {
+  const textureOverlay = getTextureBackground(player.texture);
   const textColor = textOn(player.bgColor);
   const lethal = Object.values(player.damage).some((d) => d >= 21);
   const needsAssignment = !player.userId && !!onAssign;
