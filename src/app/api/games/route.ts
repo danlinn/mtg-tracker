@@ -80,6 +80,36 @@ export async function POST(req: Request) {
 
   const gameDate = playedAt ? new Date(playedAt) : new Date();
   const deckIds = players.map((p: { deckId: string }) => p.deckId);
+  const userIds = players.map((p: { userId: string }) => p.userId);
+
+  const missingField = players.find((p: { userId: string; deckId: string }) => !p.userId || !p.deckId);
+  if (missingField) {
+    return NextResponse.json(
+      { error: "Every seat needs a player and a deck" },
+      { status: 400 }
+    );
+  }
+
+  const [existingDecks, existingUsers] = await Promise.all([
+    prisma.deck.findMany({ where: { id: { in: deckIds } }, select: { id: true } }),
+    prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true } }),
+  ]);
+
+  const missingDeckIds = deckIds.filter((id: string) => !existingDecks.some((d) => d.id === id));
+  if (missingDeckIds.length > 0) {
+    return NextResponse.json(
+      { error: `Deck not found — try reloading the page and reassigning decks` },
+      { status: 400 }
+    );
+  }
+
+  const missingUserIds = userIds.filter((id: string) => !existingUsers.some((u) => u.id === id));
+  if (missingUserIds.length > 0) {
+    return NextResponse.json(
+      { error: `Player not found — try reloading the page` },
+      { status: 400 }
+    );
+  }
 
   try {
     const [game] = await prisma.$transaction([
@@ -119,8 +149,9 @@ export async function POST(req: Request) {
     return NextResponse.json(game);
   } catch (error) {
     console.error("[POST /api/games] Error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to save game" },
+      { error: `Failed to save game: ${message}` },
       { status: 500 }
     );
   }

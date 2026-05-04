@@ -16,6 +16,8 @@ const mockGameFindMany = jest.fn();
 const mockGameCount = jest.fn();
 const mockGameCreate = jest.fn();
 const mockDeckUpdate = jest.fn();
+const mockDeckFindMany = jest.fn();
+const mockUserFindMany = jest.fn();
 const mockTransaction = jest.fn();
 jest.mock("@/lib/prisma", () => ({
   prisma: {
@@ -26,6 +28,10 @@ jest.mock("@/lib/prisma", () => ({
     },
     deck: {
       update: (...args: unknown[]) => mockDeckUpdate(...args),
+      findMany: (...args: unknown[]) => mockDeckFindMany(...args),
+    },
+    user: {
+      findMany: (...args: unknown[]) => mockUserFindMany(...args),
     },
     $transaction: (...args: unknown[]) => mockTransaction(...args),
   },
@@ -104,6 +110,12 @@ describe("GET /api/games", () => {
 describe("POST /api/games", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockDeckFindMany.mockImplementation(({ where }: { where: { id: { in: string[] } } }) =>
+      Promise.resolve(where.id.in.map((id: string) => ({ id })))
+    );
+    mockUserFindMany.mockImplementation(({ where }: { where: { id: { in: string[] } } }) =>
+      Promise.resolve(where.id.in.map((id: string) => ({ id })))
+    );
   });
 
   it("returns 401 when not authenticated", async () => {
@@ -225,7 +237,41 @@ describe("POST /api/games", () => {
     );
     expect(res.status).toBe(500);
     const data = await res.json();
-    expect(data.error).toBe("Failed to save game");
+    expect(data.error).toContain("Failed to save game");
+  });
+
+  it("returns 400 when a deck does not exist", async () => {
+    const { POST } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockDeckFindMany.mockResolvedValue([{ id: "d1" }]);
+    const res = await POST(
+      makeRequest({
+        players: [
+          { userId: "u1", deckId: "d1", isWinner: true },
+          { userId: "u2", deckId: "d-missing", isWinner: false },
+        ],
+      })
+    );
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toContain("Deck not found");
+  });
+
+  it("returns 400 when a player does not exist", async () => {
+    const { POST } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockUserFindMany.mockResolvedValue([{ id: "u1" }]);
+    const res = await POST(
+      makeRequest({
+        players: [
+          { userId: "u1", deckId: "d1", isWinner: true },
+          { userId: "u-missing", deckId: "d2", isWinner: false },
+        ],
+      })
+    );
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toContain("Player not found");
   });
 
   it("returns 400 with empty players array", async () => {
