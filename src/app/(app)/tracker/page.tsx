@@ -5,8 +5,10 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useTheme, useThemePalette, type ThemeName } from "@/lib/theme";
 import type { Palette, ColorKey } from "@/lib/themePalettes";
-import { bgForComboStyled, GRADIENT_STYLES, THEME_DEFAULT_GRADIENT, type GradientStyleName } from "@/lib/gradientStyles";
+import { textOn, comboForDeck } from "@/lib/themePalettes";
+import { GRADIENT_ORDER, COMBO_KEYS, bgForComboStyled, GRADIENT_STYLES, THEME_DEFAULT_GRADIENT, type GradientStyleName } from "@/lib/gradientStyles";
 import { THEME_DEFAULT_TEXTURE, getTextureBackground } from "@/lib/textures";
+import { DEFAULT_SEAT_COMBOS, isAlive } from "@/lib/tracker-logic";
 import PlaygroupSwitcher from "@/components/PlaygroupSwitcher";
 
 interface Player {
@@ -37,33 +39,8 @@ interface UserWithDecks {
   decks: DeckInfo[];
 }
 
-function comboForDeck(deck: DeckInfo): ColorKey[] {
-  const combo: ColorKey[] = [];
-  if (deck.colorW) combo.push("W");
-  if (deck.colorU) combo.push("U");
-  if (deck.colorB) combo.push("B");
-  if (deck.colorR) combo.push("R");
-  if (deck.colorG) combo.push("G");
-  return combo;
-}
-
-// Gradient order: Black, Blue, Red, Green, White — matches the deck cards
-const GRADIENT_ORDER: ColorKey[] = ["B", "U", "R", "G", "W"];
-const COMBO_KEYS: ColorKey[] = ["W", "U", "B", "R", "G"]; // WUBRG only (no C in combos)
-
-// Generate a CSS background for a given combo of colors.
-// Single color = solid; multi-color = linear gradient in BURGW order.
 function bgForCombo(combo: ColorKey[], palette: Palette): string {
-  if (combo.length === 0) return palette.C.hex;
-  const ordered = GRADIENT_ORDER.filter((c) => combo.includes(c));
-  if (ordered.length === 1) return palette[ordered[0]].hex;
-  const stops = ordered.map((c, i) => {
-    const hex = palette[c].hex;
-    if (i === 0) return `${hex} 10%`;
-    if (i === ordered.length - 1) return `${hex} 90%`;
-    return hex;
-  });
-  return `linear-gradient(135deg, ${stops.join(", ")})`;
+  return bgForComboStyled(combo, palette, "linear");
 }
 
 // All 31 non-empty subsets of WUBRG + colorless = 32 presets, computed
@@ -86,9 +63,6 @@ function allCombos(palette: Palette): { key: string; combo: ColorKey[]; bg: stri
     return a.key.localeCompare(b.key);
   });
 }
-
-// Seats 1-4 each get a distinct default color combo.
-const DEFAULT_SEAT_COMBOS: ColorKey[][] = [["R"], ["U"], ["G"], ["B"]];
 
 // Per-tab session persistence so navigating to other pages doesn't
 // wipe the in-flight game. Cleared only on "New Game" or when the
@@ -147,17 +121,6 @@ function makePlayers(count: number, startLife: number, palette: Palette, gradien
   });
 }
 
-function textOn(bg: string): string {
-  // Gradients: sample the first hex in the string
-  const match = bg.match(/#[0-9a-fA-F]{6}/);
-  if (!match) return "#ffffff";
-  const hex = match[0].replace("#", "");
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness > 150 ? "#111827" : "#ffffff";
-}
 
 // Determine the right CSS property for a color value that may be a
 // hex, rgb(), or a `linear-gradient(...)` expression.
@@ -538,12 +501,6 @@ export default function TrackerPage() {
     };
   }, [setupDone]);
 
-  // A player is out of the game if they hit 0 life OR took 21+ from
-  // a single commander. Tap zones still work while eliminated, so the
-  // player can be revived (drop the offending commander damage below
-  // 21, or +1 their life back above 0).
-  const isAlive = (p: Player) =>
-    p.life > 0 && !Object.values(p.damage).some((d) => d >= 21);
 
   // Winner detection: when exactly one player is alive, pop the log
   // overlay. Keeping it as an overlay (instead of navigating away)

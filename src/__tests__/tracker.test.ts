@@ -7,12 +7,7 @@
  */
 
 import { describe, it, expect } from "@jest/globals";
-
-// ---- isAlive / isDead logic (extracted inline for testability) ----
-
-function isAlive(player: { life: number; damage: Record<number, number> }): boolean {
-  return player.life > 0 && !Object.values(player.damage).some((d) => d >= 21);
-}
+import { isAlive } from "@/lib/tracker-logic";
 
 describe("isAlive", () => {
   it("returns true when life > 0 and no lethal commander damage", () => {

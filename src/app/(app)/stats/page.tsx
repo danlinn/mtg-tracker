@@ -19,14 +19,14 @@ import {
 } from "recharts";
 import ManaSymbol from "@/components/ManaSymbol";
 import { useThemePalette } from "@/lib/theme";
-
-type ColorKey = "W" | "U" | "B" | "R" | "G";
+import type { ColorKey, ManaColorKey } from "@/lib/themePalettes";
+import { GRADIENT_ORDER, COMBO_KEYS } from "@/lib/gradientStyles";
 
 interface Deck {
   id: string;
   name: string;
   commander: string;
-  colors: Record<ColorKey, boolean>;
+  colors: Record<ManaColorKey, boolean>;
 }
 
 interface GameEntry {
@@ -50,7 +50,7 @@ interface PlayerOption {
 
 // Labels are theme-independent; actual hex values come from the active
 // theme palette via useThemePalette() inside the component.
-const COLOR_LABELS: Record<ColorKey, string> = {
+const COLOR_LABELS: Record<ManaColorKey, string> = {
   W: "White",
   U: "Blue",
   B: "Black",
@@ -58,9 +58,7 @@ const COLOR_LABELS: Record<ColorKey, string> = {
   G: "Green",
 };
 
-const COLOR_KEYS: ColorKey[] = ["W", "U", "B", "R", "G"];
-// Same gradient order as decks page: Black, Blue, Red, Green, White
-const GRADIENT_ORDER: ColorKey[] = ["B", "U", "R", "G", "W"];
+const COLOR_KEYS = COMBO_KEYS;
 
 // Recharts tooltip styling — dark background with white text for readability
 const TOOLTIP_STYLE = {
@@ -118,7 +116,7 @@ export default function StatsPage() {
   // Filters
   const [deckFilter, setDeckFilter] = useState<string>("");
   const [playerCountFilter, setPlayerCountFilter] = useState<string>("");
-  const [colorFilter, setColorFilter] = useState<Record<ColorKey, boolean>>({
+  const [colorFilter, setColorFilter] = useState<Record<ManaColorKey, boolean>>({
     W: false, U: false, B: false, R: false, G: false,
   });
   const [colorCountFilter, setColorCountFilter] = useState<string>("");
@@ -206,7 +204,7 @@ export default function StatsPage() {
 
   // Win rate per color
   const winRateByColor = useMemo(() => {
-    const stats: Record<ColorKey, { wins: number; games: number }> = {
+    const stats: Record<ManaColorKey, { wins: number; games: number }> = {
       W: { wins: 0, games: 0 },
       U: { wins: 0, games: 0 },
       B: { wins: 0, games: 0 },
@@ -252,7 +250,7 @@ export default function StatsPage() {
   const totalWins = filteredGames.filter((g) => g.isWinner).length;
   const overallWinRate = totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0;
 
-  function toggleColor(c: ColorKey) {
+  function toggleColor(c: ManaColorKey) {
     setColorFilter((prev) => ({ ...prev, [c]: !prev[c] }));
   }
 
