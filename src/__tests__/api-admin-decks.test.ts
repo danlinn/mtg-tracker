@@ -106,5 +106,29 @@ describe("Admin Decks API", () => {
       const res = await DELETE(req, { params: Promise.resolve({ id: "1" }) });
       expect(res.status).toBe(200);
     });
+
+    it("returns 404 when deck not found for delete", async () => {
+      mockIsAdmin.mockResolvedValue(true);
+      mockFindUnique.mockResolvedValue(null);
+      const { DELETE } = await getDeckHandler();
+      const req = new Request("http://localhost", { method: "DELETE" });
+      const res = await DELETE(req, { params: Promise.resolve({ id: "999" }) });
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe("PUT /api/admin/decks/[id] — negative cases", () => {
+    it("returns 404 when deck not found for update", async () => {
+      mockIsAdmin.mockResolvedValue(true);
+      mockFindUnique.mockResolvedValue(null);
+      const { PUT } = await getDeckHandler();
+      const req = new Request("http://localhost", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Updated" }),
+      });
+      const res = await PUT(req, { params: Promise.resolve({ id: "999" }) });
+      expect(res.status).toBe(404);
+    });
   });
 });

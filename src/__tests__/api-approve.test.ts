@@ -103,4 +103,38 @@ describe("POST /api/admin/approve", () => {
     const data = await res.json();
     expect(data.status).toBe("rejected");
   });
+
+  it("returns 400 for invalid action", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    const POST = await getHandler();
+    const res = await POST(makeRequest({ userId: "u1", action: "ban" }));
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when userId is missing", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    const POST = await getHandler();
+    const res = await POST(makeRequest({ action: "approve" }));
+    expect(res.status).toBe(400);
+  });
+
+  it("does not create duplicate playgroup memberships", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    mockUserFindUnique.mockResolvedValue({ id: "u1", email: "a@b.com", name: "Alice" });
+    mockUserUpdate.mockResolvedValue({});
+    // User is already a member
+    mockMemberFindUnique.mockResolvedValue({ id: "existing-member" });
+    mockMemberCreate.mockResolvedValue({});
+    const POST = await getHandler();
+    const res = await POST(
+      makeRequest({
+        userId: "u1",
+        action: "approve",
+        playgroupIds: ["pg1"],
+      })
+    );
+    expect(res.status).toBe(200);
+    // Should NOT have called create since member already exists
+    expect(mockMemberCreate).not.toHaveBeenCalled();
+  });
 });

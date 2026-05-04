@@ -51,4 +51,26 @@ describe("GET /api/health", () => {
     const data = await res.json();
     expect(data.error).toContain("ECONNREFUSED");
   });
+
+  it("error response includes database: disconnected, not connected", async () => {
+    const GET = await getHandler();
+    mockUserCount.mockRejectedValue(new Error("timeout"));
+
+    const res = await GET();
+    const data = await res.json();
+    expect(data.database).toBe("disconnected");
+    expect(data.database).not.toBe("connected");
+    expect(data.status).toBe("error");
+    expect(data.status).not.toBe("ok");
+  });
+
+  it("ok response does not include error field", async () => {
+    const GET = await getHandler();
+    mockUserCount.mockResolvedValue(3);
+
+    const res = await GET();
+    const data = await res.json();
+    expect(data.status).toBe("ok");
+    expect(data.error).toBeUndefined();
+  });
 });

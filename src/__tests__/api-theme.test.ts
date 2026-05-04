@@ -109,4 +109,27 @@ describe("PUT /api/theme", () => {
       expect(res.status).toBe(200);
     }
   });
+
+  it("returns 400 for empty string theme", async () => {
+    const { PUT } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    const res = await PUT(makeRequest({ theme: "" }));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("Invalid theme");
+  });
+
+  it("returns 400 for numeric theme", async () => {
+    const { PUT } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    const res = await PUT(makeRequest({ theme: 123 }));
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 for null theme", async () => {
+    const { PUT } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    const res = await PUT(makeRequest({ theme: null }));
+    expect(res.status).toBe(400);
+  });
 });

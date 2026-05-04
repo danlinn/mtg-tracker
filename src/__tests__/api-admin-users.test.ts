@@ -121,5 +121,14 @@ describe("Admin Users API", () => {
       const data = await res.json();
       expect(data.success).toBe(true);
     });
+
+    it("returns 404 when user not found for delete", async () => {
+      mockIsAdmin.mockResolvedValue(true);
+      mockFindUnique.mockResolvedValue(null);
+      const { DELETE } = await getUserHandler();
+      const req = new Request("http://localhost/api/admin/users/1", { method: "DELETE" });
+      const res = await DELETE(req, { params: Promise.resolve({ id: "999" }) });
+      expect(res.status).toBe(404);
+    });
   });
 });

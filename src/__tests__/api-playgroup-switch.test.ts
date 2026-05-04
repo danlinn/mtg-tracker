@@ -77,4 +77,18 @@ describe("POST /api/playgroups/switch", () => {
     );
     expect(res.status).toBe(200);
   });
+
+  it("does not check membership when switching to 'all'", async () => {
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    const { POST } = await import("@/app/api/playgroups/switch/route");
+    await POST(
+      new Request("http://localhost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playgroupId: "all" }),
+      })
+    );
+    // "all" should not require membership check
+    expect(mockIsPlaygroupMember).not.toHaveBeenCalled();
+  });
 });

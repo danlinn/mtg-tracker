@@ -105,4 +105,36 @@ describe("GET /api/players/[id]", () => {
     expect(data.totalGames).toBe(0);
     expect(data.winRate).toBe(0);
   });
+
+  it("winRate is 0 when wins is 0 (no division by zero)", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("me");
+    mockUserFindUnique.mockResolvedValue({ id: "u3", name: "Charlie" });
+    mockGamePlayerCount
+      .mockResolvedValueOnce(5)  // totalGames
+      .mockResolvedValueOnce(0); // wins
+    mockDeckFindMany.mockResolvedValue([]);
+
+    const res = await GET(new Request("http://localhost"), makeParams("u3"));
+    const data = await res.json();
+    expect(data.totalGames).toBe(5);
+    expect(data.wins).toBe(0);
+    expect(data.losses).toBe(5);
+    expect(data.winRate).toBe(0);
+  });
+
+  it("winRate is 100 when all games are wins", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("me");
+    mockUserFindUnique.mockResolvedValue({ id: "u4", name: "Diana" });
+    mockGamePlayerCount
+      .mockResolvedValueOnce(3)  // totalGames
+      .mockResolvedValueOnce(3); // wins
+    mockDeckFindMany.mockResolvedValue([]);
+
+    const res = await GET(new Request("http://localhost"), makeParams("u4"));
+    const data = await res.json();
+    expect(data.winRate).toBe(100);
+    expect(data.losses).toBe(0);
+  });
 });

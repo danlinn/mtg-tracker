@@ -184,4 +184,57 @@ describe("GET /api/leaderboard", () => {
     await GET(makeRequest());
     expect(mockBuildGameWhere).toHaveBeenCalledWith("user-42");
   });
+
+  it("player with 0 wins has 0 winRate", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockGamePlayerFindMany.mockResolvedValue([
+      gpEntry("u1", "Alice", false),
+      gpEntry("u1", "Alice", false),
+      gpEntry("u1", "Alice", false),
+    ]);
+
+    const res = await GET(makeRequest());
+    const data = await res.json();
+    expect(data.entries).toHaveLength(1);
+    expect(data.entries[0].winRate).toBe(0);
+    expect(data.entries[0].wins).toBe(0);
+    expect(data.entries[0].games).toBe(3);
+  });
+
+  it("player with 100% winRate is sorted first", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockGamePlayerFindMany.mockResolvedValue([
+      gpEntry("u1", "Alice", true),
+      gpEntry("u1", "Alice", false),  // Alice: 50%
+      gpEntry("u2", "Bob", true),     // Bob: 100%
+    ]);
+
+    const res = await GET(makeRequest());
+    const data = await res.json();
+    expect(data.entries[0].name).toBe("Bob");
+    expect(data.entries[0].winRate).toBe(100);
+    expect(data.entries[1].name).toBe("Alice");
+    expect(data.entries[1].winRate).toBe(50);
+  });
+
+  it("players with same winRate are sorted by total wins", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockGamePlayerFindMany.mockResolvedValue([
+      gpEntry("u1", "Alice", true),
+      gpEntry("u1", "Alice", false),  // Alice: 1/2 = 50%
+      gpEntry("u2", "Bob", true),
+      gpEntry("u2", "Bob", true),
+      gpEntry("u2", "Bob", false),
+      gpEntry("u2", "Bob", false),    // Bob: 2/4 = 50%
+    ]);
+
+    const res = await GET(makeRequest());
+    const data = await res.json();
+    // Same winRate (50%), Bob has more wins (2 vs 1) so comes first
+    expect(data.entries[0].name).toBe("Bob");
+    expect(data.entries[1].name).toBe("Alice");
+  });
 });

@@ -110,4 +110,66 @@ describe("GET /api/stats", () => {
     expect(data.deckStats[1].name).toBe("Old");
     expect(data.deckStats[2].name).toBe("Never");
   });
+
+  it("winRate is 0 when no games are played (no division by zero)", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockGamePlayerCount.mockResolvedValue(0);
+    mockDeckFindMany.mockResolvedValue([]);
+
+    const res = await GET();
+    const data = await res.json();
+    expect(data.winRate).toBe(0);
+    expect(data.totalGames).toBe(0);
+    expect(data.wins).toBe(0);
+    expect(data.losses).toBe(0);
+  });
+
+  it("deck with all losses shows 0% winRate", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockGamePlayerCount
+      .mockResolvedValueOnce(3)
+      .mockResolvedValueOnce(0);
+    mockDeckFindMany.mockResolvedValue([
+      {
+        id: "d1",
+        name: "Loser Deck",
+        commander: "C1",
+        commander2: null,
+        lastPlayedAt: new Date("2025-01-01"),
+        gameEntries: [
+          { isWinner: false, game: { players: [{ id: "1" }, { id: "2" }] } },
+          { isWinner: false, game: { players: [{ id: "1" }, { id: "2" }] } },
+        ],
+      },
+    ]);
+
+    const res = await GET();
+    const data = await res.json();
+    expect(data.deckStats[0].winRate).toBe(0);
+    expect(data.deckStats[0].wins).toBe(0);
+    expect(data.deckStats[0].games).toBe(2);
+  });
+
+  it("deck with no game entries shows 0 games and 0% winRate", async () => {
+    const GET = await getHandler();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    mockGamePlayerCount.mockResolvedValue(0);
+    mockDeckFindMany.mockResolvedValue([
+      {
+        id: "d1",
+        name: "Unused",
+        commander: "C1",
+        commander2: null,
+        lastPlayedAt: null,
+        gameEntries: [],
+      },
+    ]);
+
+    const res = await GET();
+    const data = await res.json();
+    expect(data.deckStats[0].games).toBe(0);
+    expect(data.deckStats[0].winRate).toBe(0);
+  });
 });

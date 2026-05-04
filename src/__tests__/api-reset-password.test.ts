@@ -112,4 +112,39 @@ describe("POST /api/reset-password", () => {
       })
     );
   });
+
+  it("returns 400 for password of exactly 5 chars (boundary)", async () => {
+    const POST = await getHandler();
+    const res = await POST(makeRequest({ token: "abc", password: "12345" }));
+    expect(res.status).toBe(400);
+  });
+
+  it("accepts password of exactly 6 chars (boundary)", async () => {
+    const POST = await getHandler();
+    const future = new Date(Date.now() + 3600 * 1000);
+    mockUserFindUnique.mockResolvedValue({
+      id: "user-1",
+      resetToken: "valid-token",
+      resetTokenExp: future,
+    });
+    mockUserUpdate.mockResolvedValue({});
+
+    const res = await POST(makeRequest({ token: "valid-token", password: "123456" }));
+    expect(res.status).toBe(200);
+  });
+
+  it("token that just expired is rejected", async () => {
+    const POST = await getHandler();
+    const justExpired = new Date(Date.now() - 1000); // 1 second ago
+    mockUserFindUnique.mockResolvedValue({
+      id: "user-1",
+      resetToken: "expired-token",
+      resetTokenExp: justExpired,
+    });
+
+    const res = await POST(makeRequest({ token: "expired-token", password: "newpass123" }));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toContain("expired");
+  });
 });

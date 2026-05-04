@@ -200,4 +200,32 @@ describe("POST /api/admin/playgroups/[id] (member management)", () => {
     );
     expect(res.status).toBe(400);
   });
+
+  it("rejects unknown action", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    const { POST } = await import("@/app/api/admin/playgroups/[id]/route");
+    const res = await POST(
+      new Request("http://localhost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "destroy", userId: "user-1" }),
+      }),
+      { params: Promise.resolve({ id: "pg1" }) }
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when missing userId for add", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    const { POST } = await import("@/app/api/admin/playgroups/[id]/route");
+    const res = await POST(
+      new Request("http://localhost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "add" }),
+      }),
+      { params: Promise.resolve({ id: "pg1" }) }
+    );
+    expect(res.status).toBe(400);
+  });
 });
