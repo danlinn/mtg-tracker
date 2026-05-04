@@ -1,0 +1,162 @@
+/* ═══════════════════════════════════════════════
+   DUNGEON — torchlit stone, parchment, flickering
+   ═══════════════════════════════════════════════ */
+
+[data-theme="dungeon"] {
+  --background: #1a1410;
+  --foreground: #d8c8a8;
+  --card-bg: #241c14;
+  --card-border: #3a2c1c;
+  --accent: #e8a040;
+  --accent-hover: #f0c070;
+  --muted: #8a7050;
+  --t-text-700: #c0a880;
+  --t-text-400: #5a4830;
+}
+
+[data-theme="dungeon"] body {
+  font-family: 'Philosopher', Georgia, 'Times New Roman', serif;
+  background-color: #2a2218;
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(232,160,64,0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 10%, rgba(232,160,64,0.04) 0%, transparent 40%),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px, transparent 28px,
+      rgba(0,0,0,0.3) 28px, rgba(0,0,0,0.3) 30px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 58px,
+      rgba(0,0,0,0.2) 58px, rgba(0,0,0,0.2) 60px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(40,32,22,1) 0px, rgba(40,32,22,1) 30px,
+      rgba(35,28,18,1) 30px, rgba(35,28,18,1) 60px
+    );
+  background-attachment: fixed;
+}
+
+[data-theme="dungeon"] h1,
+[data-theme="dungeon"] h2,
+[data-theme="dungeon"] h3 {
+  font-family: 'Philosopher', Georgia, serif;
+  font-weight: 700;
+  color: #e8a040;
+  letter-spacing: 0.03em;
+  text-shadow: 0 0 14px rgba(232,160,64,0.5), 0 2px 4px rgba(0,0,0,0.5);
+}
+
+[data-theme="dungeon"] .card-themed {
+  border-color: #3a2c1c;
+  box-shadow: inset 0 1px 0 rgba(232,160,64,0.08), 0 2px 8px rgba(0,0,0,0.5);
+}
+
+/* Buttons */
+[data-theme="dungeon"] .btn-primary {
+  background: linear-gradient(180deg, #e8a040 0%, #a06820 100%);
+  color: #1a1410;
+  border: 1px solid rgba(232,160,64,0.3);
+  font-family: 'Philosopher', serif;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(232,160,64,0.3), 0 2px 8px rgba(0,0,0,0.5);
+}
+
+[data-theme="dungeon"] .btn-primary:hover,
+[data-theme="dungeon"] .btn-primary:hover {
+  background: linear-gradient(180deg, #f0c070 0%, #c08830 100%);
+  box-shadow: 0 0 20px rgba(232,160,64,0.5), 0 4px 16px rgba(0,0,0,0.5);
+}
+
+/* Nav */
+[data-theme="dungeon"] nav {
+  background: linear-gradient(180deg, #241c14 0%, #1a1410 100%);
+  border-bottom: 2px solid #5a4020;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.6), 0 1px 0 rgba(232,160,64,0.1);
+}
+
+[data-theme="dungeon"] nav .font-bold.text-lg {
+  font-family: 'Philosopher', serif;
+  font-weight: 700;
+  color: #e8a040;
+  text-shadow: 0 0 14px rgba(232,160,64,0.6), 0 0 30px rgba(232,160,64,0.3);
+  letter-spacing: 0.06em;
+}
+
+[data-theme="dungeon"] nav .nav-link-active {
+  background: rgba(232,160,64,0.15);
+  color: #e8a040;
+  border: 1px solid rgba(232,160,64,0.2);
+}
+
+[data-theme="dungeon"] nav .nav-link:hover {
+  background: rgba(232,160,64,0.08);
+}
+
+/* Decorative dividers */
+[data-theme="dungeon"] .section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+[data-theme="dungeon"] .section-heading::before,
+[data-theme="dungeon"] .section-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #5a4020, #e8a040, #5a4020, transparent);
+}
+
+/* Leaderboard */
+[data-theme="dungeon"] .medal-gold {
+  background: linear-gradient(135deg, #e8a040, #f0c070);
+  color: #1a1410;
+  box-shadow: 0 0 14px rgba(232,160,64,0.5);
+}
+
+[data-theme="dungeon"] .medal-silver {
+  background: linear-gradient(135deg, #8a7050, #a08868);
+  color: #1a1410;
+}
+
+[data-theme="dungeon"] .medal-bronze {
+  background: linear-gradient(135deg, #6a4020, #8a5830);
+  color: #d8c8a8;
+}
+
+/* Stats values */
+[data-theme="dungeon"] .stat-value {
+  color: #e8a040;
+  text-shadow: 0 0 10px rgba(232,160,64,0.4);
+}
+
+/* Hover glow */
+[data-theme="dungeon"] .card-hover-glow:hover {
+  box-shadow: 0 0 14px rgba(232,160,64,0.2), 0 4px 12px rgba(0,0,0,0.5);
+  border-color: #e8a040;
+}
+
+/* Torch flicker animation */
+@keyframes dungeon-flicker {
+  0%, 100% { text-shadow: 0 0 14px rgba(232,160,64,0.6), 0 0 30px rgba(232,160,64,0.3); }
+  25% { text-shadow: 0 0 18px rgba(232,160,64,0.8), 0 0 40px rgba(232,160,64,0.4); }
+  50% { text-shadow: 0 0 10px rgba(232,160,64,0.5), 0 0 24px rgba(232,160,64,0.2); }
+  75% { text-shadow: 0 0 20px rgba(232,160,64,0.7), 0 0 36px rgba(232,160,64,0.35); }
+}
+
+[data-theme="dungeon"] nav .font-bold.text-lg {
+  animation: dungeon-flicker 2s ease-in-out infinite;
+}
+
+/* Stone texture overlay */
+[data-theme="dungeon"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background: repeating-conic-gradient(rgba(232,160,64,0.1) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px;
+}

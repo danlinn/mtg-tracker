@@ -1,0 +1,239 @@
+/* ═══════════════════════════════════════════════
+   STAINED GLASS — deep jewel tones, gold leading
+   ═══════════════════════════════════════════════ */
+
+[data-theme="stained-glass"] {
+  --background: #0c0818;
+  --foreground: #e8dce8;
+  --card-bg: #14102a;
+  --card-border: #2a2048;
+  --accent: #d4a84a;
+  --accent-hover: #e8c878;
+  --muted: #7a6898;
+  --t-text-700: #c4b0d8;
+  --t-text-400: #4a3868;
+}
+
+[data-theme="stained-glass"] body {
+  font-family: 'Philosopher', Georgia, 'Times New Roman', serif;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(180,40,60,0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 30%, rgba(40,80,180,0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 80%, rgba(40,160,80,0.04) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, rgba(212,168,74,0.03) 0%, transparent 50%), 
+    var(--background);
+}
+
+[data-theme="stained-glass"] h1,
+[data-theme="stained-glass"] h2,
+[data-theme="stained-glass"] h3 {
+  font-family: 'Philosopher', Georgia, serif;
+  font-weight: 700;
+  background: linear-gradient(135deg, #c43050, #4060c0, #40a050, #d4a84a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 12px rgba(212,168,74,0.3));
+}
+
+[data-theme="stained-glass"] .card-themed {
+  border-color: #3a2a58;
+  border-width: 2px;
+  box-shadow: 0 0 6px rgba(212,168,74,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Stained glass pane backgrounds — 4 rotating patterns */
+[data-theme="stained-glass"] .card-themed::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.18;
+}
+
+[data-theme="stained-glass"] .card-themed > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Pattern 1: Ruby & Sapphire diagonal split */
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+1).card-themed::before,
+[data-theme="stained-glass"] .space-y-3 > :nth-child(4n+1).card-themed::before,
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+1) > .card-themed::before,
+[data-theme="stained-glass"] .grid > :nth-child(4n+1)::before {
+  background:
+    linear-gradient(135deg, #8b1a3a 0%, #8b1a3a 50%, #1a3a8b 50%, #1a3a8b 100%),
+    linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 40%);
+  background-blend-mode: normal;
+}
+
+/* Pattern 2: Emerald & Gold triangles */
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+2).card-themed::before,
+[data-theme="stained-glass"] .space-y-3 > :nth-child(4n+2).card-themed::before,
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+2) > .card-themed::before,
+[data-theme="stained-glass"] .grid > :nth-child(4n+2)::before {
+  background:
+    linear-gradient(45deg, #1a6b3a 0%, #1a6b3a 50%, #8b6a1a 50%, #8b6a1a 100%),
+    linear-gradient(45deg, rgba(255,255,255,0.25) 0%, transparent 35%);
+  background-blend-mode: normal;
+}
+
+/* Pattern 3: Amethyst & Ruby four triangles */
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+3).card-themed::before,
+[data-theme="stained-glass"] .space-y-3 > :nth-child(4n+3).card-themed::before,
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+3) > .card-themed::before,
+[data-theme="stained-glass"] .grid > :nth-child(4n+3)::before {
+  background:
+    conic-gradient(from 0deg at 50% 50%, #5a1a8b 0deg, #5a1a8b 90deg, #8b1a3a 90deg, #8b1a3a 180deg, #1a5a8b 180deg, #1a5a8b 270deg, #1a8b3a 270deg, #1a8b3a 360deg),
+    linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%);
+  background-blend-mode: normal;
+}
+
+/* Pattern 4: Sapphire & Emerald reverse diagonal */
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+4).card-themed::before,
+[data-theme="stained-glass"] .space-y-3 > :nth-child(4n+4).card-themed::before,
+[data-theme="stained-glass"] .space-y-2 > :nth-child(4n+4) > .card-themed::before,
+[data-theme="stained-glass"] .grid > :nth-child(4n+4)::before {
+  background:
+    linear-gradient(-45deg, #1a3a8b 0%, #1a3a8b 50%, #1a6b3a 50%, #1a6b3a 100%),
+    linear-gradient(-45deg, rgba(255,255,255,0.25) 0%, transparent 40%);
+  background-blend-mode: normal;
+}
+
+/* Glint overlay on all stained glass panes */
+[data-theme="stained-glass"] .card-themed::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.06) 100%);
+  pointer-events: none;
+}
+
+/* Stats grid cards get patterns directly */
+[data-theme="stained-glass"] .grid > .bg-white {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="stained-glass"] .grid > .bg-white::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+}
+
+[data-theme="stained-glass"] .grid > .bg-white::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.06) 100%);
+  pointer-events: none;
+}
+
+[data-theme="stained-glass"] .grid > .bg-white > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Buttons */
+[data-theme="stained-glass"] .btn-primary {
+  background: linear-gradient(135deg, #d4a84a 0%, #b08030 100%);
+  color: #0c0818;
+  border: 1px solid rgba(212,168,74,0.4);
+  font-family: 'Philosopher', serif;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(212,168,74,0.3), 0 2px 8px rgba(0,0,0,0.5);
+}
+
+[data-theme="stained-glass"] .btn-primary:hover,
+[data-theme="stained-glass"] .btn-primary:hover {
+  background: linear-gradient(135deg, #e8c878 0%, #c09040 100%);
+  box-shadow: 0 0 20px rgba(212,168,74,0.5), 0 4px 16px rgba(0,0,0,0.5);
+}
+
+/* Nav */
+[data-theme="stained-glass"] nav {
+  background: linear-gradient(180deg, #14102a 0%, #0c0818 100%);
+  border-bottom: 2px solid #d4a84a;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.6), 0 1px 0 rgba(212,168,74,0.2);
+}
+
+[data-theme="stained-glass"] nav .font-bold.text-lg {
+  font-family: 'Philosopher', serif;
+  font-weight: 700;
+  background: linear-gradient(135deg, #c43050, #4060c0, #40a050, #d4a84a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px rgba(212,168,74,0.4));
+  letter-spacing: 0.06em;
+}
+
+[data-theme="stained-glass"] nav .nav-link-active {
+  background: rgba(212,168,74,0.15);
+  color: #d4a84a;
+  border: 1px solid rgba(212,168,74,0.2);
+}
+
+[data-theme="stained-glass"] nav .nav-link:hover {
+  background: rgba(212,168,74,0.08);
+}
+
+/* Decorative dividers */
+[data-theme="stained-glass"] .section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+[data-theme="stained-glass"] .section-heading::before,
+[data-theme="stained-glass"] .section-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c43050, #4060c0, #40a050, #d4a84a, transparent);
+}
+
+/* Leaderboard */
+[data-theme="stained-glass"] .medal-gold {
+  background: linear-gradient(135deg, #d4a84a, #e8c878);
+  color: #0c0818;
+  box-shadow: 0 0 14px rgba(212,168,74,0.5);
+}
+
+[data-theme="stained-glass"] .medal-silver {
+  background: linear-gradient(135deg, #4060c0, #6080d0);
+  color: #e8dce8;
+}
+
+[data-theme="stained-glass"] .medal-bronze {
+  background: linear-gradient(135deg, #c43050, #d06070);
+  color: #e8dce8;
+}
+
+/* Stats values */
+[data-theme="stained-glass"] .stat-value {
+  color: #d4a84a;
+  text-shadow: 0 0 10px rgba(212,168,74,0.3);
+}
+
+/* Hover glow */
+[data-theme="stained-glass"] .card-hover-glow:hover {
+  box-shadow: 0 0 14px rgba(212,168,74,0.2), 0 0 8px rgba(196,48,80,0.1), 0 4px 12px rgba(0,0,0,0.5);
+  border-color: #d4a84a;
+}
+
+/* Jewel shimmer */
+@keyframes stained-glass-shift {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(212,168,74,0.4)); }
+  25% { filter: drop-shadow(0 0 10px rgba(196,48,80,0.4)); }
+  50% { filter: drop-shadow(0 0 10px rgba(64,96,192,0.4)); }
+  75% { filter: drop-shadow(0 0 10px rgba(64,160,80,0.4)); }
+}
+
+[data-theme="stained-glass"] nav .font-bold.text-lg {
+  animation: stained-glass-shift 8s ease-in-out infinite;
+}

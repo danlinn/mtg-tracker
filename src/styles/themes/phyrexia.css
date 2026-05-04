@@ -1,0 +1,147 @@
+/* ═══════════════════════════════════════════════
+   PHYREXIA — oily black/green, biomechanical
+   ═══════════════════════════════════════════════ */
+
+[data-theme="phyrexia"] {
+  --background: #080a08;
+  --foreground: #c8d8c0;
+  --card-bg: #0e120e;
+  --card-border: #1a2a1a;
+  --accent: #4aff4a;
+  --accent-hover: #80ff80;
+  --muted: #5a7a5a;
+  --t-text-700: #a0c0a0;
+  --t-text-400: #3a5a3a;
+}
+
+[data-theme="phyrexia"] body {
+  font-family: 'Orbitron', 'Courier New', monospace;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(74,255,74,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(74,255,74,0.03) 0%, transparent 50%),
+    linear-gradient(180deg, #080a08 0%, #040604 100%);
+}
+
+[data-theme="phyrexia"] h1,
+[data-theme="phyrexia"] h2,
+[data-theme="phyrexia"] h3 {
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  color: #4aff4a;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.9em;
+  text-shadow: 0 0 16px rgba(74,255,74,0.5), 0 0 40px rgba(74,255,74,0.2);
+}
+
+[data-theme="phyrexia"] .card-themed {
+  border-color: #1a2a1a;
+  box-shadow: 0 0 4px rgba(74,255,74,0.08), inset 0 1px 0 rgba(74,255,74,0.05);
+}
+
+/* Buttons */
+[data-theme="phyrexia"] .btn-primary {
+  background: linear-gradient(180deg, #4aff4a 0%, #1a8a1a 100%);
+  color: #080a08;
+  border: 1px solid rgba(74,255,74,0.3);
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(74,255,74,0.3), 0 2px 8px rgba(0,0,0,0.5);
+}
+
+[data-theme="phyrexia"] .btn-primary:hover,
+[data-theme="phyrexia"] .btn-primary:hover {
+  background: linear-gradient(180deg, #80ff80 0%, #2aaa2a 100%);
+  box-shadow: 0 0 20px rgba(74,255,74,0.5), 0 4px 16px rgba(0,0,0,0.5);
+}
+
+/* Nav */
+[data-theme="phyrexia"] nav {
+  background: linear-gradient(180deg, #0e120e 0%, #080a08 100%);
+  border-bottom: 1px solid #1a3a1a;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.6), 0 0 8px rgba(74,255,74,0.08);
+}
+
+[data-theme="phyrexia"] nav .font-bold.text-lg {
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  color: #4aff4a;
+  text-shadow: 0 0 12px rgba(74,255,74,0.6), 0 0 30px rgba(74,255,74,0.3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+[data-theme="phyrexia"] nav .nav-link-active {
+  background: rgba(74,255,74,0.12);
+  color: #4aff4a;
+  border: 1px solid rgba(74,255,74,0.15);
+}
+
+[data-theme="phyrexia"] nav .nav-link:hover {
+  background: rgba(74,255,74,0.06);
+}
+
+/* Decorative dividers */
+[data-theme="phyrexia"] .section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+[data-theme="phyrexia"] .section-heading::before,
+[data-theme="phyrexia"] .section-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #1a3a1a, #4aff4a, #1a3a1a, transparent);
+}
+
+/* Leaderboard */
+[data-theme="phyrexia"] .medal-gold {
+  background: linear-gradient(135deg, #4aff4a, #80ff80);
+  color: #080a08;
+  box-shadow: 0 0 14px rgba(74,255,74,0.5);
+}
+
+[data-theme="phyrexia"] .medal-silver {
+  background: linear-gradient(135deg, #3a5a3a, #5a8a5a);
+  color: #c8d8c0;
+}
+
+[data-theme="phyrexia"] .medal-bronze {
+  background: linear-gradient(135deg, #1a4a1a, #2a6a2a);
+  color: #4aff4a;
+}
+
+/* Stats values */
+[data-theme="phyrexia"] .stat-value {
+  color: #4aff4a;
+  text-shadow: 0 0 10px rgba(74,255,74,0.4);
+}
+
+/* Hover glow */
+[data-theme="phyrexia"] .card-hover-glow:hover {
+  box-shadow: 0 0 14px rgba(74,255,74,0.2), 0 4px 12px rgba(0,0,0,0.5);
+  border-color: #4aff4a;
+}
+
+/* Toxic pulse animation */
+@keyframes phyrexia-pulse {
+  0%, 100% { text-shadow: 0 0 12px rgba(74,255,74,0.6), 0 0 30px rgba(74,255,74,0.3); }
+  50% { text-shadow: 0 0 18px rgba(74,255,74,0.8), 0 0 40px rgba(74,255,74,0.4); }
+}
+
+[data-theme="phyrexia"] nav .font-bold.text-lg {
+  animation: phyrexia-pulse 4s ease-in-out infinite;
+}
+
+/* Oily sheen overlay */
+[data-theme="phyrexia"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background:
+    radial-gradient(ellipse at 40% 30%, rgba(74,255,74,0.02) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='10' height='10' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='2' height='2' fill='%234aff4a' opacity='0.04'/%3E%3Crect x='5' y='4' width='1' height='1' fill='%23ffffff' opacity='0.05'/%3E%3Crect x='8' y='7' width='1' height='1' fill='%234aff4a' opacity='0.03'/%3E%3Crect x='3' y='8' width='2' height='1' fill='%23ffffff' opacity='0.02'/%3E%3C/svg%3E") repeat;
+}

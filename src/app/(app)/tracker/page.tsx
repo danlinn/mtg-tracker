@@ -797,8 +797,8 @@ export default function TrackerPage() {
                 onClick={() => setPlayerCount(n)}
                 className={`flex-1 py-3 rounded-lg text-sm font-medium transition-colors ${
                   playerCount === n
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-accent text-accent-text"
+                    : "bg-surface-raised text-text-secondary hover:bg-surface-hover"
                 }`}
               >
                 {n}
@@ -816,8 +816,8 @@ export default function TrackerPage() {
                 onClick={() => setStartLife(n)}
                 className={`flex-1 py-3 rounded-lg text-sm font-medium transition-colors ${
                   startLife === n
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-accent text-accent-text"
+                    : "bg-surface-raised text-text-secondary hover:bg-surface-hover"
                 }`}
               >
                 {n}
@@ -831,17 +831,17 @@ export default function TrackerPage() {
           <label className="block text-sm font-medium">
             Assign Players (optional)
           </label>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-text-muted">
             Fill these in to auto-log the game when a winner is decided.
           </p>
           {seatsForCount.map((seat, i) => {
             return (
-              <div key={i} className="border border-gray-200 rounded-lg p-2 space-y-2">
-                <div className="text-xs font-semibold text-gray-600">Seat {i + 1}</div>
+              <div key={i} className="border border-border-light rounded-lg p-2 space-y-2">
+                <div className="text-xs font-semibold text-text-tertiary">Seat {i + 1}</div>
                 <select
                   value={seat.userId}
                   onChange={(e) => updateSeat(i, "userId", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+                  className="w-full px-3 py-2 border border-border rounded-lg bg-surface text-text-primary text-sm"
                 >
                   <option value="">Select player...</option>
                   {users.map((u) => (
@@ -854,7 +854,7 @@ export default function TrackerPage() {
                   <select
                     value={seat.deckId}
                     onChange={(e) => handleDeckSelect(e.target.value, i, "setup")}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-surface text-text-primary text-sm"
                   >
                     <option value="">Select deck...</option>
                     {getDecksFor(seat.userId).map((d) => (
@@ -872,12 +872,12 @@ export default function TrackerPage() {
 
         <button
           onClick={handleStart}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          className="w-full bg-accent text-accent-text py-3 rounded-lg font-semibold hover:bg-accent-hover transition-colors"
         >
           Start Game
         </button>
 
-        <p className="text-xs text-gray-500 text-center">
+        <p className="text-xs text-text-muted text-center">
           Tap the top of any counter to increase, bottom to decrease. Commander
           damage auto-adjusts life. When only one player remains alive, you&apos;ll
           jump to the log game screen (if seats are assigned).
@@ -1153,13 +1153,13 @@ export default function TrackerPage() {
           onClick={() => setConfirmAction(null)}
         >
           <div
-            className="bg-white rounded-lg p-5 max-w-sm w-full space-y-4"
+            className="bg-surface rounded-lg p-5 max-w-sm w-full space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="font-semibold text-gray-900 text-lg">
+            <h3 className="font-semibold text-text-primary text-lg">
               {confirmAction === "reset" ? "Reset the game?" : "Start a new game?"}
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-text-tertiary">
               {confirmAction === "reset"
                 ? "Life totals and commander damage will be reset. Player assignments stay."
                 : "The current game will be discarded and you'll return to setup."}
@@ -1168,7 +1168,7 @@ export default function TrackerPage() {
               <button
                 type="button"
                 onClick={() => setConfirmAction(null)}
-                className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
+                className="flex-1 py-2 rounded-lg border border-border text-text-secondary font-medium hover:bg-surface-hover"
               >
                 Cancel
               </button>
@@ -1182,7 +1182,7 @@ export default function TrackerPage() {
                   }
                   setConfirmAction(null);
                 }}
-                className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-medium"
+                className="flex-1 py-2 rounded-lg bg-accent text-accent-text font-medium"
               >
                 {confirmAction === "reset" ? "Reset" : "New Game"}
               </button>
@@ -1193,13 +1193,13 @@ export default function TrackerPage() {
 
       {logOverlayOpen && winnerIdx !== null && (
         <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white">
-              <h3 className="font-semibold text-gray-900 text-lg">Log game</h3>
+          <div className="bg-surface rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b border-border-light sticky top-0 bg-surface">
+              <h3 className="font-semibold text-text-primary text-lg">Log game</h3>
               <button
                 type="button"
                 onClick={() => setLogOverlayDismissed(true)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:bg-surface-raised"
                 aria-label="Close"
               >
                 <svg
@@ -1220,7 +1220,7 @@ export default function TrackerPage() {
             <div className="p-4 space-y-4">
               {logSavedId ? (
                 <div className="space-y-3">
-                  <div className="bg-green-50 text-green-700 px-3 py-2 rounded text-sm font-medium">
+                  <div className="bg-success-bg text-success px-3 py-2 rounded text-sm font-medium">
                     Game logged.
                   </div>
                   <button
@@ -1228,14 +1228,14 @@ export default function TrackerPage() {
                     onClick={() => {
                       handleNewGame();
                     }}
-                    className="w-full py-2 rounded-lg bg-blue-600 text-white font-medium"
+                    className="w-full py-2 rounded-lg bg-accent text-accent-text font-medium"
                   >
                     Start new game
                   </button>
                   <button
                     type="button"
                     onClick={() => setLogOverlayDismissed(true)}
-                    className="w-full py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
+                    className="w-full py-2 rounded-lg border border-border text-text-secondary font-medium hover:bg-surface-hover"
                   >
                     Close
                   </button>
@@ -1243,25 +1243,25 @@ export default function TrackerPage() {
               ) : (
                 <>
                   {logError && (
-                    <div className="bg-red-50 text-red-700 px-3 py-2 rounded text-sm">
+                    <div className="bg-danger-bg text-danger px-3 py-2 rounded text-sm">
                       {logError}
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">
+                    <label className="block text-sm font-medium mb-1 text-text-secondary">
                       Date played
                     </label>
                     <input
                       type="date"
                       value={logPlayedAt}
                       onChange={(e) => setLogPlayedAt(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                      className="w-full px-3 py-2 border border-border rounded-lg bg-surface text-text-primary"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-text-secondary">
                       Seats
                     </label>
                     {players.map((p, i) => {
@@ -1273,16 +1273,16 @@ export default function TrackerPage() {
                           key={i}
                           className={`border rounded-lg p-2 text-sm ${
                             isWinner
-                              ? "border-green-500 bg-green-50"
-                              : "border-gray-200"
+                              ? "border-success bg-success-bg"
+                              : "border-border-light"
                           }`}
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-semibold text-gray-600">
+                            <span className="text-xs font-semibold text-text-tertiary">
                               Seat {i + 1}
                             </span>
                             {isWinner && (
-                              <span className="text-xs font-bold text-green-700 uppercase">
+                              <span className="text-xs font-bold text-success uppercase">
                                 Winner
                               </span>
                             )}
@@ -1297,7 +1297,7 @@ export default function TrackerPage() {
                                 )
                               );
                             }}
-                            className="w-full px-2 py-1 border border-gray-300 rounded bg-white text-gray-900 text-sm mb-1"
+                            className="w-full px-2 py-1 border border-border rounded bg-surface text-text-primary text-sm mb-1"
                           >
                             <option value="">Select player...</option>
                             {users.map((u) => (
@@ -1310,7 +1310,7 @@ export default function TrackerPage() {
                             <select
                               value={p.deckId}
                               onChange={(e) => handleDeckSelect(e.target.value, i, "overlay")}
-                              className="w-full px-2 py-1 border border-gray-300 rounded bg-white text-gray-900 text-sm"
+                              className="w-full px-2 py-1 border border-border rounded bg-surface text-text-primary text-sm"
                             >
                               <option value="">Select deck...</option>
                               {getDecksFor(p.userId).map((d) => (
@@ -1322,7 +1322,7 @@ export default function TrackerPage() {
                             </select>
                           )}
                           {deck && (
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="text-xs text-text-muted mt-1">
                               {deck.name} — {deck.commander}
                             </div>
                           )}
@@ -1332,7 +1332,7 @@ export default function TrackerPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-700">
+                    <label className="block text-sm font-medium mb-1 text-text-secondary">
                       Notes
                     </label>
                     <textarea
@@ -1340,7 +1340,7 @@ export default function TrackerPage() {
                       onChange={(e) => setLogNotes(e.target.value)}
                       placeholder="Optional..."
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+                      className="w-full px-3 py-2 border border-border rounded-lg bg-surface text-text-primary text-sm"
                     />
                   </div>
 
@@ -1349,16 +1349,16 @@ export default function TrackerPage() {
                       type="checkbox"
                       checked={logAsterisk}
                       onChange={(e) => setLogAsterisk(e.target.checked)}
-                      className="w-4 h-4 rounded border-gray-300"
+                      className="w-4 h-4 rounded border-border"
                     />
-                    <span className="text-sm font-medium text-gray-700">Asterisk *</span>
+                    <span className="text-sm font-medium text-text-secondary">Asterisk *</span>
                   </label>
 
                   <div className="flex gap-2 pt-2">
                     <button
                       type="button"
                       onClick={() => setLogOverlayDismissed(true)}
-                      className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
+                      className="flex-1 py-2 rounded-lg border border-border text-text-secondary font-medium hover:bg-surface-hover"
                     >
                       Not yet
                     </button>
@@ -1366,7 +1366,7 @@ export default function TrackerPage() {
                       type="button"
                       onClick={handleSaveGame}
                       disabled={logSaving}
-                      className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-medium disabled:opacity-50"
+                      className="flex-1 py-2 rounded-lg bg-accent text-accent-text font-medium disabled:opacity-50"
                     >
                       {logSaving ? "Saving..." : "Log game"}
                     </button>
@@ -1374,7 +1374,7 @@ export default function TrackerPage() {
                   <button
                     type="button"
                     onClick={() => handleNewGame()}
-                    className="w-full py-2 rounded-lg text-gray-500 text-sm hover:text-gray-700 hover:bg-gray-50"
+                    className="w-full py-2 rounded-lg text-text-muted text-sm hover:text-text-secondary hover:bg-surface-hover"
                   >
                     Discard and start new game
                   </button>
@@ -1392,10 +1392,10 @@ export default function TrackerPage() {
           onTouchEnd={(e) => e.stopPropagation()}
         >
           <div
-            className="bg-white rounded-lg p-4 max-w-sm w-full space-y-3"
+            className="bg-surface rounded-lg p-4 max-w-sm w-full space-y-3"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="font-semibold text-gray-900">
+            <h3 className="font-semibold text-text-primary">
               Assign Seat {assignSeatFor + 1}
             </h3>
             <select
@@ -1408,7 +1408,7 @@ export default function TrackerPage() {
                   )
                 );
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+              className="w-full px-3 py-2 border border-border rounded-lg bg-surface text-text-primary text-sm"
             >
               <option value="">Select player...</option>
               {users.map((u) => (
@@ -1421,7 +1421,7 @@ export default function TrackerPage() {
               <select
                 value={players[assignSeatFor]?.deckId ?? ""}
                 onChange={(e) => handleDeckSelect(e.target.value, assignSeatFor!, "overlay")}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm"
+                className="w-full px-3 py-2 border border-border rounded-lg bg-surface text-text-primary text-sm"
               >
                 <option value="">Select deck...</option>
                 {getDecksFor(players[assignSeatFor].userId).map((d) => (
@@ -1435,7 +1435,7 @@ export default function TrackerPage() {
             <button
               type="button"
               onClick={() => setAssignSeatFor(null)}
-              className="w-full py-2 rounded-lg bg-blue-600 text-white font-medium"
+              className="w-full py-2 rounded-lg bg-accent text-accent-text font-medium"
             >
               Done
             </button>
@@ -1449,10 +1449,10 @@ export default function TrackerPage() {
           onClick={(e) => { if (e.target === e.currentTarget) setColorPickerFor(null); }}
         >
           <div
-            className="bg-white rounded-lg p-4 max-w-sm w-full space-y-3 max-h-[85vh] overflow-y-auto"
+            className="bg-surface rounded-lg p-4 max-w-sm w-full space-y-3 max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="font-semibold text-gray-900">Pick a color</h3>
+            <h3 className="font-semibold text-text-primary">Pick a color</h3>
             <div className="grid grid-cols-6 gap-2 max-h-80 overflow-y-auto">
               {BG_PRESETS.map((preset) => (
                 <button
@@ -1464,7 +1464,7 @@ export default function TrackerPage() {
                     });
                     setColorPickerFor(null);
                   }}
-                  className="w-full aspect-square rounded-lg border border-gray-300 flex items-end justify-center text-[10px] font-bold p-0.5"
+                  className="w-full aspect-square rounded-lg border border-border flex items-end justify-center text-[10px] font-bold p-0.5"
                   style={backgroundStyle(preset.bg)}
                   aria-label={preset.key}
                 >
@@ -1473,7 +1473,7 @@ export default function TrackerPage() {
               ))}
             </div>
             <div>
-              <label className="text-sm text-gray-600 block mb-1">Custom:</label>
+              <label className="text-sm text-text-tertiary block mb-1">Custom:</label>
               <input
                 type="color"
                 value={
@@ -1490,7 +1490,7 @@ export default function TrackerPage() {
             </div>
             {colorPickerFor !== null && players[colorPickerFor]?.colorCombo && players[colorPickerFor].colorCombo!.length > 1 && (
               <div>
-                <label className="text-sm text-gray-600 block mb-1">Gradient style:</label>
+                <label className="text-sm text-text-tertiary block mb-1">Gradient style:</label>
                 <div className="grid grid-cols-4 gap-1.5">
                   {GRADIENT_STYLES.filter((s) => {
                     const n = players[colorPickerFor].colorCombo!.length;
@@ -1512,7 +1512,7 @@ export default function TrackerPage() {
                           }));
                         }}
                         className={`aspect-square rounded-lg border-2 text-[8px] font-bold flex items-end justify-center pb-0.5 ${
-                          isActive ? "border-blue-500 ring-1 ring-blue-300" : "border-gray-300"
+                          isActive ? "border-accent ring-1 ring-accent" : "border-border"
                         }`}
                         style={{ background: preview }}
                         title={style.label}
@@ -1533,13 +1533,13 @@ export default function TrackerPage() {
                   }
                   setColorPickerFor(null);
                 }}
-                className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50"
+                className="flex-1 py-2 rounded-lg border border-border text-text-secondary text-sm font-medium hover:bg-surface-hover"
               >
                 Default color
               </button>
               <button
                 onClick={() => setColorPickerFor(null)}
-                className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-medium"
+                className="flex-1 py-2 rounded-lg bg-accent text-accent-text font-medium"
               >
                 Done
               </button>
