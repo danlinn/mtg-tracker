@@ -6,7 +6,7 @@ import type { Palette, ColorKey } from "@/lib/themePalettes";
 import { comboForDeck } from "@/lib/themePalettes";
 import { bgForComboStyled, GRADIENT_STYLES, THEME_DEFAULT_GRADIENT, type GradientStyleName } from "@/lib/gradientStyles";
 import { GRADIENT_ORDER, COMBO_KEYS } from "@/lib/gradientStyles";
-import { THEME_DEFAULT_TEXTURE, getTextureBackground } from "@/lib/textures";
+import { THEME_DEFAULT_TEXTURE, getTextureBackground, type TextureName } from "@/lib/textures";
 import { DEFAULT_SEAT_COMBOS, isAlive } from "@/lib/tracker-logic";
 import type { Player, UserWithDecks } from "@/features/tracker/types";
 import {
@@ -96,7 +96,7 @@ const STARTER_GRADIENTS: GradientStyleName[] = GRADIENT_STYLES
   .filter((s) => !s.minColors && !s.maxColors)
   .map((s) => s.name);
 
-function makePlayers(count: number, startLife: number, palette: Palette, gradientStyle: GradientStyleName): Player[] {
+function makePlayers(count: number, startLife: number, palette: Palette, gradientStyle: GradientStyleName, texture: TextureName): Player[] {
   return Array.from({ length: count }, (_, i) => {
     const combo = DEFAULT_SEAT_COMBOS[i % DEFAULT_SEAT_COMBOS.length];
     const style = STARTER_GRADIENTS[i % STARTER_GRADIENTS.length] ?? gradientStyle;
@@ -105,6 +105,7 @@ function makePlayers(count: number, startLife: number, palette: Palette, gradien
       bgColor: bgForComboStyled(combo, palette, style),
       colorCombo: combo,
       gradientStyle: style,
+      texture,
       damage: {},
       userId: "",
       deckId: "",
@@ -118,7 +119,7 @@ export default function TrackerPage() {
   const { theme, setTheme } = useTheme();
   const palette = useThemePalette();
   const defaultGradient = THEME_DEFAULT_GRADIENT[theme] ?? "linear";
-  const textureOverlay = getTextureBackground(THEME_DEFAULT_TEXTURE[theme] ?? "none");
+  const defaultTexture: TextureName = THEME_DEFAULT_TEXTURE[theme] ?? "none";
   const BG_PRESETS = useMemo(() => allCombos(palette), [palette]);
   // Hydrate from sessionStorage if we have a game in progress this tab
   const saved = typeof window !== "undefined" ? loadSession() : null;
@@ -175,12 +176,12 @@ export default function TrackerPage() {
     setPlayers((prev) =>
       prev.map((p) =>
         p.colorCombo
-          ? { ...p, bgColor: bgForComboStyled(p.colorCombo, palette, p.gradientStyle), gradientStyle: defaultGradient }
+          ? { ...p, bgColor: bgForComboStyled(p.colorCombo, palette, p.gradientStyle), gradientStyle: defaultGradient, texture: defaultTexture }
           : p
       )
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [palette, defaultGradient]);
+  }, [palette, defaultGradient, defaultTexture]);
 
   // Prevent screen from scrolling during play
   useEffect(() => {
@@ -245,7 +246,7 @@ export default function TrackerPage() {
   }
 
   function handleStart() {
-    const ps = makePlayers(playerCount, startLife, palette, defaultGradient).map((p, i) => {
+    const ps = makePlayers(playerCount, startLife, palette, defaultGradient, defaultTexture).map((p, i) => {
       const seat = seatsForCount[i];
       const combo = deckComboForSeat(seat?.userId ?? "", seat?.deckId ?? "");
       return {
@@ -535,7 +536,6 @@ export default function TrackerPage() {
       dead={isDead(players[idx])}
       deckLabel={deckLabelFor(players[idx])}
       swapState={swapStateFor(idx)}
-      textureOverlay={textureOverlay}
     />
   );
 
@@ -716,6 +716,7 @@ export default function TrackerPage() {
           player={players[colorPickerFor]}
           palette={palette}
           defaultGradient={defaultGradient}
+          defaultTexture={defaultTexture}
           BG_PRESETS={BG_PRESETS}
           updatePlayer={updatePlayer}
           onClose={() => setColorPickerFor(null)}

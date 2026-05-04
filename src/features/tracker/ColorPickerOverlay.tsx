@@ -1,5 +1,6 @@
 import type { Palette } from "@/lib/themePalettes";
 import { bgForComboStyled, GRADIENT_STYLES, type GradientStyleName } from "@/lib/gradientStyles";
+import { ALL_TEXTURES, getTextureBackground, type TextureName } from "@/lib/textures";
 import { DEFAULT_SEAT_COMBOS } from "@/lib/tracker-logic";
 import type { Player } from "./types";
 
@@ -14,6 +15,7 @@ interface ColorPickerOverlayProps {
   player: Player;
   palette: Palette;
   defaultGradient: GradientStyleName;
+  defaultTexture: TextureName;
   BG_PRESETS: BgPreset[];
   updatePlayer: (idx: number, updater: (p: Player) => Player) => void;
   onClose: () => void;
@@ -31,6 +33,7 @@ export function ColorPickerOverlay({
   palette,
   defaultGradient,
   BG_PRESETS,
+  defaultTexture,
   updatePlayer,
   onClose,
 }: ColorPickerOverlayProps) {
@@ -114,11 +117,39 @@ export function ColorPickerOverlay({
             </div>
           </div>
         )}
+        <div>
+          <label className="text-sm text-text-tertiary block mb-1">Texture overlay:</label>
+          <div className="grid grid-cols-6 gap-1.5">
+            {ALL_TEXTURES.map((t) => {
+              const isActive = (player.texture ?? defaultTexture) === t.name;
+              const preview = t.name === "none" ? "" : getTextureBackground(t.name, 0.4);
+              return (
+                <button
+                  key={t.name}
+                  onClick={() => {
+                    updatePlayer(playerIndex, (p) => ({ ...p, texture: t.name }));
+                  }}
+                  className={`aspect-square rounded-lg border-2 text-[7px] font-bold flex items-end justify-center pb-0.5 ${
+                    isActive ? "border-accent ring-1 ring-accent" : "border-border"
+                  }`}
+                  style={{
+                    background: preview
+                      ? `${preview}, ${player.bgColor}`
+                      : player.bgColor,
+                  }}
+                  title={t.label}
+                >
+                  <span className="bg-black/50 text-white px-0.5 rounded">{t.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div className="flex gap-2">
           <button
             onClick={() => {
               const combo = DEFAULT_SEAT_COMBOS[playerIndex % DEFAULT_SEAT_COMBOS.length];
-              updatePlayer(playerIndex, (p) => ({ ...p, bgColor: bgForComboStyled(combo, palette, p.gradientStyle ?? defaultGradient), colorCombo: combo }));
+              updatePlayer(playerIndex, (p) => ({ ...p, bgColor: bgForComboStyled(combo, palette, p.gradientStyle ?? defaultGradient), colorCombo: combo, texture: defaultTexture }));
               onClose();
             }}
             className="flex-1 py-2 rounded-lg border border-border text-text-secondary text-sm font-medium hover:bg-surface-hover"
