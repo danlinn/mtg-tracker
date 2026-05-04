@@ -253,3 +253,40 @@ describe("DELETE /api/admin/games/[id]", () => {
     expect((await res.json()).success).toBe(true);
   });
 });
+
+describe("PUT /api/admin/games/[id] — negative edge cases", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it("rejects 5 players", async () => {
+    const { PUT } = await getHandlers();
+    mockIsAdmin.mockResolvedValue(true);
+    mockGameFindUnique.mockResolvedValue({ id: "game-1", players: [] });
+    const players = Array.from({ length: 5 }, (_, i) => ({
+      userId: `u${i}`,
+      deckId: `d${i}`,
+      isWinner: i === 0,
+    }));
+    const res = await PUT(makeRequest("PUT", { players }), {
+      params: paramsPromise,
+    });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe("Games require 2-4 players");
+  });
+
+  it("rejects multiple winners", async () => {
+    const { PUT } = await getHandlers();
+    mockIsAdmin.mockResolvedValue(true);
+    mockGameFindUnique.mockResolvedValue({ id: "game-1", players: [] });
+    const res = await PUT(
+      makeRequest("PUT", {
+        players: [
+          { userId: "u1", deckId: "d1", isWinner: true },
+          { userId: "u2", deckId: "d2", isWinner: true },
+        ],
+      }),
+      { params: paramsPromise }
+    );
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toBe("Exactly one winner required");
+  });
+});

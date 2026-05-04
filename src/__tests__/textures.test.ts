@@ -45,11 +45,61 @@ describe("THEME_DEFAULT_TEXTURE", () => {
     expect(THEME_DEFAULT_TEXTURE.default).toBe("none");
   });
 
-  it("every theme has a default texture", () => {
+  it("every theme has a default texture that is a valid TextureName", () => {
     const themes = Object.keys(THEME_DEFAULT_TEXTURE);
     expect(themes.length).toBeGreaterThanOrEqual(10);
+    const validNames: TextureName[] = [
+      "none", "grit", "hex-grid", "circuit", "scales", "crosshatch",
+      "dots", "diamonds", "waves", "stone", "diagonal-streak", "shimmer", "pixelated",
+    ];
     for (const t of themes) {
-      expect(THEME_DEFAULT_TEXTURE[t as keyof typeof THEME_DEFAULT_TEXTURE]).toBeTruthy();
+      const val = THEME_DEFAULT_TEXTURE[t as keyof typeof THEME_DEFAULT_TEXTURE];
+      expect(typeof val).toBe("string");
+      expect(validNames).toContain(val);
     }
+  });
+});
+
+describe("negative / edge cases", () => {
+  it("getTextureBackground returns empty string only for 'none'", () => {
+    const textured: TextureName[] = [
+      "grit", "hex-grid", "circuit", "scales", "crosshatch",
+      "dots", "diamonds", "waves", "stone", "diagonal-streak", "shimmer", "pixelated",
+    ];
+    expect(getTextureBackground("none")).toBe("");
+    for (const name of textured) {
+      const result = getTextureBackground(name);
+      expect(result).not.toBe("");
+      expect(result.length).toBeGreaterThan(10);
+    }
+  });
+
+  it("zero opacity still returns a valid SVG data URI", () => {
+    const result = getTextureBackground("grit", 0);
+    expect(result).toContain("url(");
+    expect(result).toContain("data:image/svg+xml");
+  });
+
+  it("very high opacity does not break texture generation", () => {
+    const result = getTextureBackground("grit", 1);
+    expect(result).toContain("url(");
+    expect(result).toContain("data:image/svg+xml");
+  });
+
+  it("different textures produce different output", () => {
+    const grit = getTextureBackground("grit");
+    const hex = getTextureBackground("hex-grid");
+    const dots = getTextureBackground("dots");
+    expect(grit).not.toBe(hex);
+    expect(grit).not.toBe(dots);
+    expect(hex).not.toBe(dots);
+  });
+
+  it("different opacities produce different output for same texture", () => {
+    const low = getTextureBackground("circuit", 0.05);
+    const mid = getTextureBackground("circuit", 0.5);
+    const high = getTextureBackground("circuit", 0.9);
+    expect(low).not.toBe(mid);
+    expect(mid).not.toBe(high);
   });
 });

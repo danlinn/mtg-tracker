@@ -108,4 +108,43 @@ describe("theme palettes", () => {
     expect(getPalette("synth")).toEqual(THEME_PALETTES.synth);
     expect(getPalette("grixis")).toEqual(THEME_PALETTES.grixis);
   });
+
+  it("getPalette falls back to default for garbage string", () => {
+    const def = THEME_PALETTES.default;
+    expect(getPalette("nonexistent-theme")).toEqual(def);
+    expect(getPalette("")).toEqual(def);
+  });
+
+  it("no two themes share the exact same palette", () => {
+    for (let i = 0; i < THEMES.length; i++) {
+      for (let j = i + 1; j < THEMES.length; j++) {
+        const a = JSON.stringify(THEME_PALETTES[THEMES[i]]);
+        const b = JSON.stringify(THEME_PALETTES[THEMES[j]]);
+        expect(a).not.toBe(b);
+      }
+    }
+  });
+
+  it("hex and text colors are different within each palette entry (contrast required)", () => {
+    for (const t of THEMES) {
+      for (const c of COLORS) {
+        const entry = THEME_PALETTES[t][c];
+        // hex (background) and text (foreground) should differ for readability
+        expect(entry.hex).not.toBe(entry.text);
+      }
+    }
+  });
+
+  it("colorless (C) is never a vibrant primary color", () => {
+    for (const t of THEMES) {
+      const [r, g, b] = hexToRgb(THEME_PALETTES[t].C.hex);
+      // Colorless should be muted/neutral — no single channel dominantly bright
+      // while others are near zero (that would be a strong primary color)
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      // If the saturation is very high, that's a problem for "colorless"
+      const saturation = max === 0 ? 0 : (max - min) / max;
+      expect(saturation).toBeLessThan(0.5);
+    }
+  });
 });

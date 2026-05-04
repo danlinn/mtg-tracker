@@ -110,4 +110,48 @@ describe("POST /api/register", () => {
     const data = await res.json();
     expect(data.error).toBe("Invalid JSON");
   });
+
+  it("returns 400 when only name is provided", async () => {
+    const POST = await getHandler();
+    const res = await POST(makeRequest({ name: "Test" }));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("Missing required fields");
+  });
+
+  it("returns 400 when only password is provided", async () => {
+    const POST = await getHandler();
+    const res = await POST(makeRequest({ password: "password123" }));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("Missing required fields");
+  });
+
+  it("returns 400 for empty string fields", async () => {
+    const POST = await getHandler();
+    const res = await POST(makeRequest({ email: "", password: "", name: "" }));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("Missing required fields");
+  });
+
+  it("successful registration response does not leak password", async () => {
+    const POST = await getHandler();
+    mockCreate.mockResolvedValue({
+      id: "new-id",
+      email: "new@test.com",
+      name: "New User",
+    });
+
+    const res = await POST(
+      makeRequest({
+        email: "new@test.com",
+        password: "password123",
+        name: "New User",
+      })
+    );
+    const data = await res.json();
+    expect(data.password).toBeUndefined();
+    expect(data.hashedPassword).toBeUndefined();
+  });
 });

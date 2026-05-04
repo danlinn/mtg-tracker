@@ -453,4 +453,77 @@ describe("save game after elimination", () => {
       expect(result.winnerIdx).toBe(1);
     }
   });
+
+  it("exactly 20 from a single source does NOT eliminate", () => {
+    const result = validateSave([
+      player("u1", "d1", 40, { 1: 20 }),
+      player("u2", "d2", 0),
+      player("u3", "d3", 0),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.winnerIdx).toBe(0);
+    }
+  });
+
+  it("negative life counts as dead", () => {
+    const result = validateSave([
+      player("u1", "d1", -10),
+      player("u2", "d2", 40),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.winnerIdx).toBe(1);
+    }
+  });
+
+  it("life at exactly 0 is dead", () => {
+    expect(isAlive({ life: 0, damage: {} })).toBe(false);
+  });
+
+  it("life at exactly 1 is alive", () => {
+    expect(isAlive({ life: 1, damage: {} })).toBe(true);
+  });
+
+  it("payload isWinner flags are mutually exclusive (only one true)", () => {
+    const result = validateSave([
+      player("u1", "d1", 0),
+      player("u2", "d2", 0),
+      player("u3", "d3", 0),
+      player("u4", "d4", 5),
+    ]);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const winnerCount = result.payload.filter((p) => p.isWinner).length;
+      expect(winnerCount).toBe(1);
+      const loserCount = result.payload.filter((p) => !p.isWinner).length;
+      expect(loserCount).toBe(3);
+    }
+  });
+});
+
+describe("cleanUrl edge cases", () => {
+  it("handles whitespace-only string", () => {
+    expect(cleanUrl("   ")).toBe("");
+  });
+
+  it("handles non-URL string gracefully", () => {
+    const result = cleanUrl("not a url at all");
+    expect(typeof result).toBe("string");
+    expect(result).toBe("not a url at all");
+  });
+
+  it("preserves other query params when removing channel_binding", () => {
+    const url = "postgresql://u:p@h/db?sslmode=require&channel_binding=require&connect_timeout=5";
+    const cleaned = cleanUrl(url);
+    expect(cleaned).toContain("sslmode=require");
+    expect(cleaned).toContain("connect_timeout=5");
+    expect(cleaned).not.toContain("channel_binding");
+  });
+
+  it("handles URL with no query params", () => {
+    const url = "postgresql://user:pass@host/db";
+    const cleaned = cleanUrl(url);
+    expect(cleaned).toBe("postgresql://user:pass@host/db");
+  });
 });

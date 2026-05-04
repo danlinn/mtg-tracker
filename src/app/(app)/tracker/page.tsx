@@ -127,14 +127,19 @@ function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
 }
 
+const STARTER_GRADIENTS: GradientStyleName[] = GRADIENT_STYLES
+  .filter((s) => !s.minColors && !s.maxColors)
+  .map((s) => s.name);
+
 function makePlayers(count: number, startLife: number, palette: Palette, gradientStyle: GradientStyleName): Player[] {
   return Array.from({ length: count }, (_, i) => {
     const combo = DEFAULT_SEAT_COMBOS[i % DEFAULT_SEAT_COMBOS.length];
+    const style = STARTER_GRADIENTS[i % STARTER_GRADIENTS.length] ?? gradientStyle;
     return {
       life: startLife,
-      bgColor: bgForComboStyled(combo, palette, gradientStyle),
+      bgColor: bgForComboStyled(combo, palette, style),
       colorCombo: combo,
-      gradientStyle,
+      gradientStyle: style,
       damage: {},
       userId: "",
       deckId: "",
@@ -702,7 +707,7 @@ export default function TrackerPage() {
         ? seatsForCount[seatIdx]?.userId
         : players[seatIdx]?.userId;
       if (userId) {
-        window.location.href = `/admin/users/${userId}/decks/new?returnTo=/tracker`;
+        window.location.href = `/decks/new?forUser=${userId}&returnTo=/tracker`;
       } else {
         window.location.href = "/decks/new?returnTo=/tracker";
       }
@@ -1487,7 +1492,12 @@ export default function TrackerPage() {
               <div>
                 <label className="text-sm text-gray-600 block mb-1">Gradient style:</label>
                 <div className="grid grid-cols-4 gap-1.5">
-                  {GRADIENT_STYLES.filter((s) => !s.minColors || players[colorPickerFor].colorCombo!.length >= s.minColors).map((style) => {
+                  {GRADIENT_STYLES.filter((s) => {
+                    const n = players[colorPickerFor].colorCombo!.length;
+                    if (s.minColors && n < s.minColors) return false;
+                    if (s.maxColors && n > s.maxColors) return false;
+                    return true;
+                  }).map((style) => {
                     const p = players[colorPickerFor];
                     const preview = style.fn(p.colorCombo!, palette);
                     const isActive = (p.gradientStyle ?? defaultGradient) === style.name;

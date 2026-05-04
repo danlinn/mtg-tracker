@@ -120,6 +120,35 @@ describe("extractDecklistFromMoxfield", () => {
   });
 });
 
+describe("extractDecklistFromMoxfield — negative cases", () => {
+  it("handles deck with no commanders", () => {
+    const noCommanders: MoxfieldDeck = {
+      ...mockDeck,
+      commanders: {},
+    };
+    const result = extractDecklistFromMoxfield(noCommanders);
+    // Should still include mainboard cards
+    expect(result).toContain("Sol Ring");
+    expect(result).not.toContain("Atraxa");
+  });
+
+  it("handles deck with no commanders and no mainboard", () => {
+    const emptyDeck: MoxfieldDeck = {
+      ...mockDeck,
+      commanders: {},
+      mainboard: {},
+      companions: {},
+    };
+    const result = extractDecklistFromMoxfield(emptyDeck);
+    expect(result.trim()).toBe("");
+  });
+
+  it("does not include companion section header when companions are empty", () => {
+    const result = extractDecklistFromMoxfield(mockDeck);
+    expect(result).not.toContain("// Companion");
+  });
+});
+
 describe("extractColorsFromMoxfield", () => {
   it("extracts color identity from commanders", () => {
     const colors = extractColorsFromMoxfield(mockDeck);

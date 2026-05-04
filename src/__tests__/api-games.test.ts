@@ -227,4 +227,64 @@ describe("POST /api/games", () => {
     const data = await res.json();
     expect(data.error).toBe("Failed to save game");
   });
+
+  it("returns 400 with empty players array", async () => {
+    const { POST } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    const res = await POST(makeRequest({ players: [] }));
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toBe("Games require 2-4 players");
+  });
+
+  it("returns 400 with exactly 1 player", async () => {
+    const { POST } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    const res = await POST(
+      makeRequest({
+        players: [{ userId: "u1", deckId: "d1", isWinner: true }],
+      })
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("accepts exactly 4 players (upper boundary)", async () => {
+    const { POST } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    const gameResult = {
+      id: "g1",
+      playedAt: new Date().toISOString(),
+      players: [],
+    };
+    mockTransaction.mockResolvedValue([gameResult, {}, {}, {}, {}]);
+
+    const players = Array.from({ length: 4 }, (_, i) => ({
+      userId: `u${i}`,
+      deckId: `d${i}`,
+      isWinner: i === 0,
+    }));
+    const res = await POST(makeRequest({ players }));
+    expect(res.status).toBe(200);
+  });
+
+  it("accepts exactly 2 players (lower boundary)", async () => {
+    const { POST } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    const gameResult = {
+      id: "g1",
+      playedAt: new Date().toISOString(),
+      players: [],
+    };
+    mockTransaction.mockResolvedValue([gameResult, {}, {}]);
+
+    const res = await POST(
+      makeRequest({
+        players: [
+          { userId: "u1", deckId: "d1", isWinner: true },
+          { userId: "u2", deckId: "d2", isWinner: false },
+        ],
+      })
+    );
+    expect(res.status).toBe(200);
+  });
 });
