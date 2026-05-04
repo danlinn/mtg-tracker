@@ -111,6 +111,12 @@ export async function POST(req: Request) {
     );
   }
 
+  let resolvedPlaygroupId = playgroupId || (await getActivePlaygroupId()) || null;
+  if (resolvedPlaygroupId) {
+    const pg = await prisma.playgroup.findUnique({ where: { id: resolvedPlaygroupId }, select: { id: true } });
+    if (!pg) resolvedPlaygroupId = null;
+  }
+
   try {
     const [game] = await prisma.$transaction([
       prisma.game.create({
@@ -118,7 +124,7 @@ export async function POST(req: Request) {
           playedAt: gameDate,
           notes: notes?.trim() || null,
           asterisk: !!asterisk,
-          playgroupId: playgroupId || (await getActivePlaygroupId()) || null,
+          playgroupId: resolvedPlaygroupId,
           players: {
             create: players.map(
               (p: { userId: string; deckId: string; isWinner: boolean }) => ({
