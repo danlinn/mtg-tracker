@@ -1,55 +1,23 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import Link from "next/link";
-import { signOut } from "next-auth/react";
-import { useTheme, useThemePalette, type ThemeName } from "@/lib/theme";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { useTheme, useThemePalette } from "@/lib/theme";
 import type { Palette, ColorKey } from "@/lib/themePalettes";
+import { comboForDeck } from "@/lib/themePalettes";
 import { bgForComboStyled, GRADIENT_STYLES, THEME_DEFAULT_GRADIENT, type GradientStyleName } from "@/lib/gradientStyles";
+import { GRADIENT_ORDER, COMBO_KEYS } from "@/lib/gradientStyles";
 import { THEME_DEFAULT_TEXTURE, getTextureBackground } from "@/lib/textures";
-import PlaygroupSwitcher from "@/components/PlaygroupSwitcher";
-
-interface Player {
-  life: number;
-  bgColor: string;
-  colorCombo: ColorKey[] | null;
-  gradientStyle: GradientStyleName;
-  damage: Record<string, number>; // keys: "0", "0b" (partner), "1", "1b", etc
-  userId: string;
-  deckId: string;
-}
-
-interface DeckInfo {
-  id: string;
-  name: string;
-  commander: string;
-  commander2: string | null;
-  colorW: boolean;
-  colorU: boolean;
-  colorB: boolean;
-  colorR: boolean;
-  colorG: boolean;
-}
-
-interface UserWithDecks {
-  id: string;
-  name: string;
-  decks: DeckInfo[];
-}
-
-function comboForDeck(deck: DeckInfo): ColorKey[] {
-  const combo: ColorKey[] = [];
-  if (deck.colorW) combo.push("W");
-  if (deck.colorU) combo.push("U");
-  if (deck.colorB) combo.push("B");
-  if (deck.colorR) combo.push("R");
-  if (deck.colorG) combo.push("G");
-  return combo;
-}
-
-// Gradient order: Black, Blue, Red, Green, White — matches the deck cards
-const GRADIENT_ORDER: ColorKey[] = ["B", "U", "R", "G", "W"];
-const COMBO_KEYS: ColorKey[] = ["W", "U", "B", "R", "G"]; // WUBRG only (no C in combos)
+import { DEFAULT_SEAT_COMBOS, isAlive } from "@/lib/tracker-logic";
+import type { Player, UserWithDecks } from "@/features/tracker/types";
+import {
+  PlayerBox,
+  SetupScreen,
+  ConfirmDialog,
+  LogGameOverlay,
+  AssignSeatOverlay,
+  ColorPickerOverlay,
+  TrackerNav,
+} from "@/features/tracker";
 
 // Generate a CSS background for a given combo of colors.
 // Single color = solid; multi-color = linear gradient in BURGW order.
@@ -86,9 +54,6 @@ function allCombos(palette: Palette): { key: string; combo: ColorKey[]; bg: stri
     return a.key.localeCompare(b.key);
   });
 }
-
-// Seats 1-4 each get a distinct default color combo.
-const DEFAULT_SEAT_COMBOS: ColorKey[][] = [["R"], ["U"], ["G"], ["B"]];
 
 // Per-tab session persistence so navigating to other pages doesn't
 // wipe the in-flight game. Cleared only on "New Game" or when the
@@ -147,300 +112,7 @@ function makePlayers(count: number, startLife: number, palette: Palette, gradien
   });
 }
 
-function textOn(bg: string): string {
-  // Gradients: sample the first hex in the string
-  const match = bg.match(/#[0-9a-fA-F]{6}/);
-  if (!match) return "#ffffff";
-  const hex = match[0].replace("#", "");
-  const r = parseInt(hex.slice(0, 2), 16);
-  const g = parseInt(hex.slice(2, 4), 16);
-  const b = parseInt(hex.slice(4, 6), 16);
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness > 150 ? "#111827" : "#ffffff";
-}
-
-// Determine the right CSS property for a color value that may be a
-// hex, rgb(), or a `linear-gradient(...)` expression.
-function backgroundStyle(bg: string): React.CSSProperties {
-  return { background: bg };
-}
-
-interface PlayerBoxProps {
-  player: Player;
-  index: number;
-  opponents: { index: number; player: Player; hasPartner: boolean }[];
-  onLifeChange: (delta: number) => void;
-  onCommanderDamage: (damageKey: string, delta: number) => void;
-  onOpenColor: () => void;
-  onAssign?: () => void;
-  onStartSwap?: () => void;
-  rotate?: boolean;
-  dead?: boolean;
-  deckLabel?: string;
-  swapState?: "source" | "target" | null;
-  textureOverlay?: string;
-}
-
-function PlayerBox({
-  player,
-  index,
-  opponents,
-  onLifeChange,
-  onCommanderDamage,
-  onOpenColor,
-  onAssign,
-  onStartSwap,
-  rotate,
-  dead,
-  deckLabel,
-  swapState,
-  textureOverlay,
-}: PlayerBoxProps) {
-  const textColor = textOn(player.bgColor);
-  const lethal = Object.values(player.damage).some((d) => d >= 21);
-  const needsAssignment = !player.userId && !!onAssign;
-  const canSwap = !!onStartSwap && !needsAssignment;
-
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressTriggered = useRef(false);
-
-  function startLongPress(e: React.TouchEvent | React.MouseEvent) {
-    longPressTriggered.current = false;
-    if (needsAssignment) {
-      e.preventDefault();
-      longPressTimer.current = setTimeout(() => {
-        longPressTriggered.current = true;
-        onAssign!();
-      }, 500);
-    } else if (canSwap) {
-      e.preventDefault();
-      longPressTimer.current = setTimeout(() => {
-        longPressTriggered.current = true;
-        onStartSwap!();
-      }, 500);
-    }
-  }
-
-  function cancelLongPress() {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  }
-
-  function handleTap(delta: number) {
-    if (longPressTriggered.current) {
-      longPressTriggered.current = false;
-      return;
-    }
-    onLifeChange(delta);
-  }
-
-  const longPressHandlers = (needsAssignment || canSwap)
-    ? {
-        onTouchStart: startLongPress,
-        onTouchEnd: cancelLongPress,
-        onTouchCancel: cancelLongPress,
-        onMouseDown: startLongPress,
-        onMouseUp: cancelLongPress,
-        onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
-      }
-    : {};
-
-  // Leave a dead zone above the commander damage bar so taps don't
-  // hit both the life-change button and a commander-damage button.
-  const hasCommander = opponents.length > 0;
-
-  const swapRing = swapState === "source"
-    ? "ring-4 ring-inset ring-yellow-400"
-    : swapState === "target"
-    ? "ring-4 ring-inset ring-green-400"
-    : "";
-
-  return (
-    <div
-      data-player-idx={index}
-      className={`relative w-full h-full overflow-hidden select-none ${swapRing}`}
-      style={{
-        background: textureOverlay ? `${textureOverlay}, ${player.bgColor}` : player.bgColor,
-        color: textColor,
-        transform: rotate ? "rotate(180deg)" : undefined,
-        filter: dead ? "grayscale(1)" : undefined,
-        opacity: dead ? 0.45 : 1,
-        transition: "filter 300ms, opacity 300ms",
-      }}
-    >
-      {/* Tap zones — even split of the area above the info bar / commander damage.
-           When opponents exist, reserve 8rem at the bottom (info bar + commander).
-           Each zone gets exactly half the remaining space. */}
-      <button
-        type="button"
-        onClick={() => handleTap(1)}
-        className="absolute top-0 left-0 right-0 active:bg-white/10"
-        style={hasCommander
-          ? { height: "calc(50% - 4rem)" }
-          : { height: "50%" }
-        }
-        aria-label={`Player ${index + 1} +1 life`}
-        {...longPressHandlers}
-      />
-      <button
-        type="button"
-        onClick={() => handleTap(-1)}
-        className="absolute left-0 right-0 active:bg-black/10"
-        style={hasCommander
-          ? { top: "calc(50% - 4rem)", height: "calc(50% - 4rem)" }
-          : { top: "50%", height: "50%" }
-        }
-        aria-label={`Player ${index + 1} -1 life`}
-        {...longPressHandlers}
-      />
-
-      <div
-        className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
-        style={{ paddingBottom: opponents.length > 0 ? "8rem" : 0 }}
-      >
-        <div className="text-7xl sm:text-8xl font-bold tabular-nums" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>
-          {player.life}
-        </div>
-        {dead && (
-          <div className="text-xs font-bold uppercase mt-1 px-2 py-0.5 rounded bg-gray-900 text-white">
-            Eliminated
-          </div>
-        )}
-        {!dead && lethal && (
-          <div className="text-xs font-bold uppercase mt-1 px-2 py-0.5 rounded bg-red-600 text-white">
-            Lethal!
-          </div>
-        )}
-      </div>
-
-      {/* Info bar: name/deck + color picker, between life and commander damage */}
-      {opponents.length > 0 && (
-        <div
-          className="absolute left-0 right-0 flex items-center justify-between px-2 z-10 pointer-events-none"
-          style={{ bottom: "6.75rem" }}
-        >
-          <div
-            className="text-xs font-semibold truncate flex-1 mr-2"
-            style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
-          >
-            {deckLabel || (needsAssignment ? (
-              <span className="opacity-60">Hold to assign</span>
-            ) : null)}
-          </div>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onOpenColor(); }}
-            className="w-8 h-8 flex items-center justify-center pointer-events-auto"
-            aria-label="Change background color"
-          >
-            <span
-              className="w-4 h-4 rounded-full shadow-md border block"
-              style={{
-                background: "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
-                borderColor: textColor,
-              }}
-            />
-          </button>
-        </div>
-      )}
-
-      {/* Fallback: when no commander damage bar, keep label + color picker at top */}
-      {opponents.length === 0 && (
-        <>
-          {deckLabel ? (
-            <div
-              className="absolute top-2 left-2 right-12 text-xs font-semibold pointer-events-none truncate z-10"
-              style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
-            >
-              {deckLabel}
-            </div>
-          ) : needsAssignment ? (
-            <div
-              className="absolute top-2 left-2 right-12 text-xs font-medium pointer-events-none truncate z-10 opacity-60"
-              style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}
-            >
-              Hold to assign player
-            </div>
-          ) : null}
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onOpenColor(); }}
-            className="absolute top-0 right-0 w-11 h-11 z-10 flex items-center justify-center"
-            aria-label="Change background color"
-          >
-            <span
-              className="w-5 h-5 rounded-full shadow-md border block"
-              style={{
-                background: "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
-                borderColor: textColor,
-              }}
-            />
-          </button>
-        </>
-      )}
-
-      {opponents.length > 0 && (
-        <div
-          className="absolute bottom-0 left-0 right-0 flex items-stretch justify-start gap-2 px-2 pb-2 pt-1 z-10"
-          style={{ backgroundColor: "rgba(0,0,0,0.25)" }}
-        >
-          {opponents.map((opp) => {
-            const oppBg = opp.player.bgColor;
-            const oppText = textOn(oppBg);
-            const keys = opp.hasPartner
-              ? [{ key: String(opp.index), label: "A" }, { key: `${opp.index}b`, label: "B" }]
-              : [{ key: String(opp.index), label: "" }];
-
-            return (
-              <div key={opp.index} className="flex-1 flex gap-0.5">
-                {keys.map((k) => {
-                  const dmg = player.damage[k.key] ?? 0;
-                  const isLethal = dmg >= 21;
-                  return (
-                    <div
-                      key={k.key}
-                      className={`relative flex-1 h-24 rounded-lg overflow-hidden border-2 select-none ${
-                        isLethal ? "border-red-500" : "border-white/30"
-                      }`}
-                      style={{ background: oppBg, color: oppText }}
-                    >
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); onCommanderDamage(k.key, 1); }}
-                        className="absolute top-0 left-0 right-0 h-1/2 flex items-start justify-center pt-1 active:bg-white/10"
-                        aria-label={`+1 commander damage${k.label ? ` (${k.label})` : ""} from player ${opp.index + 1}`}
-                      >
-                        <span className="text-[10px] font-bold opacity-70">▲</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); onCommanderDamage(k.key, -1); }}
-                        className="absolute bottom-0 left-0 right-0 h-1/2 flex items-end justify-center pb-1 active:bg-black/10"
-                        aria-label={`-1 commander damage${k.label ? ` (${k.label})` : ""} from player ${opp.index + 1}`}
-                      >
-                        <span className="text-[10px] font-bold opacity-70">▼</span>
-                      </button>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        {k.label && (
-                          <span className="text-[8px] font-bold opacity-50">{k.label}</span>
-                        )}
-                        <span className={`${opp.hasPartner ? "text-lg" : "text-2xl"} font-bold tabular-nums`} style={{ textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}>
-                          {dmg}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
+const ADD_DECK = "__add_deck__";
 
 export default function TrackerPage() {
   const { theme, setTheme } = useTheme();
@@ -537,13 +209,6 @@ export default function TrackerPage() {
       wakeLock?.release();
     };
   }, [setupDone]);
-
-  // A player is out of the game if they hit 0 life OR took 21+ from
-  // a single commander. Tap zones still work while eliminated, so the
-  // player can be revived (drop the offending commander damage below
-  // 21, or +1 their life back above 0).
-  const isAlive = (p: Player) =>
-    p.life > 0 && !Object.values(p.damage).some((d) => d >= 21);
 
   // Winner detection: when exactly one player is alive, pop the log
   // overlay. Keeping it as an overlay (instead of navigating away)
@@ -700,7 +365,6 @@ export default function TrackerPage() {
     return users.find((u) => u.id === userId)?.decks ?? [];
   }
 
-  const ADD_DECK = "__add_deck__";
   function handleDeckSelect(value: string, seatIdx: number, context: "setup" | "overlay") {
     if (value === ADD_DECK) {
       const userId = context === "setup"
@@ -785,104 +449,19 @@ export default function TrackerPage() {
   // Setup screen
   if (!setupDone) {
     return (
-      <div className="max-w-md mx-auto space-y-5 py-6">
-        <h1 className="text-2xl font-bold text-center">Life Tracker</h1>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Players</label>
-          <div className="flex gap-2">
-            {[2, 3, 4].map((n) => (
-              <button
-                key={n}
-                onClick={() => setPlayerCount(n)}
-                className={`flex-1 py-3 rounded-lg text-sm font-medium transition-colors ${
-                  playerCount === n
-                    ? "bg-accent text-accent-text"
-                    : "bg-surface-raised text-text-secondary hover:bg-surface-hover"
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Starting Life</label>
-          <div className="flex gap-2">
-            {[20, 30, 40].map((n) => (
-              <button
-                key={n}
-                onClick={() => setStartLife(n)}
-                className={`flex-1 py-3 rounded-lg text-sm font-medium transition-colors ${
-                  startLife === n
-                    ? "bg-accent text-accent-text"
-                    : "bg-surface-raised text-text-secondary hover:bg-surface-hover"
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Per-seat player/deck assignment (optional) */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">
-            Assign Players (optional)
-          </label>
-          <p className="text-xs text-text-muted">
-            Fill these in to auto-log the game when a winner is decided.
-          </p>
-          {seatsForCount.map((seat, i) => {
-            return (
-              <div key={i} className="border border-border-light rounded-lg p-2 space-y-2">
-                <div className="text-xs font-semibold text-text-tertiary">Seat {i + 1}</div>
-                <select
-                  value={seat.userId}
-                  onChange={(e) => updateSeat(i, "userId", e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-lg bg-surface text-text-primary text-sm"
-                >
-                  <option value="">Select player...</option>
-                  {users.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name}
-                    </option>
-                  ))}
-                </select>
-                {seat.userId && (
-                  <select
-                    value={seat.deckId}
-                    onChange={(e) => handleDeckSelect(e.target.value, i, "setup")}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-surface text-text-primary text-sm"
-                  >
-                    <option value="">Select deck...</option>
-                    {getDecksFor(seat.userId).map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name} ({d.commander})
-                      </option>
-                    ))}
-                    <option value={ADD_DECK}>+ Add Deck...</option>
-                  </select>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        <button
-          onClick={handleStart}
-          className="w-full bg-accent text-accent-text py-3 rounded-lg font-semibold hover:bg-accent-hover transition-colors"
-        >
-          Start Game
-        </button>
-
-        <p className="text-xs text-text-muted text-center">
-          Tap the top of any counter to increase, bottom to decrease. Commander
-          damage auto-adjusts life. When only one player remains alive, you&apos;ll
-          jump to the log game screen (if seats are assigned).
-        </p>
-      </div>
+      <SetupScreen
+        playerCount={playerCount}
+        setPlayerCount={setPlayerCount}
+        startLife={startLife}
+        setStartLife={setStartLife}
+        seatsForCount={seatsForCount}
+        users={users}
+        updateSeat={updateSeat}
+        handleDeckSelect={handleDeckSelect}
+        getDecksFor={getDecksFor}
+        handleStart={handleStart}
+        ADD_DECK={ADD_DECK}
+      />
     );
   }
 
@@ -1017,92 +596,12 @@ export default function TrackerPage() {
     >
       {layout}
 
-      {/* Pull-down nav trigger */}
-      {!showNav && (
-        <div
-          className="absolute top-0 left-0 right-0 h-8 z-50"
-          onTouchStart={() => setShowNav(true)}
-          onClick={() => setShowNav(true)}
-        >
-          <div className="w-12 h-1 bg-white/30 rounded-full mx-auto mt-3" />
-        </div>
-      )}
-
-      {/* Nav overlay */}
-      {showNav && (
-        <div className="absolute inset-0 z-50 flex flex-col">
-          <div className="bg-nav-bg/95 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
-            <div className="px-4 py-3 flex items-center justify-between">
-              <span className="nav-logo font-bold text-lg text-nav-text-hover">MTG Tracker</span>
-              <button
-                type="button"
-                onClick={() => setShowNav(false)}
-                className="text-nav-text-muted hover:text-nav-text-hover p-2"
-                aria-label="Close menu"
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="px-4 pb-3 space-y-1 border-t border-nav-border">
-              {[
-                { href: "/dashboard", label: "Dashboard" },
-                { href: "/decks", label: "Decks" },
-                { href: "/games", label: "Games" },
-                { href: "/players", label: "Players" },
-                { href: "/stats", label: "Stats" },
-                { href: "/leaderboard", label: "Leaderboard" },
-                { href: "/playgroups", label: "Groups" },
-              ].map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="block px-3 py-2 rounded text-sm font-medium text-nav-text hover:text-nav-text-hover hover:bg-nav-hover-bg"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <div className="mt-2 pt-2 border-t border-nav-border space-y-1">
-                <div className="px-3 py-2 flex items-center justify-between">
-                  <span className="text-sm text-nav-text-muted">Group</span>
-                  <PlaygroupSwitcher />
-                </div>
-                <div className="px-3 py-2 flex items-center justify-between">
-                  <span className="text-sm text-nav-text-muted">Theme</span>
-                  <select
-                    value={theme}
-                    onChange={(e) => setTheme(e.target.value as ThemeName)}
-                    className="bg-nav-select-bg text-nav-text text-sm rounded px-2 py-1 border border-nav-select-border"
-                  >
-                    {(["default","synth","cyber","flame","chris","phyrexia","stained-glass","dungeon","neon-dynasty","grixis"] as const).map((v) => (
-                      <option key={v} value={v}>{v === "stained-glass" ? "Stained Glass" : v === "neon-dynasty" ? "Neon Dynasty" : v.charAt(0).toUpperCase() + v.slice(1)}</option>
-                    ))}
-                  </select>
-                </div>
-                <button
-                  onClick={() => {
-                    if ("caches" in window) {
-                      caches.keys().then((names) => names.forEach((n) => caches.delete(n)));
-                    }
-                    window.location.reload();
-                  }}
-                  className="block w-full text-left px-3 py-2 text-sm text-nav-text-muted hover:text-nav-text-hover"
-                >
-                  Reload App
-                </button>
-                <button
-                  onClick={() => signOut({ callbackUrl: "/login" })}
-                  className="block w-full text-left px-3 py-2 text-sm text-nav-text-muted hover:text-nav-text-hover"
-                >
-                  Sign out
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="flex-1" onClick={() => setShowNav(false)} />
-        </div>
-      )}
+      <TrackerNav
+        showNav={showNav}
+        setShowNav={setShowNav}
+        theme={theme}
+        setTheme={setTheme}
+      />
 
       <div
         className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center gap-3"
@@ -1148,404 +647,79 @@ export default function TrackerPage() {
       </div>
 
       {confirmAction && (
-        <div
-          className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4"
-          onClick={() => setConfirmAction(null)}
-        >
-          <div
-            className="bg-surface rounded-lg p-5 max-w-sm w-full space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="font-semibold text-text-primary text-lg">
-              {confirmAction === "reset" ? "Reset the game?" : "Start a new game?"}
-            </h3>
-            <p className="text-sm text-text-tertiary">
-              {confirmAction === "reset"
-                ? "Life totals and commander damage will be reset. Player assignments stay."
-                : "The current game will be discarded and you'll return to setup."}
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setConfirmAction(null)}
-                className="flex-1 py-2 rounded-lg border border-border text-text-secondary font-medium hover:bg-surface-hover"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirmAction === "reset") {
-                    handleReset();
-                  } else {
-                    handleNewGame();
-                  }
-                  setConfirmAction(null);
-                }}
-                className="flex-1 py-2 rounded-lg bg-accent text-accent-text font-medium"
-              >
-                {confirmAction === "reset" ? "Reset" : "New Game"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          action={confirmAction}
+          onConfirm={() => {
+            if (confirmAction === "reset") {
+              handleReset();
+            } else {
+              handleNewGame();
+            }
+            setConfirmAction(null);
+          }}
+          onCancel={() => setConfirmAction(null)}
+        />
       )}
 
       {logOverlayOpen && winnerIdx !== null && (
-        <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4">
-          <div className="bg-surface rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-border-light sticky top-0 bg-surface">
-              <h3 className="font-semibold text-text-primary text-lg">Log game</h3>
-              <button
-                type="button"
-                onClick={() => setLogOverlayDismissed(true)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:bg-surface-raised"
-                aria-label="Close"
-              >
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="p-4 space-y-4">
-              {logSavedId ? (
-                <div className="space-y-3">
-                  <div className="bg-success-bg text-success px-3 py-2 rounded text-sm font-medium">
-                    Game logged.
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleNewGame();
-                    }}
-                    className="w-full py-2 rounded-lg bg-accent text-accent-text font-medium"
-                  >
-                    Start new game
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLogOverlayDismissed(true)}
-                    className="w-full py-2 rounded-lg border border-border text-text-secondary font-medium hover:bg-surface-hover"
-                  >
-                    Close
-                  </button>
-                </div>
-              ) : (
-                <>
-                  {logError && (
-                    <div className="bg-danger-bg text-danger px-3 py-2 rounded text-sm">
-                      {logError}
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-text-secondary">
-                      Date played
-                    </label>
-                    <input
-                      type="date"
-                      value={logPlayedAt}
-                      onChange={(e) => setLogPlayedAt(e.target.value)}
-                      className="w-full px-3 py-2 border border-border rounded-lg bg-surface text-text-primary"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-text-secondary">
-                      Seats
-                    </label>
-                    {players.map((p, i) => {
-                      const user = users.find((u) => u.id === p.userId);
-                      const deck = user?.decks.find((d) => d.id === p.deckId);
-                      const isWinner = i === winnerIdx;
-                      return (
-                        <div
-                          key={i}
-                          className={`border rounded-lg p-2 text-sm ${
-                            isWinner
-                              ? "border-success bg-success-bg"
-                              : "border-border-light"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-semibold text-text-tertiary">
-                              Seat {i + 1}
-                            </span>
-                            {isWinner && (
-                              <span className="text-xs font-bold text-success uppercase">
-                                Winner
-                              </span>
-                            )}
-                          </div>
-                          <select
-                            value={p.userId}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              setPlayers((prev) =>
-                                prev.map((pp, ii) =>
-                                  ii === i ? { ...pp, userId: v, deckId: "" } : pp
-                                )
-                              );
-                            }}
-                            className="w-full px-2 py-1 border border-border rounded bg-surface text-text-primary text-sm mb-1"
-                          >
-                            <option value="">Select player...</option>
-                            {users.map((u) => (
-                              <option key={u.id} value={u.id}>
-                                {u.name}
-                              </option>
-                            ))}
-                          </select>
-                          {p.userId && (
-                            <select
-                              value={p.deckId}
-                              onChange={(e) => handleDeckSelect(e.target.value, i, "overlay")}
-                              className="w-full px-2 py-1 border border-border rounded bg-surface text-text-primary text-sm"
-                            >
-                              <option value="">Select deck...</option>
-                              {getDecksFor(p.userId).map((d) => (
-                                <option key={d.id} value={d.id}>
-                                  {d.name} ({d.commander})
-                                </option>
-                              ))}
-                              <option value={ADD_DECK}>+ Add Deck...</option>
-                            </select>
-                          )}
-                          {deck && (
-                            <div className="text-xs text-text-muted mt-1">
-                              {deck.name} — {deck.commander}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-text-secondary">
-                      Notes
-                    </label>
-                    <textarea
-                      value={logNotes}
-                      onChange={(e) => setLogNotes(e.target.value)}
-                      placeholder="Optional..."
-                      rows={2}
-                      className="w-full px-3 py-2 border border-border rounded-lg bg-surface text-text-primary text-sm"
-                    />
-                  </div>
-
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={logAsterisk}
-                      onChange={(e) => setLogAsterisk(e.target.checked)}
-                      className="w-4 h-4 rounded border-border"
-                    />
-                    <span className="text-sm font-medium text-text-secondary">Asterisk *</span>
-                  </label>
-
-                  <div className="flex gap-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setLogOverlayDismissed(true)}
-                      className="flex-1 py-2 rounded-lg border border-border text-text-secondary font-medium hover:bg-surface-hover"
-                    >
-                      Not yet
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSaveGame}
-                      disabled={logSaving}
-                      className="flex-1 py-2 rounded-lg bg-accent text-accent-text font-medium disabled:opacity-50"
-                    >
-                      {logSaving ? "Saving..." : "Log game"}
-                    </button>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleNewGame()}
-                    className="w-full py-2 rounded-lg text-text-muted text-sm hover:text-text-secondary hover:bg-surface-hover"
-                  >
-                    Discard and start new game
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+        <LogGameOverlay
+          players={players}
+          winnerIdx={winnerIdx}
+          users={users}
+          logPlayedAt={logPlayedAt}
+          setLogPlayedAt={setLogPlayedAt}
+          logNotes={logNotes}
+          setLogNotes={setLogNotes}
+          logAsterisk={logAsterisk}
+          setLogAsterisk={setLogAsterisk}
+          logSaving={logSaving}
+          logError={logError}
+          logSavedId={logSavedId}
+          onDismiss={() => setLogOverlayDismissed(true)}
+          onSave={handleSaveGame}
+          onNewGame={handleNewGame}
+          onPlayerChange={(seatIdx, userId) => {
+            setPlayers((prev) =>
+              prev.map((pp, ii) =>
+                ii === seatIdx ? { ...pp, userId, deckId: "" } : pp
+              )
+            );
+          }}
+          handleDeckSelect={handleDeckSelect}
+          getDecksFor={getDecksFor}
+          ADD_DECK={ADD_DECK}
+        />
       )}
 
       {assignSeatFor !== null && (
-        <div
-          className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4"
-          onClick={(e) => { if (e.target === e.currentTarget) setAssignSeatFor(null); }}
-          onTouchEnd={(e) => e.stopPropagation()}
-        >
-          <div
-            className="bg-surface rounded-lg p-4 max-w-sm w-full space-y-3"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="font-semibold text-text-primary">
-              Assign Seat {assignSeatFor + 1}
-            </h3>
-            <select
-              value={players[assignSeatFor]?.userId ?? ""}
-              onChange={(e) => {
-                const v = e.target.value;
-                setPlayers((prev) =>
-                  prev.map((pp, ii) =>
-                    ii === assignSeatFor ? { ...pp, userId: v, deckId: "" } : pp
-                  )
-                );
-              }}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-surface text-text-primary text-sm"
-            >
-              <option value="">Select player...</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name}
-                </option>
-              ))}
-            </select>
-            {players[assignSeatFor]?.userId && (
-              <select
-                value={players[assignSeatFor]?.deckId ?? ""}
-                onChange={(e) => handleDeckSelect(e.target.value, assignSeatFor!, "overlay")}
-                className="w-full px-3 py-2 border border-border rounded-lg bg-surface text-text-primary text-sm"
-              >
-                <option value="">Select deck...</option>
-                {getDecksFor(players[assignSeatFor].userId).map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name} ({d.commander})
-                  </option>
-                ))}
-                <option value={ADD_DECK}>+ Add Deck...</option>
-              </select>
-            )}
-            <button
-              type="button"
-              onClick={() => setAssignSeatFor(null)}
-              className="w-full py-2 rounded-lg bg-accent text-accent-text font-medium"
-            >
-              Done
-            </button>
-          </div>
-        </div>
+        <AssignSeatOverlay
+          seatIndex={assignSeatFor}
+          player={players[assignSeatFor]}
+          users={users}
+          onPlayerChange={(userId) => {
+            setPlayers((prev) =>
+              prev.map((pp, ii) =>
+                ii === assignSeatFor ? { ...pp, userId, deckId: "" } : pp
+              )
+            );
+          }}
+          handleDeckSelect={handleDeckSelect}
+          getDecksFor={getDecksFor}
+          onClose={() => setAssignSeatFor(null)}
+          ADD_DECK={ADD_DECK}
+        />
       )}
 
       {colorPickerFor !== null && (
-        <div
-          className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4"
-          onClick={(e) => { if (e.target === e.currentTarget) setColorPickerFor(null); }}
-        >
-          <div
-            className="bg-surface rounded-lg p-4 max-w-sm w-full space-y-3 max-h-[85vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="font-semibold text-text-primary">Pick a color</h3>
-            <div className="grid grid-cols-6 gap-2 max-h-80 overflow-y-auto">
-              {BG_PRESETS.map((preset) => (
-                <button
-                  key={preset.key}
-                  onClick={() => {
-                    updatePlayer(colorPickerFor, (p) => {
-                      const combo = preset.combo.length > 0 ? preset.combo : [];
-                      return { ...p, bgColor: bgForComboStyled(combo, palette, p.gradientStyle ?? defaultGradient), colorCombo: combo };
-                    });
-                    setColorPickerFor(null);
-                  }}
-                  className="w-full aspect-square rounded-lg border border-border flex items-end justify-center text-[10px] font-bold p-0.5"
-                  style={backgroundStyle(preset.bg)}
-                  aria-label={preset.key}
-                >
-                  <span className="px-1 rounded bg-black/40 text-white">{preset.key}</span>
-                </button>
-              ))}
-            </div>
-            <div>
-              <label className="text-sm text-text-tertiary block mb-1">Custom:</label>
-              <input
-                type="color"
-                value={
-                  players[colorPickerFor].bgColor.startsWith("#")
-                    ? players[colorPickerFor].bgColor
-                    : "#000000"
-                }
-                onChange={(e) => {
-                  const v = e.target.value;
-                  updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: v, colorCombo: null }));
-                }}
-                className="w-full h-10 rounded cursor-pointer"
-              />
-            </div>
-            {colorPickerFor !== null && players[colorPickerFor]?.colorCombo && players[colorPickerFor].colorCombo!.length > 1 && (
-              <div>
-                <label className="text-sm text-text-tertiary block mb-1">Gradient style:</label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {GRADIENT_STYLES.filter((s) => {
-                    const n = players[colorPickerFor].colorCombo!.length;
-                    if (s.minColors && n < s.minColors) return false;
-                    if (s.maxColors && n > s.maxColors) return false;
-                    return true;
-                  }).map((style) => {
-                    const p = players[colorPickerFor];
-                    const preview = style.fn(p.colorCombo!, palette);
-                    const isActive = (p.gradientStyle ?? defaultGradient) === style.name;
-                    return (
-                      <button
-                        key={style.name}
-                        onClick={() => {
-                          updatePlayer(colorPickerFor, (pl) => ({
-                            ...pl,
-                            gradientStyle: style.name,
-                            bgColor: bgForComboStyled(pl.colorCombo!, palette, style.name),
-                          }));
-                        }}
-                        className={`aspect-square rounded-lg border-2 text-[8px] font-bold flex items-end justify-center pb-0.5 ${
-                          isActive ? "border-accent ring-1 ring-accent" : "border-border"
-                        }`}
-                        style={{ background: preview }}
-                        title={style.label}
-                      >
-                        <span className="bg-black/50 text-white px-1 rounded text-[7px]">{style.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  if (colorPickerFor !== null) {
-                    const combo = DEFAULT_SEAT_COMBOS[colorPickerFor % DEFAULT_SEAT_COMBOS.length];
-                    updatePlayer(colorPickerFor, (p) => ({ ...p, bgColor: bgForComboStyled(combo, palette, p.gradientStyle ?? defaultGradient), colorCombo: combo }));
-                  }
-                  setColorPickerFor(null);
-                }}
-                className="flex-1 py-2 rounded-lg border border-border text-text-secondary text-sm font-medium hover:bg-surface-hover"
-              >
-                Default color
-              </button>
-              <button
-                onClick={() => setColorPickerFor(null)}
-                className="flex-1 py-2 rounded-lg bg-accent text-accent-text font-medium"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
+        <ColorPickerOverlay
+          playerIndex={colorPickerFor}
+          player={players[colorPickerFor]}
+          palette={palette}
+          defaultGradient={defaultGradient}
+          BG_PRESETS={BG_PRESETS}
+          updatePlayer={updatePlayer}
+          onClose={() => setColorPickerFor(null)}
+        />
       )}
 
     </div>
