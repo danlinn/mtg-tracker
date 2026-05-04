@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import CommanderSearch from "@/components/CommanderSearch";
 
@@ -26,6 +26,8 @@ function NewDeckForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("returnTo");
+  const forUserId = searchParams.get("forUser");
+  const [forUserName, setForUserName] = useState("");
   const [name, setName] = useState("");
   const [commander, setCommander] = useState("");
   const [commanderImage, setCommanderImage] = useState<string | null>(null);
@@ -42,6 +44,16 @@ function NewDeckForm() {
   const [error, setError] = useState("");
   const [moxfieldUrl, setMoxfieldUrl] = useState("");
   const [importing, setImporting] = useState(false);
+
+  useEffect(() => {
+    if (!forUserId) return;
+    fetch("/api/users")
+      .then((r) => r.json())
+      .then((data) => {
+        const user = (Array.isArray(data) ? data : []).find((u: { id: string }) => u.id === forUserId);
+        if (user) setForUserName(user.name);
+      });
+  }, [forUserId]);
 
   function buildEdhpUrl() {
     if (!decklist.trim()) return null;
@@ -133,6 +145,7 @@ function NewDeckForm() {
         bracket: bracket ? Number(bracket) : null,
         edhp: edhp ? Number(edhp) : null,
         decklist: decklist.trim() || null,
+        ...(forUserId ? { forUserId } : {}),
       }),
     });
 
@@ -148,7 +161,9 @@ function NewDeckForm() {
 
   return (
     <div className="max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-6">New Deck</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        {forUserName ? `New Deck for ${forUserName}` : "New Deck"}
+      </h1>
 
       {/* Moxfield Import */}
       <div className="mb-6 p-3 border border-border rounded-lg bg-surface-raised">

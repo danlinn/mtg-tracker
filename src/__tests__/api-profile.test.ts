@@ -85,4 +85,23 @@ describe("PUT /api/profile", () => {
     }));
     expect(res.status).toBe(400);
   });
+
+  it("rejects with empty object body", async () => {
+    mockGetUserId.mockResolvedValue("user-1");
+    const res = await PUT(new Request("http://localhost/api/profile", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    }));
+    expect(res.status).toBe(400);
+  });
+
+  it("GET returns null body when user not found in DB", async () => {
+    mockGetUserId.mockResolvedValue("user-1");
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data).toBeNull();
+  });
 });

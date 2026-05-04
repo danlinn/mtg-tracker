@@ -707,7 +707,7 @@ export default function TrackerPage() {
         ? seatsForCount[seatIdx]?.userId
         : players[seatIdx]?.userId;
       if (userId) {
-        window.location.href = `/admin/users/${userId}/decks/new?returnTo=/tracker`;
+        window.location.href = `/decks/new?forUser=${userId}&returnTo=/tracker`;
       } else {
         window.location.href = "/decks/new?returnTo=/tracker";
       }

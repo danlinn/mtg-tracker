@@ -30,7 +30,7 @@ function makeRequest(body?: Record<string, unknown>) {
 
 async function getHandlers() {
   const mod = await import("@/app/api/decks/route");
-  return { GET: mod.GET, POST: mod.POST };
+  return { GET: mod.GET, POST: mod.POST, lastCreateByUser: mod.lastCreateByUser };
 }
 
 describe("GET /api/decks", () => {
@@ -65,8 +65,10 @@ describe("GET /api/decks", () => {
 });
 
 describe("POST /api/decks", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
+    const { lastCreateByUser } = await getHandlers();
+    lastCreateByUser.clear();
   });
 
   it("returns 401 when not authenticated", async () => {
@@ -104,5 +106,19 @@ describe("POST /api/decks", () => {
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.name).toBe("Krenko");
+  });
+
+  it("returns 400 when missing commander", async () => {
+    const { POST } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    const res = await POST(makeRequest({ commander: "Some Commander" }));
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when both name and commander are missing", async () => {
+    const { POST } = await getHandlers();
+    mockGetCurrentUserId.mockResolvedValue("user-1");
+    const res = await POST(makeRequest({}));
+    expect(res.status).toBe(400);
   });
 });

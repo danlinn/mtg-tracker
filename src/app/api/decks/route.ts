@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUserId } from "@/lib/auth-helpers";
 
+export const lastCreateByUser = new Map<string, number>();
+const DECK_CREATE_COOLDOWN_MS = 10_000;
+
 export async function GET(req: Request) {
   const userId = await getCurrentUserId();
   if (!userId) {
@@ -41,6 +44,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const now = Date.now();
+  const lastCreate = lastCreateByUser.get(userId) ?? 0;
+  if (now - lastCreate < DECK_CREATE_COOLDOWN_MS) {
+    const waitSec = Math.ceil((DECK_CREATE_COOLDOWN_MS - (now - lastCreate)) / 1000);
+    return NextResponse.json(
+      { error: `Please wait ${waitSec} seconds before creating another deck` },
+      { status: 429 }
+    );
+  }
+
   let body;
   try {
     body = await req.json();
@@ -48,7 +61,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { name, commander, commanderImage, commander2, commander2Image, colors, bracket, edhp, decklist } = body;
+  const { name, commander, commanderImage, commander2, commander2Image, colors, bracket, edhp, decklist, forUserId } = body;
 
   if (!name || !commander) {
     return NextResponse.json(
@@ -56,6 +69,8 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
+
+  const ownerId = forUserId || userId;
 
   try {
     const deck = await prisma.deck.create({
@@ -73,10 +88,11 @@ export async function POST(req: Request) {
         colorB: colors?.B ?? false,
         colorR: colors?.R ?? false,
         colorG: colors?.G ?? false,
-        userId,
+        userId: ownerId,
       },
     });
 
+    lastCreateByUser.set(userId, Date.now());
     return NextResponse.json(deck);
   } catch (error) {
     console.error("[POST /api/decks] Error:", error);
