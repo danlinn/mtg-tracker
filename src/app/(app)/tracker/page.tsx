@@ -72,7 +72,15 @@ function loadSession(): TrackerSession | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const session = JSON.parse(raw) as TrackerSession;
+    if (session.players) {
+      session.players = session.players.map((p) => ({
+        ...p,
+        texture: p.texture ?? "none",
+      }));
+    }
+    return session;
   } catch {
     return null;
   }
