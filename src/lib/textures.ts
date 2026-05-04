@@ -61,7 +61,9 @@ export const ALL_TEXTURES: { name: TextureName; label: string }[] = [
   { name: "flames", label: "Flames" },
 ];
 
-export function getTextureBackground(name: TextureName, opacity: number = 0.18): string {
-  if (name === "none") return "";
-  return TEXTURE_SVGS[name](opacity);
+export function getTextureBackground(name: TextureName | undefined, opacity: number = 0.18): string {
+  if (!name || name === "none") return "";
+  const fn = TEXTURE_SVGS[name];
+  if (!fn) return "";
+  return fn(opacity);
 }
