@@ -82,43 +82,61 @@ export function ColorPickerOverlay({
             className="w-full h-10 rounded cursor-pointer"
           />
         </div>
-        {player.colorCombo && player.colorCombo.length > 1 && (
-          <div>
-            <label className="text-sm text-text-tertiary block mb-1">Gradient style:</label>
-            <div className="grid grid-cols-4 gap-1.5">
-              {GRADIENT_STYLES.filter((s) => {
-                const n = player.colorCombo!.length;
-                if (s.minColors && n < s.minColors) return false;
-                if (s.maxColors && n > s.maxColors) return false;
-                return true;
-              }).map((style) => {
-                const preview = style.fn(player.colorCombo!, palette);
-                const isActive = (player.gradientStyle ?? defaultGradient) === style.name;
-                return (
-                  <button
-                    key={style.name}
-                    onClick={() => {
-                      updatePlayer(playerIndex, (pl) => ({
-                        ...pl,
-                        gradientStyle: style.name,
-                        bgColor: bgForComboStyled(pl.colorCombo!, palette, style.name),
-                      }));
-                    }}
-                    className={`aspect-square rounded-lg border-2 text-[8px] font-bold flex items-end justify-center pb-0.5 ${
-                      isActive ? "border-accent ring-1 ring-accent" : "border-border"
-                    }`}
-                    style={{ background: preview }}
-                    title={style.label}
-                  >
-                    <span className="bg-black/50 text-white px-1 rounded text-[7px]">{style.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {player.colorCombo && player.colorCombo.length > 1 && (() => {
+          const n = player.colorCombo!.length;
+          const eligible = GRADIENT_STYLES.filter((s) => {
+            if (s.minColors && n < s.minColors) return false;
+            if (s.maxColors && n > s.maxColors) return false;
+            return true;
+          });
+          const gradients = eligible.filter((s) => !s.isPattern);
+          const gradientPatterns = eligible.filter((s) => s.isPattern);
+          const renderButton = (style: typeof GRADIENT_STYLES[number]) => {
+            const preview = style.fn(player.colorCombo!, palette);
+            const isActive = (player.gradientStyle ?? defaultGradient) === style.name;
+            return (
+              <button
+                key={style.name}
+                onClick={() => {
+                  updatePlayer(playerIndex, (pl) => ({
+                    ...pl,
+                    gradientStyle: style.name,
+                    bgColor: bgForComboStyled(pl.colorCombo!, palette, style.name),
+                  }));
+                }}
+                className={`aspect-square rounded-lg border-2 text-[8px] font-bold flex items-end justify-center pb-0.5 ${
+                  isActive ? "border-accent ring-1 ring-accent" : "border-border"
+                }`}
+                style={{ background: preview }}
+                title={style.label}
+              >
+                <span className="bg-black/50 text-white px-1 rounded text-[7px]">{style.label}</span>
+              </button>
+            );
+          };
+          return (
+            <>
+              {gradients.length > 0 && (
+                <div>
+                  <label className="text-sm text-text-tertiary block mb-1">Gradients:</label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {gradients.map(renderButton)}
+                  </div>
+                </div>
+              )}
+              {gradientPatterns.length > 0 && (
+                <div>
+                  <label className="text-sm text-text-tertiary block mb-1">Gradient patterns:</label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {gradientPatterns.map(renderButton)}
+                  </div>
+                </div>
+              )}
+            </>
+          );
+        })()}
         <div>
-          <label className="text-sm text-text-tertiary block mb-1">Texture overlay:</label>
+          <label className="text-sm text-text-tertiary block mb-1">Patterns:</label>
           <div className="grid grid-cols-6 gap-1.5">
             {ALL_TEXTURES.map((t) => {
               const isActive = (player.texture ?? defaultTexture) === t.name;
