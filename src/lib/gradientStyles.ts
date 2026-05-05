@@ -29,6 +29,7 @@ export interface GradientStyleDef {
   label: string;
   minColors?: number;
   maxColors?: number;
+  isPattern?: boolean;
   fn: (combo: ColorKey[], palette: Palette) => string;
 }
 
@@ -135,6 +136,7 @@ export const GRADIENT_STYLES: GradientStyleDef[] = [
   {
     name: "pixelated",
     label: "Pixelated",
+    isPattern: true,
     fn: (combo, palette) => {
       const hexes = getHexes(combo, palette);
       if (hexes.length <= 1) return hexes[0] ?? palette.C.hex;
@@ -203,6 +205,7 @@ export const GRADIENT_STYLES: GradientStyleDef[] = [
     name: "stained-glass",
     label: "Stained Glass",
     minColors: 2,
+    isPattern: true,
     fn: (combo, palette) => {
       const hexes = getHexes(combo, palette);
       if (hexes.length <= 1) return hexes[0] ?? palette.C.hex;
