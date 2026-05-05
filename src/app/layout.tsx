@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Providers from "@/components/Providers";
 import { Analytics } from "@vercel/analytics/next";
+import { AutotixInit } from "./autotix-init";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -37,6 +38,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
+        <AutotixInit />
         <Analytics />
       </body>
     </html>
