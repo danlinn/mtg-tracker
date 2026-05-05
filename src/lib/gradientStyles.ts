@@ -149,11 +149,11 @@ export const GRADIENT_STYLES: GradientStyleDef[] = [
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const colorIdx = (r * 3 + c * 7 + r * c) % hexes.length;
-          rects.push(`<rect x='${c * s}' y='${r * s}' width='${s}' height='${s}' fill='${hexes[colorIdx].replace("#", "%23")}'/>`);
+          rects.push(`<rect x='${c * s}' y='${r * s}' width='${s}' height='${s}' fill='${hexes[colorIdx]}'/>`);
         }
       }
-      const svg = `%3Csvg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' shape-rendering='crispEdges'%3E${rects.join("")}%3C/svg%3E`;
-      return `url("data:image/svg+xml,${svg}")`;
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' shape-rendering='crispEdges'>${rects.join("")}</svg>`;
+      return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
     },
   },
   {
