@@ -89,8 +89,6 @@ export function ColorPickerOverlay({
             if (s.maxColors && n > s.maxColors) return false;
             return true;
           });
-          const gradients = eligible.filter((s) => !s.isPattern);
-          const gradientPatterns = eligible.filter((s) => s.isPattern);
           const renderButton = (style: typeof GRADIENT_STYLES[number]) => {
             const preview = style.fn(player.colorCombo!, palette);
             const isActive = (player.gradientStyle ?? defaultGradient) === style.name;
@@ -115,24 +113,12 @@ export function ColorPickerOverlay({
             );
           };
           return (
-            <>
-              {gradients.length > 0 && (
-                <div>
-                  <label className="text-sm text-text-tertiary block mb-1">Gradients:</label>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {gradients.map(renderButton)}
-                  </div>
-                </div>
-              )}
-              {gradientPatterns.length > 0 && (
-                <div>
-                  <label className="text-sm text-text-tertiary block mb-1">Gradient patterns:</label>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {gradientPatterns.map(renderButton)}
-                  </div>
-                </div>
-              )}
-            </>
+            <div>
+              <label className="text-sm text-text-tertiary block mb-1">Gradients:</label>
+              <div className="grid grid-cols-4 gap-1.5">
+                {eligible.map(renderButton)}
+              </div>
+            </div>
           );
         })()}
         <div>
